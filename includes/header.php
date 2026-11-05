@@ -59,16 +59,23 @@ $navigation = [
         html.night-mode textarea { background-color: #0f172a !important; color: #f1f5f9 !important; border-color: #475569 !important; }
         html.night-mode input::placeholder,
         html.night-mode textarea::placeholder { color: #94a3b8 !important; }
-        #night-mode-toggle[aria-checked="true"] { background-color: #10b981 !important; }
-        #night-mode-toggle[aria-checked="true"] .night-mode-knob { transform: translateX(1.25rem) !important; }
     </style>
 </head>
 <body class="min-h-screen bg-slate-50 text-slate-800">
     <header class="bg-emerald-800 text-white shadow">
         <div class="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
             <div class="flex flex-wrap items-center justify-between gap-3">
-                <a href="<?= $appBaseUrl ?>/" class="text-lg font-bold tracking-wide">
-                    Agriculture Information System
+                <a href="<?= $appBaseUrl ?>/" class="inline-flex items-center gap-3 rounded-md focus:outline-none focus:ring-2 focus:ring-white">
+                    <span class="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-emerald-50 shadow-sm ring-1 ring-emerald-200/70">
+                        <svg class="h-10 w-10" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 32 32" aria-hidden="true">
+                            <path d="M16 4.5v8m0 0c-3.2 0-5.2-2-5.2-5.2 3.2 0 5.2 2 5.2 5.2Zm0 0c3.2 0 5.2-2 5.2-5.2-3.2 0-5.2 2-5.2 5.2Z" stroke="#166534" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" />
+                            <path d="M5 16.5h22M5.8 21c6.1-2.3 14.3-2.3 20.4 0M7.2 25.5c5.2-1.6 12.4-1.6 17.6 0" stroke="#65a30d" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
+                        </svg>
+                    </span>
+                    <span class="leading-tight">
+                        <span class="block font-serif text-2xl font-bold tracking-tight text-white sm:text-[1.75rem]">Agriculture</span>
+                        <span class="mt-1 block text-sm font-semibold uppercase tracking-[0.16em] text-emerald-100">Information System</span>
+                    </span>
                 </a>
                 <?php if (isset($_SESSION['user_id'])): ?>
                     <div class="flex flex-col items-end gap-2">
@@ -80,13 +87,18 @@ $navigation = [
                             <span class="text-emerald-200">Role</span>
                             <span class="font-semibold"><?= $_SESSION['role'] === 'admin' ? 'Administrator' : 'Staff' ?></span>
                         </span>
-                        <label class="inline-flex items-center gap-2 text-sm text-emerald-50" for="night-mode-toggle">
-                            <span>Night mode</span>
-                            <button id="night-mode-toggle" type="button" role="switch" aria-checked="false" aria-label="Toggle night mode"
-                                    class="relative inline-flex h-6 w-11 items-center rounded-full bg-slate-400 transition-colors focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-emerald-800">
-                                <span class="night-mode-knob inline-block h-4 w-4 translate-x-1 rounded-full bg-white shadow transition-transform"></span>
+                        <div class="inline-flex items-center gap-2 rounded-full border border-emerald-500/70 bg-white/10 px-2.5 py-1.5 shadow-sm">
+                            <span id="theme-mode-label" class="text-xs font-semibold uppercase tracking-wider text-emerald-100">Light</span>
+                            <button id="night-mode-toggle" type="button" role="switch" aria-checked="false" aria-label="Switch to dark theme" title="Switch to dark theme"
+                                    class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/15 text-amber-200 transition hover:bg-white/25 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-emerald-800">
+                                <svg data-theme-icon="sun" class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-6.364-2.636 1.591-1.591M3 12h2.25m.386-6.364 1.591 1.591M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />
+                                </svg>
+                                <svg data-theme-icon="moon" class="hidden h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0 1 18 15.75 9.75 9.75 0 0 1 8.25 6c0-1.33.267-2.598.752-3.752A9.753 9.753 0 0 0 2.25 11.25 9.75 9.75 0 0 0 12 21a9.753 9.753 0 0 0 9.752-5.998Z" />
+                                </svg>
                             </button>
-                        </label>
+                        </div>
                     </div>
                 <?php endif; ?>
             </div>
@@ -119,6 +131,11 @@ $navigation = [
             const setNightMode = (enabled) => {
                 document.documentElement.classList.toggle('night-mode', enabled);
                 nightModeToggle.setAttribute('aria-checked', String(enabled));
+                document.getElementById('theme-mode-label').textContent = enabled ? 'Night' : 'Light';
+                nightModeToggle.setAttribute('aria-label', enabled ? 'Switch to light theme' : 'Switch to dark theme');
+                nightModeToggle.setAttribute('title', enabled ? 'Switch to light theme' : 'Switch to dark theme');
+                nightModeToggle.querySelector('[data-theme-icon="sun"]').classList.toggle('hidden', enabled);
+                nightModeToggle.querySelector('[data-theme-icon="moon"]').classList.toggle('hidden', !enabled);
                 try {
                     localStorage.setItem('ais-theme', enabled ? 'night' : 'light');
                 } catch (error) {}
