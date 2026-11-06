@@ -72,19 +72,9 @@ try {
 $pageTitle = 'Dashboard';
 require __DIR__ . '/includes/header.php';
 ?>
-<div class="flex flex-wrap items-center justify-between gap-4">
-    <div>
-        <h1 class="text-2xl font-bold text-slate-900">Dashboard</h1>
-        <p class="mt-1 text-sm text-slate-600">Agriculture records at a glance.</p>
-    </div>
-    <div class="flex flex-wrap gap-2">
-        <a href="/FMidterm_Project/farmers/" class="rounded-md bg-emerald-700 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-800">Farmers</a>
-        <a href="/FMidterm_Project/farms/" class="rounded-md bg-emerald-700 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-800">Farms</a>
-        <a href="/FMidterm_Project/crops/" class="rounded-md bg-emerald-700 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-800">Crops</a>
-        <a href="/FMidterm_Project/plantings/" class="rounded-md bg-emerald-700 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-800">Plantings</a>
-        <a href="/FMidterm_Project/harvests/" class="rounded-md bg-emerald-700 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-800">Harvests</a>
-        <a href="/FMidterm_Project/reports/" class="rounded-md border border-emerald-700 px-3 py-2 text-sm font-semibold text-emerald-800 hover:bg-emerald-50">Reports</a>
-    </div>
+<div>
+    <h1 class="text-2xl font-bold text-slate-900">Dashboard</h1>
+    <p class="mt-1 text-sm text-slate-600">A quick overview of your agriculture records.</p>
 </div>
 
 <?php if ($pageError): ?>
