@@ -83,7 +83,7 @@ require __DIR__ . '/includes/header.php';
     </div>
 <?php endif; ?>
 
-<section class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5" aria-label="Record totals">
+<section class="mt-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-5" aria-label="Record totals">
     <?php
     $cards = [
         ['label' => 'Farmers', 'count' => $summary['farmers'] ?? 0, 'url' => '/farmers/'],
@@ -94,9 +94,9 @@ require __DIR__ . '/includes/header.php';
     ];
     foreach ($cards as $card):
     ?>
-        <a href="/FMidterm_Project<?= $card['url'] ?>" class="rounded-lg bg-white p-5 shadow-sm ring-1 ring-slate-200 hover:ring-emerald-500">
+        <a href="/FMidterm_Project<?= $card['url'] ?>" class="rounded-lg bg-white p-3 shadow-sm ring-1 ring-slate-200 hover:ring-emerald-500 sm:p-5">
             <p class="text-sm font-medium text-slate-600"><?= htmlspecialchars($card['label'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></p>
-            <p class="mt-2 text-3xl font-bold text-emerald-800"><?= (int) $card['count'] ?></p>
+            <p class="mt-2 text-2xl font-bold text-emerald-800 sm:text-3xl"><?= (int) $card['count'] ?></p>
         </a>
     <?php endforeach; ?>
 </section>
