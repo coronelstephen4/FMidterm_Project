@@ -100,3 +100,4 @@ Each module needs: model, list page with search, filter, sorting and pagination,
 - [ ] Confirm the app runs against the Supabase database with demo records after scripts 08 and 09
 - [ ] Rehearse the demo
 - [ ] Final cleanup and submission
+- [x] Push reviewed website and documentation updates to GitHub (private credentials remain ignored; local review screenshots with credentials were excluded)

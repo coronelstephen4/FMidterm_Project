@@ -17,7 +17,7 @@
 - **Phase:** 9 Final testing and submission
 - **Last updated:** 2026-11-10
 - **Currently working on:** Final testing and submission; confirming responsive layouts and night-mode contrast
-- **Next step:** Review responsive layouts and green-on-dark contrast on devices, then capture final screenshots and complete populated-database checks
+- **Next step:** Review responsive layouts and green-on-dark contrast on devices, then capture clean final screenshots and complete populated-database checks
 
 ## Decisions and Open Questions
 
@@ -50,6 +50,11 @@ Decision:
 
 Newest entry at the top. Format:
 `[Date Time] What was done | Files changed | What is next`
+
+### 2026-11-10
+- Pushed the responsive layout, dashboard contrast, and project documentation updates to `origin/main` in commit `39ad553`. Confirmed private database credentials remain ignored. Left local review screenshots out of Git because one visibly contains database credentials.
+- Files changed: `PROJECT_TASKS.md`, `PROJECT_TRACKER.md`
+- Next: Rotate the exposed database password; capture clean final screenshots after responsive checks and finish populated-database verification.
 
 ### 2026-11-10
 - Reviewed local screenshot files before publishing. Kept the screenshot images out of Git because at least one contains private database configuration; updated the screenshot folder note to distinguish review captures from final submission evidence.
