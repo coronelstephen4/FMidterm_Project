@@ -1,1 +1,11 @@
 config/db_credentials.php
+
+# Keep project instructions, requirements, and submission evidence local.
+/AGENTS.md
+/CODING_STANDARDS.md
+/PROJECT_DOCUMENTATION.md
+/PROJECT_REQUIREMENTS.md
+/PROJECT_TASKS.md
+/PROJECT_TRACKER.md
+/ap3 project.docx
+/submission_materials/
