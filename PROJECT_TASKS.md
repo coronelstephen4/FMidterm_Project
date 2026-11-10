@@ -108,4 +108,4 @@ Each module needs: model, list page with search, filter, sorting and pagination,
 - [ ] Confirm the app runs against the Supabase database with demo records after scripts 08 and 09
 - [ ] Rehearse the demo
 - [ ] Final cleanup and submission
-- [~] Publish project guidance, documentation, and source DOCX to GitHub per the user's latest request; keep private credentials and screenshots excluded (push pending)
+- [x] Publish project guidance, documentation, source DOCX, and system updates to GitHub in commit `a77763f`; private credentials and screenshots remain excluded

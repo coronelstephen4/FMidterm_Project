@@ -16,13 +16,18 @@
 
 - **Phase:** 9 Final testing and submission
 - **Last updated:** 2026-11-11
-- **Currently working on:** Publishing the reviewed project updates to GitHub
-- **Next step:** Commit and push the source, database scripts, project guidance, documentation, and source DOCX; keep credentials and screenshots out of GitHub
+- **Currently working on:** Final responsive and populated-database review after publishing the project updates
+- **Next step:** Confirm the Settings menu and Night-mode controls on desktop/mobile, then capture clean screenshots and finish populated-database checks
 
 ## Progress Log
 
 Newest entry at the top. Format:
 `[Date Time] What was done | Files changed | What is next`
+
+### 2026-11-11 06:12
+- Pushed the source, database scripts, project guidance, documentation, and source DOCX to `origin/main` in commit `a77763f`; private credentials and screenshots remained excluded.
+- Files changed: `PROJECT_TASKS.md`, `PROJECT_TRACKER.md`
+- Next: Continue final responsive and populated-database review.
 
 ### 2026-11-11 06:10
 - Prepared the requested GitHub publish: project source, SQL scripts, guidance, documentation, and source DOCX will be included; private credentials, screenshots, and the temporary Word lock file stay excluded.
