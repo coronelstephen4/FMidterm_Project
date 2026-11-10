@@ -1,5 +1,5 @@
--- Adds clearly labeled, fictional demonstration records to an empty/demo database.
--- This script is additive and designed to avoid duplicate demo rows on reruns.
+-- Adds fictional sample records to an empty database.
+-- This script is additive and designed to avoid duplicate sample rows on reruns.
 -- Run only after lookup migration 08 has completed.
 
 BEGIN;
@@ -7,21 +7,21 @@ BEGIN;
 INSERT INTO public.farmer (first_name, last_name, contact_number, address, date_registered)
 SELECT d.first_name, d.last_name, d.contact_number, d.address, d.date_registered
 FROM (VALUES
-    ('Ana', 'Alonzo', '09990001001', 'AIS Demo Address 01, Cebu', DATE '2024-01-08'),
-    ('Ben', 'Bautista', '09990001002', 'AIS Demo Address 02, Cebu', DATE '2024-01-12'),
-    ('Carla', 'Cruz', '09990001003', 'AIS Demo Address 03, Cebu', DATE '2024-01-16'),
-    ('Daniel', 'Dela Vega', '09990001004', 'AIS Demo Address 04, Cebu', DATE '2024-01-20'),
-    ('Elena', 'Enriquez', '09990001005', 'AIS Demo Address 05, Cebu', DATE '2024-01-24'),
-    ('Felix', 'Flores', '09990001006', 'AIS Demo Address 06, Cebu', DATE '2024-01-28'),
-    ('Grace', 'Garcia', '09990001007', 'AIS Demo Address 07, Cebu', DATE '2024-02-01'),
-    ('Hector', 'Hernandez', '09990001008', 'AIS Demo Address 08, Cebu', DATE '2024-02-05'),
-    ('Iris', 'Ignacio', '09990001009', 'AIS Demo Address 09, Cebu', DATE '2024-02-09'),
-    ('Jose', 'Jimenez', '09990001010', 'AIS Demo Address 10, Cebu', DATE '2024-02-13'),
-    ('Karla', 'Luna', '09990001011', 'AIS Demo Address 11, Cebu', DATE '2024-02-17'),
-    ('Luis', 'Mendoza', '09990001012', 'AIS Demo Address 12, Cebu', DATE '2024-02-21'),
-    ('Maya', 'Navarro', '09990001013', 'AIS Demo Address 13, Cebu', DATE '2024-02-25'),
-    ('Noel', 'Ortega', '09990001014', 'AIS Demo Address 14, Cebu', DATE '2024-03-01'),
-    ('Olivia', 'Perez', '09990001015', 'AIS Demo Address 15, Cebu', DATE '2024-03-05')
+    ('Ana', 'Alonzo', '09990001001', 'AIS Address 01, Cebu', DATE '2024-01-08'),
+    ('Ben', 'Bautista', '09990001002', 'AIS Address 02, Cebu', DATE '2024-01-12'),
+    ('Carla', 'Cruz', '09990001003', 'AIS Address 03, Cebu', DATE '2024-01-16'),
+    ('Daniel', 'Dela Vega', '09990001004', 'AIS Address 04, Cebu', DATE '2024-01-20'),
+    ('Elena', 'Enriquez', '09990001005', 'AIS Address 05, Cebu', DATE '2024-01-24'),
+    ('Felix', 'Flores', '09990001006', 'AIS Address 06, Cebu', DATE '2024-01-28'),
+    ('Grace', 'Garcia', '09990001007', 'AIS Address 07, Cebu', DATE '2024-02-01'),
+    ('Hector', 'Hernandez', '09990001008', 'AIS Address 08, Cebu', DATE '2024-02-05'),
+    ('Iris', 'Ignacio', '09990001009', 'AIS Address 09, Cebu', DATE '2024-02-09'),
+    ('Jose', 'Jimenez', '09990001010', 'AIS Address 10, Cebu', DATE '2024-02-13'),
+    ('Karla', 'Luna', '09990001011', 'AIS Address 11, Cebu', DATE '2024-02-17'),
+    ('Luis', 'Mendoza', '09990001012', 'AIS Address 12, Cebu', DATE '2024-02-21'),
+    ('Maya', 'Navarro', '09990001013', 'AIS Address 13, Cebu', DATE '2024-02-25'),
+    ('Noel', 'Ortega', '09990001014', 'AIS Address 14, Cebu', DATE '2024-03-01'),
+    ('Olivia', 'Perez', '09990001015', 'AIS Address 15, Cebu', DATE '2024-03-05')
 ) AS d(first_name, last_name, contact_number, address, date_registered)
 WHERE NOT EXISTS (
     SELECT 1 FROM public.farmer f
@@ -33,12 +33,12 @@ WITH demo_farmers AS (
     SELECT f.farmer_id, f.first_name, f.last_name,
            ROW_NUMBER() OVER (ORDER BY f.contact_number)::INTEGER AS demo_number
     FROM public.farmer f
-    WHERE f.address LIKE 'AIS Demo Address %'
+    WHERE f.address LIKE 'AIS Address %'
 )
 INSERT INTO public.farm (farmer_id, farm_name, location, area_hectares, soil_type_id, irrigation_type_id)
 SELECT df.farmer_id,
-       'Demo Farm ' || LPAD(df.demo_number::TEXT, 2, '0') || ' - ' || df.first_name || ' ' || df.last_name,
-       'Demo Farm Location ' || LPAD(df.demo_number::TEXT, 2, '0') || ', Cebu',
+       'Farm ' || LPAD(df.demo_number::TEXT, 2, '0') || ' - ' || df.first_name || ' ' || df.last_name,
+       'Farm Location ' || LPAD(df.demo_number::TEXT, 2, '0') || ', Cebu',
        (1.25 + df.demo_number * 0.35)::NUMERIC(8,2),
        ((df.demo_number - 1) % 4 + 1)::SMALLINT,
        ((df.demo_number - 1) % 3 + 1)::SMALLINT
@@ -46,7 +46,7 @@ FROM demo_farmers df
 WHERE NOT EXISTS (
     SELECT 1 FROM public.farm existing
     WHERE existing.farmer_id = df.farmer_id
-      AND existing.farm_name = 'Demo Farm ' || LPAD(df.demo_number::TEXT, 2, '0') || ' - ' || df.first_name || ' ' || df.last_name
+      AND existing.farm_name = 'Farm ' || LPAD(df.demo_number::TEXT, 2, '0') || ' - ' || df.first_name || ' ' || df.last_name
 );
 
 INSERT INTO public.crop (crop_name, variety, crop_category_id, growing_period_days, recommended_season_id)
@@ -73,7 +73,7 @@ WITH demo_farms AS (
            ROW_NUMBER() OVER (ORDER BY fm.contact_number)::INTEGER AS demo_number
     FROM public.farm f
     INNER JOIN public.farmer fm ON fm.farmer_id = f.farmer_id
-    WHERE fm.address LIKE 'AIS Demo Address %'
+    WHERE fm.address LIKE 'AIS Address %'
 ), planting_values AS (
     SELECT n AS demo_number,
            ((n - 1) % 15 + 1)::INTEGER AS farm_number,
@@ -99,7 +99,7 @@ WITH demo_farms AS (
            ROW_NUMBER() OVER (ORDER BY fm.contact_number)::INTEGER AS farm_number
     FROM public.farm f
     INNER JOIN public.farmer fm ON fm.farmer_id = f.farmer_id
-    WHERE fm.address LIKE 'AIS Demo Address %'
+    WHERE fm.address LIKE 'AIS Address %'
 )
 INSERT INTO public.planting (
     farm_id, crop_id, planting_date, area_planted, seed_quantity,
@@ -126,7 +126,7 @@ WITH demo_plantings AS (
     FROM public.planting p
     INNER JOIN public.farm f ON f.farm_id = p.farm_id
     INNER JOIN public.farmer fm ON fm.farmer_id = f.farmer_id
-    WHERE fm.address LIKE 'AIS Demo Address %'
+    WHERE fm.address LIKE 'AIS Address %'
       AND p.status_id = 1
 ), harvest_values AS (
     SELECT planting_id, expected_harvest_date, demo_number
@@ -150,9 +150,9 @@ WHERE NOT EXISTS (
 
 COMMIT;
 
-SELECT 'farmer' AS table_name, COUNT(*) AS demo_rows FROM public.farmer WHERE address LIKE 'AIS Demo Address %'
+SELECT 'farmer' AS table_name, COUNT(*) AS sample_rows FROM public.farmer WHERE address LIKE 'AIS Address %'
 UNION ALL
-SELECT 'farm', COUNT(*) FROM public.farm f INNER JOIN public.farmer fm ON fm.farmer_id = f.farmer_id WHERE fm.address LIKE 'AIS Demo Address %'
+SELECT 'farm', COUNT(*) FROM public.farm f INNER JOIN public.farmer fm ON fm.farmer_id = f.farmer_id WHERE fm.address LIKE 'AIS Address %'
 UNION ALL
 SELECT 'crop', COUNT(*) FROM public.crop WHERE (crop_name, variety) IN (
     ('Rice', 'PSB Rc 18'), ('Corn', 'Yellow Hybrid'), ('Tomato', 'Diamante Max'),
@@ -161,6 +161,6 @@ SELECT 'crop', COUNT(*) FROM public.crop WHERE (crop_name, variety) IN (
     ('Sweet Potato', 'NSIC Sp 30'), ('Watermelon', 'Sugar Baby')
 )
 UNION ALL
-SELECT 'planting', COUNT(*) FROM public.planting p INNER JOIN public.farm f ON f.farm_id = p.farm_id INNER JOIN public.farmer fm ON fm.farmer_id = f.farmer_id WHERE fm.address LIKE 'AIS Demo Address %'
+SELECT 'planting', COUNT(*) FROM public.planting p INNER JOIN public.farm f ON f.farm_id = p.farm_id INNER JOIN public.farmer fm ON fm.farmer_id = f.farmer_id WHERE fm.address LIKE 'AIS Address %'
 UNION ALL
-SELECT 'harvest', COUNT(*) FROM public.harvest h INNER JOIN public.planting p ON p.planting_id = h.planting_id INNER JOIN public.farm f ON f.farm_id = p.farm_id INNER JOIN public.farmer fm ON fm.farmer_id = f.farmer_id WHERE fm.address LIKE 'AIS Demo Address %';
+SELECT 'harvest', COUNT(*) FROM public.harvest h INNER JOIN public.planting p ON p.planting_id = h.planting_id INNER JOIN public.farm f ON f.farm_id = p.farm_id INNER JOIN public.farmer fm ON fm.farmer_id = f.farmer_id WHERE fm.address LIKE 'AIS Address %';
