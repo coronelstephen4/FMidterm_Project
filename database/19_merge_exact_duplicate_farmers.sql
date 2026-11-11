@@ -67,14 +67,18 @@ DELETE FROM public.farmer AS farmer
 USING farmer_merge_map AS merge_map
 WHERE farmer.farmer_id = merge_map.duplicate_farmer_id;
 
-COMMIT;
-
--- Show each deleted duplicate's surviving farmer ID and the remaining
--- duplicate candidates by the same identity rule.
+-- Return the merge map and clean up the temporary table before committing.
+-- Supabase may run post-commit statements on a different connection, where
+-- temporary tables from this transaction are no longer available.
 SELECT duplicate_farmer_id, keeper_farmer_id
 FROM farmer_merge_map
 ORDER BY duplicate_farmer_id;
 
+DROP TABLE farmer_merge_map;
+
+COMMIT;
+
+-- Read-only audit: confirm no exact farmer duplicates remain.
 SELECT a.farmer_id AS first_id,
        b.farmer_id AS possible_duplicate_id,
        a.first_name, a.last_name, a.contact_number, a.address
@@ -88,5 +92,3 @@ JOIN public.farmer AS b
  AND LOWER(REGEXP_REPLACE(BTRIM(a.address), '\s+', ' ', 'g')) =
      LOWER(REGEXP_REPLACE(BTRIM(b.address), '\s+', ' ', 'g'))
 ORDER BY a.farmer_id, b.farmer_id;
-
-DROP TABLE farmer_merge_map;

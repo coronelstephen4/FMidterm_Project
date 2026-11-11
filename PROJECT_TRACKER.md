@@ -16,13 +16,25 @@
 
 - **Phase:** 9 Final testing and submission
 - **Last updated:** 2026-11-12
-- **Currently working on:** Preparing a safe cleanup for exact duplicate farmer rows while preserving linked farm records
-- **Next step:** Run `database/19_merge_exact_duplicate_farmers.sql` in Supabase SQL Editor. Confirm its merge map and remaining-candidate query before marking the cleanup complete.
+- **Currently working on:** Reviewing synthetic records and confirming their real replacements
+- **Next step:** Obtain verified real-record mappings for the reported `farm -14`, `AIS`, and `FARM-LILOAN` entries, or authorization to remove confirmed synthetic rows. Keep migration 11 on hold until the placeholder decision is clear.
 
 ## Progress Log
 
 Newest entry at the top. Format:
 `[Date Time] What was done | Files changed | What is next`
+
+### 2026-11-12 03:17
+- Prepared `database/20_review_current_records.sql`, a read-only inventory of all five business tables with their linked farmer/farm/crop and lookup values. It does not label records synthetic or modify data; the user must compare results with verified real records.
+- No Supabase database connector is available in this session, so live rows cannot be inspected here. The inventory is ready for the user to run one SELECT at a time in Supabase SQL Editor.
+- Files changed: `database/20_review_current_records.sql`, `PROJECT_TASKS.md`, `PROJECT_TRACKER.md`
+- Next: Run the inventory queries and provide verified real-record corrections, especially for `farm -14`, `AIS`, and `FARM-LILOAN`, or authorize removal of confirmed synthetic rows. Keep migration 11 on hold.
+
+### 2026-11-12 03:13
+- Fixed `database/19_merge_exact_duplicate_farmers.sql`: it now outputs the merge map and drops its temporary table before `COMMIT`, avoiding a post-commit reference that can fail when Supabase uses another connection. The final duplicate audit does not depend on the temporary table.
+- Supabase read-only checks returned no exact-duplicate farmer pairs and no farms owned by IDs 23–26. The earlier script error was on its post-commit temporary-table output, so its data transaction had already committed; the current audits confirm no duplicate cleanup remains for these candidates.
+- Files changed: `database/19_merge_exact_duplicate_farmers.sql`, `PROJECT_TRACKER.md`
+- Next: Review synthetic records and obtain verified real-record mappings or authorization to remove them.
 
 ### 2026-11-12 02:23
 - Prepared `database/19_merge_exact_duplicate_farmers.sql` after the user authorized fixing the duplicate records. It merges only rows with the same normalized first/last name, contact number, and address; retains the lowest farmer ID; reassigns dependent farms before deleting duplicate farmer rows; and aborts if farm-name uniqueness would be violated. It leaves differently named rows that merely share a phone/address untouched.

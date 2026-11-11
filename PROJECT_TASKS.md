@@ -34,8 +34,8 @@ Work top to bottom. Do one task or one module at a time.
 - [x] Capitalize the first character of text values across the five main modules and linked lookup labels in Supabase; verification found no lowercase initials
 - [x] Mirror the website's duplicate checks in Supabase with `database/18_prevent_duplicate_records.sql`; user screenshot confirms the five triggers were installed (information_schema displays one row per event)
 - [x] Remove generated numbered farm-name prefixes from all 16 affected farms; assign farm_id 7 a distinct owner-based name to satisfy the per-farmer uniqueness constraint
-- [~] Merge confirmed exact duplicate farmers with `database/19_merge_exact_duplicate_farmers.sql`; it keeps the lowest ID, reassigns linked farms, and deletes only duplicate farmer rows. Run in Supabase and confirm the output before marking complete.
-- [~] Replace synthetic farmer, farm, crop, planting, and harvest data with verified real records; obtain actual name mappings for the reported `farm -14`, `AIS`, and `FARM-LILOAN` entries or authorization to remove confirmed synthetic rows
+- [x] Verify exact duplicate farmer cleanup in Supabase: the exact-identity audit returned no duplicate pairs, and no farms remain assigned to candidate IDs 23–26. The original script reported a temporary-table error in its post-commit output; migration 19 is corrected locally for future runs.
+- [~] Replace synthetic farmer, farm, crop, planting, and harvest data with verified real records; review the read-only inventory in `database/20_review_current_records.sql`, then obtain actual name mappings for `farm -14`, `AIS`, and `FARM-LILOAN` or authorization to remove confirmed synthetic rows
 
 ## Phase 2: Config and layout
 - [x] config/Database.php (PDO pgsql, credentials read from a private file, not hard-coded)
