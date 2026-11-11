@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../includes/auth_check.php';
+require_once __DIR__ . '/../includes/text_helpers.php';
 requireAdmin();
 require_once __DIR__ . '/../config/Database.php';
 require_once __DIR__ . '/../models/Crop.php';
@@ -28,7 +29,9 @@ try {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     foreach ($values as $field => $currentValue) {
         if (isset($_POST[$field]) && is_string($_POST[$field])) {
-            $values[$field] = trim($_POST[$field]);
+            $values[$field] = in_array($field, ['crop_name', 'variety'], true)
+                ? capitalizeInput($_POST[$field])
+                : trim($_POST[$field]);
         }
     }
 
@@ -63,6 +66,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         } catch (Throwable) {
             $errors[] = 'Crop options could not be checked right now. Please try again later.';
+        }
+    }
+
+    if (!$errors && !$pageError) {
+        try {
+            if ($cropModel->hasDuplicate($values['crop_name'], $values['variety'])) {
+                $errors[] = 'This crop and variety are already registered.';
+            }
+        } catch (Throwable) {
+            $errors[] = 'Crop details could not be checked right now. Please try again later.';
         }
     }
 
@@ -115,11 +128,11 @@ require __DIR__ . '/../includes/header.php';
         <div class="grid gap-5 sm:grid-cols-2">
             <div>
                 <label for="crop_name" class="mb-1 block text-sm font-medium">Crop name</label>
-                <input type="text" id="crop_name" name="crop_name" maxlength="80" required value="<?= htmlspecialchars($values['crop_name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" class="w-full rounded-md border border-slate-300 px-3 py-2">
+                <input type="text" id="crop_name" name="crop_name" maxlength="80" required value="<?= htmlspecialchars($values['crop_name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" class="w-full capitalize rounded-md border border-slate-300 px-3 py-2">
             </div>
             <div>
                 <label for="variety" class="mb-1 block text-sm font-medium">Variety</label>
-                <input type="text" id="variety" name="variety" maxlength="80" required value="<?= htmlspecialchars($values['variety'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" class="w-full rounded-md border border-slate-300 px-3 py-2">
+                <input type="text" id="variety" name="variety" maxlength="80" required value="<?= htmlspecialchars($values['variety'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" class="w-full capitalize rounded-md border border-slate-300 px-3 py-2">
             </div>
         </div>
         <div>

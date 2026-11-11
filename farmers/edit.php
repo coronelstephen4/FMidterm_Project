@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../includes/auth_check.php';
+require_once __DIR__ . '/../includes/text_helpers.php';
 requireAdmin();
 require_once __DIR__ . '/../config/Database.php';
 require_once __DIR__ . '/../models/Farmer.php';
@@ -41,7 +42,9 @@ $errors = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     foreach ($values as $field => $currentValue) {
         if (isset($_POST[$field]) && is_string($_POST[$field])) {
-            $values[$field] = trim($_POST[$field]);
+            $values[$field] = in_array($field, ['first_name', 'last_name', 'address'], true)
+                ? capitalizeInput($_POST[$field])
+                : trim($_POST[$field]);
         }
     }
 
@@ -71,18 +74,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (!$errors) {
         try {
-            $farmerModel->update(
-                $farmerId,
+            if ($farmerModel->hasDuplicate(
                 $values['first_name'],
                 $values['last_name'],
                 $values['contact_number'],
                 $values['address'],
-                $values['date_registered']
-            );
+                $farmerId
+            )) {
+                $errors[] = 'A farmer with a matching contact and address, or the same name and address, already exists. Review the existing record before saving.';
+            } else {
+                $farmerModel->update(
+                    $farmerId,
+                    $values['first_name'],
+                    $values['last_name'],
+                    $values['contact_number'],
+                    $values['address'],
+                    $values['date_registered']
+                );
 
-            $_SESSION['success'] = 'Farmer updated successfully.';
-            header('Location: /FMidterm_Project/farmers/view.php?id=' . $farmerId);
-            exit;
+                $_SESSION['success'] = 'Farmer updated successfully.';
+                header('Location: /FMidterm_Project/farmers/view.php?id=' . $farmerId);
+                exit;
+            }
         } catch (Throwable) {
             $errors[] = 'Farmer could not be updated. Please check the details and try again.';
         }
@@ -110,11 +123,11 @@ require __DIR__ . '/../includes/header.php';
         <div class="grid gap-5 sm:grid-cols-2">
             <div>
                 <label for="first_name" class="mb-1 block text-sm font-medium">First name</label>
-                <input type="text" id="first_name" name="first_name" maxlength="50" required value="<?= htmlspecialchars($values['first_name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" class="w-full rounded-md border border-slate-300 px-3 py-2">
+                <input type="text" id="first_name" name="first_name" maxlength="50" required value="<?= htmlspecialchars($values['first_name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" class="w-full capitalize rounded-md border border-slate-300 px-3 py-2">
             </div>
             <div>
                 <label for="last_name" class="mb-1 block text-sm font-medium">Last name</label>
-                <input type="text" id="last_name" name="last_name" maxlength="50" required value="<?= htmlspecialchars($values['last_name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" class="w-full rounded-md border border-slate-300 px-3 py-2">
+                <input type="text" id="last_name" name="last_name" maxlength="50" required value="<?= htmlspecialchars($values['last_name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" class="w-full capitalize rounded-md border border-slate-300 px-3 py-2">
             </div>
         </div>
         <div>
@@ -123,7 +136,7 @@ require __DIR__ . '/../includes/header.php';
         </div>
         <div>
             <label for="address" class="mb-1 block text-sm font-medium">Address</label>
-            <textarea id="address" name="address" maxlength="150" required rows="3" class="w-full rounded-md border border-slate-300 px-3 py-2"><?= htmlspecialchars($values['address'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></textarea>
+            <textarea id="address" name="address" maxlength="150" required rows="3" class="w-full capitalize rounded-md border border-slate-300 px-3 py-2"><?= htmlspecialchars($values['address'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></textarea>
         </div>
         <div>
             <label for="date_registered" class="mb-1 block text-sm font-medium">Date registered</label>

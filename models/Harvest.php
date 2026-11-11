@@ -186,6 +186,46 @@ class Harvest {
         return $isValid === true || $isValid === 't' || $isValid === '1';
     }
 
+    public function hasDuplicate(
+        int $plantingId,
+        string $harvestDate,
+        float $quantityKg,
+        float $sellingPricePerKg,
+        int $qualityGradeId,
+        int $remarkId,
+        ?int $excludeHarvestId = null
+    ): bool {
+        $sql = "SELECT EXISTS (
+                    SELECT 1 FROM harvest
+                    WHERE planting_id = :planting_id
+                      AND harvest_date = :harvest_date
+                      AND quantity_kg = :quantity_kg
+                      AND selling_price_per_kg = :selling_price_per_kg
+                      AND quality_grade_id = :quality_grade_id
+                      AND remark_id = :remark_id";
+        if ($excludeHarvestId !== null) {
+            $sql .= ' AND harvest_id <> :exclude_harvest_id';
+        }
+        $sql .= ')';
+
+        $stmt = $this->pdo->prepare($sql);
+        $params = [
+            'planting_id' => $plantingId,
+            'harvest_date' => $harvestDate,
+            'quantity_kg' => $quantityKg,
+            'selling_price_per_kg' => $sellingPricePerKg,
+            'quality_grade_id' => $qualityGradeId,
+            'remark_id' => $remarkId
+        ];
+        if ($excludeHarvestId !== null) {
+            $params['exclude_harvest_id'] = $excludeHarvestId;
+        }
+        $stmt->execute($params);
+
+        $exists = $stmt->fetchColumn();
+        return $exists === true || $exists === 't' || $exists === '1';
+    }
+
     public function create(
         int $plantingId,
         string $harvestDate,

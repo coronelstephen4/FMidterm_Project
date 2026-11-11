@@ -1,5 +1,6 @@
--- Adds fictional sample records to an empty database.
--- This script is additive and designed to avoid duplicate sample rows on reruns.
+-- ARCHIVED: This script contains fictional records and must not be run for the
+-- current project because the user requires real data only.
+-- Keep it only as a record of the earlier sample-data setup.
 -- Run only after lookup migration 08 has completed.
 
 BEGIN;

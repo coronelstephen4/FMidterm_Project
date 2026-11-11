@@ -130,6 +130,27 @@ class Crop {
         return $isValid === true || $isValid === 't' || $isValid === '1';
     }
 
+    public function hasDuplicate(string $crop_name, string $variety, ?int $exclude_crop_id = null): bool {
+        $sql = "SELECT EXISTS (
+                    SELECT 1 FROM crop
+                    WHERE LOWER(BTRIM(crop_name)) = LOWER(BTRIM(:crop_name))
+                      AND LOWER(BTRIM(variety)) = LOWER(BTRIM(:variety))";
+        if ($exclude_crop_id !== null) {
+            $sql .= ' AND crop_id <> :exclude_crop_id';
+        }
+        $sql .= ')';
+
+        $stmt = $this->pdo->prepare($sql);
+        $params = ['crop_name' => $crop_name, 'variety' => $variety];
+        if ($exclude_crop_id !== null) {
+            $params['exclude_crop_id'] = $exclude_crop_id;
+        }
+        $stmt->execute($params);
+
+        $exists = $stmt->fetchColumn();
+        return $exists === true || $exists === 't' || $exists === '1';
+    }
+
     public function create(
         string $crop_name,
         string $variety,

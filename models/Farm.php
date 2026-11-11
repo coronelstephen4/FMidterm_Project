@@ -155,6 +155,27 @@ class Farm {
         return $isValid === true || $isValid === 't' || $isValid === '1';
     }
 
+    public function hasDuplicateName(int $farmer_id, string $farm_name, ?int $exclude_farm_id = null): bool {
+        $sql = "SELECT EXISTS (
+                    SELECT 1 FROM farm
+                    WHERE farmer_id = :farmer_id
+                      AND LOWER(BTRIM(farm_name)) = LOWER(BTRIM(:farm_name))";
+        if ($exclude_farm_id !== null) {
+            $sql .= ' AND farm_id <> :exclude_farm_id';
+        }
+        $sql .= ')';
+
+        $stmt = $this->pdo->prepare($sql);
+        $params = ['farmer_id' => $farmer_id, 'farm_name' => $farm_name];
+        if ($exclude_farm_id !== null) {
+            $params['exclude_farm_id'] = $exclude_farm_id;
+        }
+        $stmt->execute($params);
+
+        $exists = $stmt->fetchColumn();
+        return $exists === true || $exists === 't' || $exists === '1';
+    }
+
     public function create(
         int $farmer_id,
         string $farm_name,

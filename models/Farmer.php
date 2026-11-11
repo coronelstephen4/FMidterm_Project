@@ -101,6 +101,51 @@ class Farmer {
         return $farmer ?: null;
     }
 
+    public function hasDuplicate(
+        string $first_name,
+        string $last_name,
+        string $contact_number,
+        string $address,
+        ?int $exclude_farmer_id = null
+    ): bool {
+        // Flag likely duplicate people even when a name or registration date
+        // was entered differently. A shared contact and address is a review
+        // candidate; matching full name and address is also a likely duplicate.
+        $sql = "SELECT EXISTS (
+                    SELECT 1 FROM farmer
+                    WHERE (
+                        (regexp_replace(BTRIM(contact_number), '\\D', '', 'g') =
+                         regexp_replace(BTRIM(:candidate_contact), '\\D', '', 'g')
+                         AND LOWER(REGEXP_REPLACE(BTRIM(address), '\\s+', ' ', 'g')) =
+                             LOWER(REGEXP_REPLACE(BTRIM(:candidate_address_contact), '\\s+', ' ', 'g')))
+                        OR
+                        (LOWER(BTRIM(first_name)) = LOWER(BTRIM(:first_name))
+                         AND LOWER(BTRIM(last_name)) = LOWER(BTRIM(:last_name))
+                         AND LOWER(REGEXP_REPLACE(BTRIM(address), '\\s+', ' ', 'g')) =
+                             LOWER(REGEXP_REPLACE(BTRIM(:candidate_address_name), '\\s+', ' ', 'g')))
+                    )";
+        if ($exclude_farmer_id !== null) {
+            $sql .= ' AND farmer_id <> :exclude_farmer_id';
+        }
+        $sql .= ')';
+
+        $stmt = $this->pdo->prepare($sql);
+        $params = [
+            'first_name' => $first_name,
+            'last_name' => $last_name,
+            'candidate_contact' => $contact_number,
+            'candidate_address_contact' => $address,
+            'candidate_address_name' => $address
+        ];
+        if ($exclude_farmer_id !== null) {
+            $params['exclude_farmer_id'] = $exclude_farmer_id;
+        }
+        $stmt->execute($params);
+
+        $exists = $stmt->fetchColumn();
+        return $exists === true || $exists === 't' || $exists === '1';
+    }
+
     public function create(
         string $first_name,
         string $last_name,

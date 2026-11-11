@@ -3,3 +3,15 @@ config/db_credentials.php
 # Keep project guidance files discoverable to workspace file mentions.
 ~$*.docx
 /submission_materials/
+!/submission_materials/
+!/submission_materials/README.md
+ /submission_materials/AIS_Final_Project_Report.docx
+!/submission_materials/AIS_Final_Project_Report_Corrected.docx
+!/submission_materials/build_corrected_report.ps1
+!/submission_materials/screenshots/
+/submission_materials/screenshots/*
+!/submission_materials/screenshots/README.md
+!/submission_materials/test-results/
+/submission_materials/test-results/*
+!/submission_materials/test-results/README.md
+/submission_materials/_docx_build_*/

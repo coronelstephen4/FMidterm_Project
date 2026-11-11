@@ -7,22 +7,151 @@
 
 ## Key Files
 - AGENTS.md: instructions Codex reads automatically
-- PROJECT_REQUIREMENTS.md: what must be built (plain-text copy of ap3_project.docx)
+- PROJECT_REQUIREMENTS.md: what must be built (plain-text copy of `ap3 project.docx`)
 - CODING_STANDARDS.md: the teacher's coding style (must be followed)
 - PROJECT_TASKS.md: task checklist
-- ap3_project.docx: original guidelines (the docx wins if anything conflicts)
+- `ap3 project.docx`: original guidelines (the DOCX wins if anything conflicts)
 
 ## Current Status
 
 - **Phase:** 9 Final testing and submission
-- **Last updated:** 2026-11-11
-- **Currently working on:** Final responsive and populated-database review after publishing the project updates
-- **Next step:** Confirm the Settings menu and Night-mode controls on desktop/mobile, then capture clean screenshots and finish populated-database checks
+- **Last updated:** 2026-11-12
+- **Currently working on:** Preparing a safe cleanup for exact duplicate farmer rows while preserving linked farm records
+- **Next step:** Run `database/19_merge_exact_duplicate_farmers.sql` in Supabase SQL Editor. Confirm its merge map and remaining-candidate query before marking the cleanup complete.
 
 ## Progress Log
 
 Newest entry at the top. Format:
 `[Date Time] What was done | Files changed | What is next`
+
+### 2026-11-12 02:23
+- Prepared `database/19_merge_exact_duplicate_farmers.sql` after the user authorized fixing the duplicate records. It merges only rows with the same normalized first/last name, contact number, and address; retains the lowest farmer ID; reassigns dependent farms before deleting duplicate farmer rows; and aborts if farm-name uniqueness would be violated. It leaves differently named rows that merely share a phone/address untouched.
+- This cleanup is destructive for exact duplicate farmer rows and remains unapplied. The project instructions require the user to run it in Supabase SQL Editor; mark complete only after the user confirms the output. No live data has been changed by this workspace.
+- Files changed: `database/19_merge_exact_duplicate_farmers.sql`, `PROJECT_DOCUMENTATION.md`, `PROJECT_TASKS.md`, `PROJECT_TRACKER.md`
+- Next: User runs the script and shares its merge-map and remaining-candidate output; then verify the cleanup and linked farms.
+
+### 2026-11-12 02:20
+- User screenshot confirms `database/18_prevent_duplicate_records.sql` ran in Supabase and installed duplicate guards for Farmer, Farm, Crop, Planting, and Harvest. The screenshot shows 10 event rows because each trigger covers INSERT and UPDATE; adjusted the verification query to group those into five table/trigger rows on future runs.
+- The migration adds database-side checks only. It did not update or delete existing records; duplicate farmer candidates remain for review.
+- Files changed: `database/18_prevent_duplicate_records.sql`, `PROJECT_DOCUMENTATION.md`, `PROJECT_TASKS.md`, `PROJECT_TRACKER.md`
+- Next: Run the read-only candidate audit and review matching farmer records and their linked farms before any cleanup.
+
+### 2026-11-12 02:15
+- Compared website model duplicate rules with current migration history. Past data capitalization/address/farm-label migrations are already recorded as user-confirmed Supabase updates. Prepared migration 18 to mirror duplicate prevention across all five core tables, including serialization for concurrent inserts; it does not update or delete existing data.
+- Supabase tools are not available in this runtime and the project instructions require the student to run SQL in Supabase SQL Editor. Migration 18 is pending; do not mark the database change complete until the user confirms success and verifies five triggers.
+- Files changed: `database/18_prevent_duplicate_records.sql`, `PROJECT_DOCUMENTATION.md`, `PROJECT_TASKS.md`, `PROJECT_TRACKER.md`
+- Next: User runs migration 18 and shares the result; then run the read-only duplicate audit and review candidates.
+
+### 2026-11-12 02:04
+- Re-read the normalization and documentation requirements in `ap3 project.docx`. Corrected the analysis to start from its five separate core tables; removed the unsupported claim that the guideline defines one wide UNF table with repeating groups. Documented why 1NF and 2NF do not require structural changes for the listed atomic fields and single-column keys.
+- Rebuilt the report as an editable Word document with a normalization comparison table and all 13 implemented relations explicitly listed (12 operational + separate `users` authentication support). Replaced the inconsistent SVG summary. Kept device screenshots and pending database/data checks as student work. Updated the Markdown reference and superseded-report note. No Supabase schema or data was changed.
+- Validation: Word package XML parses; six actual Word tables found; normalization and 13-relation inventory markers present; package root relationship resolves to `word/document.xml`; old synthetic `AGRICULTURE_UNF` label absent.
+- Files changed: `PROJECT_DOCUMENTATION.md`, `PROJECT_TASKS.md`, `PROJECT_TRACKER.md`, `.gitignore`, `normalization_unf_to_3nf.svg`, `submission_materials/README.md`, `submission_materials/build_corrected_report.ps1`, `submission_materials/AIS_Final_Project_Report_Corrected.docx`
+- Next: Review the corrected report in Word/WPS for visual page breaks, then complete the outstanding data audit and student-owned screenshot evidence.
+
+### 2026-11-12 01:33
+- Fixed the Word package root relationship that caused WPS to report the report as corrupted. Created a separate repaired copy because WPS had the original file open and locked it. All XML parts parse; root office-document relationship resolves; confirmed 12 pages and 12 embedded infographic PNGs.
+- Checked Google Docs setup: no document session is connected, and the Google Drive connector is disabled by the workspace administrator and unavailable for installation here. The plugin request was ineligible; no online document was created.
+- Files changed: `.gitignore`, `PROJECT_TRACKER.md`, `submission_materials/README.md`, `submission_materials/build_final_report.ps1`, `submission_materials/AIS_Final_Project_Report_Repaired.docx`
+- Next: Open the repaired copy. To create or edit the Google Doc directly, the workspace administrator must enable the Google Drive connector and the user must connect the intended account.
+
+### 2026-11-12 01:20
+- Created a twelve-page visual Word report based on the original `ap3 project.docx`, with infographic pages covering architecture, workflow, ERD, normalization, requirement coverage, integrity, data dictionary, user guide, and remaining evidence. Added a local regeneration script and kept device screenshots/final data checks visibly pending.
+- Validation: DOCX ZIP package and XML parsed successfully; confirmed 12 pages and 12 embedded PNGs. No connected Google Docs session was available, so the deliverable is a local `.docx` ready to open or import.
+- Files changed: `.gitignore`, `PROJECT_TASKS.md`, `PROJECT_TRACKER.md`, `submission_materials/README.md`, `submission_materials/AIS_Final_Project_Report.docx`, `submission_materials/build_final_report.ps1`, `submission_materials/report_visuals/pages/*.png`
+- Next: Student inserts actual system and iOS/Android screenshots, adds the emulated tablet and desktop views, then completes the final populated-data and duplicate-identity review.
+
+### 2026-11-12 01:03
+- Clarified responsive evidence instructions: use the available physical iOS and Android phones, emulate a 768 CSS-pixel tablet viewport and label it simulated, and capture a 1440 CSS-pixel desktop view.
+- Files changed: `PROJECT_DOCUMENTATION.md`, `PROJECT_TASKS.md`, `PROJECT_TRACKER.md`, `submission_materials/screenshots/README.md`
+- Next: Student captures final application and responsive evidence; run the database duplicate audit before any data cleanup.
+
+### 2026-11-12 00:59
+- Found the source guideline in the project root as `ap3 project.docx` (space instead of underscore); it is tracked by Git and was not missing. Corrected project references that used the wrong underscore spelling, and re-read the source DOCX.
+- Completed the report against the source: added a guideline coverage table, complete data dictionary, role/workflow guide, and a dated test-status matrix; corrected stale credential, responsive evidence, and screenshot statements. Added a final-test worksheet and aligned screenshot instructions with the user's real-data requirement. Final screenshot/device evidence remains for the student.
+- Files changed: `AGENTS.md`, `PROJECT_REQUIREMENTS.md`, `PROJECT_TASKS.md`, `PROJECT_TRACKER.md`, `PROJECT_DOCUMENTATION.md`, `submission_materials/README.md`, `submission_materials/screenshots/README.md`, `submission_materials/test-results/README.md`
+- Next: Run the duplicate audit and confirm real data/provenance; student captures approved screenshots and responsive evidence.
+
+### 2026-11-11 21:21
+- Broadened farmer create/edit duplicate detection to flag matching normalized contact plus address or matching full name plus address; added a read-only duplicate candidate audit across Farmer, Farm, Crop, Planting, and Harvest. Clarified that 3NF prevents dependency redundancy but does not merge duplicate entity rows; existing data was not changed.
+- Test: XAMPP PHP syntax checks passed for the changed model and create/edit pages; `git diff --check` passed. A live Supabase behavior test remains unavailable under the project database-access instruction.
+- Files changed: `models/Farmer.php`, `farmers/create.php`, `farmers/edit.php`, `database/17_audit_possible_duplicates.sql`, `PROJECT_DOCUMENTATION.md`, `PROJECT_TASKS.md`, `PROJECT_TRACKER.md`
+- Next: Run the audit SQL in Supabase and confirm the candidate records and linked farms before cleanup.
+
+### 2026-11-11 20:53
+- Created a visual four-stage normalization diagram and embedded it in the documentation, showing the UNF/1NF repeating and atomic structures, the 2NF entities, and the implemented 3NF main and lookup tables.
+- Files changed: `normalization_unf_to_3nf.svg`, `PROJECT_DOCUMENTATION.md`, `PROJECT_TASKS.md`, `PROJECT_TRACKER.md`
+- Next: Continue final review of duplicate farmer records; the diagram is ready to view in a browser or the project documentation.
+
+### 2026-11-11 21:01
+- Clarified the UNF diagram and documentation to explicitly show that the wide starting record combines all five core modules named by the DOCX. The DOCX does not require exactly 15 tables; the current 3NF business schema has 5 core and 7 lookup tables, plus the separate users table.
+- Files changed: `normalization_unf_to_3nf.svg`, `PROJECT_DOCUMENTATION.md`, `PROJECT_TRACKER.md`
+- Next: Continue duplicate-record review and final submission checks.
+
+### 2026-11-11 20:34
+- Audited exact duplicate business records in Supabase: duplicate farmer pairs are IDs 23/24 and 25/26; no exact duplicates were found in Farms, Crops, Plantings, or Harvests. Added duplicate checks to all five modules' create/edit paths and verified PHP syntax plus model checks against Supabase. Existing farmer duplicates were not deleted.
+- Files changed: five models, Farmers/Farms/Crops/Plantings/Harvests create and edit pages, `PROJECT_DOCUMENTATION.md`, `PROJECT_TASKS.md`, `PROJECT_TRACKER.md`
+- Next: Decide whether to merge or retain the existing duplicate farmer pairs; do not delete or reassign related records without the user's choice.
+
+### 2026-11-11 20:22
+- Read the normalization requirement in `ap3 project.docx`: the database must be normalized through 3NF and the UNF, 1NF, 2NF, and 3NF structures must be documented. Expanded `PROJECT_DOCUMENTATION.md` with explicit relation structures and the lookup-label transitive dependency removed in 3NF.
+- Files changed: `PROJECT_DOCUMENTATION.md`, `PROJECT_TASKS.md`, `PROJECT_TRACKER.md`
+- Next: Continue final data review; distinguish the normalized schema from synthetic data that still needs verification or replacement.
+
+### 2026-11-11 20:16
+- Removed the remaining numbered prefix from farm_id 7 using the distinct owner-based name `Ana Alonzo's Farm`; verified it is unique beside farm_id 22. All 16 generated numbered prefixes are now removed. The DOCX requires a farm name but specifies no naming format or actual name.
+- Files changed: `database/16_name_second_ana_farm.sql`, `PROJECT_TASKS.md`, `PROJECT_TRACKER.md`
+- Next: Refresh the Farms page to confirm the prefix-free names; keep migration 11 on hold.
+
+### 2026-11-11 20:10
+- Removed the generated `Farm <number> -` prefix from 15 farm names. Kept farm_id 7 unchanged because removing its prefix would duplicate farm_id 22's `Ana Alonzo` name for the same farmer; corrected farm_id 27's possessive to `Santiago's Farm` and fixed the input helper to preserve apostrophes.
+- Files changed: `database/14_remove_numbered_farm_name_prefixes.sql`, `database/15_fix_possessive_farm_name.sql`, `includes/text_helpers.php`, `PROJECT_TASKS.md`, `PROJECT_TRACKER.md`
+- Next: Get a distinct name for farm_id 7, then refresh the Farms page; keep migration 11 on hold.
+
+### 2026-11-11 19:57
+- Added title-case handling to Farmer, Farm, and Crop create/edit text inputs. Inputs show capitalization while typing and are normalized on submit; uppercase acronyms remain intact. Planting and Harvest use dates, numbers, and controlled lookup dropdowns rather than free-text fields.
+- Files changed: `includes/text_helpers.php`, Farmer/Farm/Crop create and edit pages, `PROJECT_TASKS.md`, `PROJECT_TRACKER.md`
+- Next: Check the create/edit forms and confirm typed lowercase words display and save with capitalized initials.
+
+### 2026-11-11 19:51
+- Capitalized the first character of text values in farmer, farm, and crop records and linked lookup labels used by the five modules. Preserved the remaining characters; verification found no lowercase initials. The DOCX does not set casing rules, and this follows the user's display-format request.
+- Files changed: `database/13_capitalize_main_table_text.sql`, `PROJECT_TASKS.md`, `PROJECT_TRACKER.md`
+- Next: Refresh the Farmers page and other module lists to confirm capitalization; keep migration 11 on hold.
+
+### 2026-11-11 19:40
+- Replaced all 15 remaining `AIS Address` placeholders with the user's three supplied addresses repeated in descending farmer ID order. Verified all 19 farmer rows in Supabase; the four existing Stephen/Cansaga rows were retained.
+- Files changed: `database/12_standardize_cogon_address.sql`, `PROJECT_TASKS.md`, `PROJECT_TRACKER.md`
+- Next: Refresh the Farmers page to confirm the updated addresses display; migration 11 remains on hold.
+
+### 2026-11-11 19:35
+- Connected with the XAMPP PHP runtime and updated the remaining exact-match row after finding its address had an extra comma. Verified both Stephen Coronel rows now show `Cogon, Poblacion, Liloan, Cebu City`.
+- Files changed: `PROJECT_TASKS.md`, `PROJECT_TRACKER.md`
+- Next: Refresh the Farmers page to confirm the displayed values; keep migration 11 on hold.
+
+### 2026-11-11 19:25
+- Attempted the requested Supabase update through the local PHP configuration, but the workspace could not establish/confirm the database connection. No successful update was reported.
+- Files changed: `PROJECT_TRACKER.md`
+- Next: Run migration 12 in Supabase SQL Editor and confirm the returned farmer rows; keep migration 11 on hold.
+
+### 2026-11-11 19:00
+- User provided three proposed address formats (Cogon/Poblacion/Liloan, Cansaga/Consolacion, and Maguikay/Mandaue). These appear to replace, rather than delete, the placeholder records; migration 11 is on hold and no database change was made.
+- Files changed: `PROJECT_TASKS.md`, `PROJECT_TRACKER.md`
+- Next: Confirm the address-to-record mapping and whether the placeholder farmer rows should be kept or deleted before preparing SQL.
+
+### 2026-11-11 18:53
+- User authorized deleting the placeholder farmer records. Prepared migration 11 to remove matching farmer rows and dependent farms, plantings, and harvests in foreign-key-safe order; crop and lookup records are preserved.
+- Files changed: `database/11_delete_placeholder_farmer_records.sql`, `PROJECT_TASKS.md`, `PROJECT_TRACKER.md`
+- Next: Run migration 11 in Supabase SQL Editor and confirm success before marking deletion complete.
+
+### 2026-11-11 18:24
+- User identified three non-human farmer first-name values (`farm -14`, `AIS`, `FARM-LILOAN`). They do not appear in the local seed SQL, so no replacement names or database update can be verified yet.
+- Files changed: `PROJECT_TASKS.md`, `PROJECT_TRACKER.md`
+- Next: Get the actual first and last names for those records; do not substitute invented human-sounding names.
+
+### 2026-11-11 18:04
+- The user clarified that all stored data must be real. Cancelled the unrun proposed fictional farm rename and restored seed script 09's previous generated name; no Supabase change was made.
+- Files changed: `database/09_seed_demo_data.sql`, removed unrun `database/11_rename_sample_farm.sql`, `PROJECT_TASKS.md`, `PROJECT_TRACKER.md`
+- Next: Obtain verified real records or the user's authorization to remove synthetic sample rows before preparing a data migration.
 
 ### 2026-11-11 06:12
 - Pushed the source, database scripts, project guidance, documentation, and source DOCX to `origin/main` in commit `a77763f`; private credentials and screenshots remained excluded.
@@ -91,6 +220,8 @@ Decided:
 - Project guidance and documentation remain unignored so the workspace mention picker can find them; they are included in the user's requested GitHub update.
 
 Open (ask the student or teacher, then record the answer here):
+- All project data must be real. The currently seeded farmer/farm/crop/planting/harvest rows are synthetic; obtain verified replacement records or ask whether to remove them and leave the tables ready for real entries. Do not invent replacement records or names.
+- Confirm whether these proposed addresses map in order to the `farm-14`, `AIS`, and `FARM-LILOAN` entries, and whether those records should be updated rather than deleted.
 - Sample data has harvest dates after today (harvest_id 5 on 2026-11-20, harvest_id 15 on 2026-12-20). Decide whether future harvest dates are allowed.
 
 Known risks:
@@ -99,6 +230,9 @@ Known risks:
 - Migration 08 is now confirmed successful in Supabase. Its first attempt failed because `farm.soil_type` was already absent; the corrected script skipped missing legacy columns, checked the remaining mappings, and completed successfully.
 
 Waiting for:
+- Refresh the Farmers page and visually confirm the standardized addresses.
+- Keep migration 11 on hold until the intended action for the placeholder rows is clear.
+- Obtain verified real records or user authorization to remove the remaining synthetic sample business records; no real replacement data was supplied yet.
 - Run final CRUD/report checks against the now-normalized Supabase schema and seeded demo data.
 - Capture application screenshots and visually confirm 390px, 768px, and 1440px layouts; headless Chrome/Edge could not launch due GPU-process failures.
 
@@ -106,7 +240,7 @@ Decision:
 - Add lookup tables for all other fixed-value fields whose options are listed in PROJECT_REQUIREMENTS.md: planting status, harvest quality grade, farm irrigation type and soil type, crop category, and recommended season.
 - Migration 08 checks each remaining lookup ID/label mapping before dropping duplicate legacy text labels; it skips columns already removed and does not delete business rows.
 - Updated farm, crop, planting, and harvest write models store lookup IDs only. Run migration 08 before using create/edit forms for those entities.
-- Sample seed data uses fictional AIS-prefixed addresses and avoids duplicate inserts on reruns; generated display labels omit the word “Demo” as requested.
+- The user has clarified that all stored business records must be real. The old seed script contains synthetic records and must not be rerun; no fictional replacement farm names should be created.
 
 ### 2026-11-10
 - Removed project instructions, requirements, documentation, tracker/checklist, DOCX, and submission README files from GitHub in commit `1230b04`. Their local copies remain and `.gitignore` now keeps them local-only.
@@ -488,7 +622,7 @@ Decision:
 - Next: Start Phase 2 by creating `config/Database.php` for a PDO PostgreSQL connection using the private credentials file.
 
 ### 2026-11-06 00:25
-- Done: Read ap3_project.docx (requirements and the 5 table designs) and CODING_STANDARDS.md.
+- Done: Read `ap3 project.docx` (requirements and the five table designs) and `CODING_STANDARDS.md`.
 - Done: Created PROJECT_REQUIREMENTS.md so Codex can read the requirements as text.
 - Done: Replaced the generic checklist in PROJECT_TASKS.md with the real phases.
 - Fixed: Stack was wrongly written as MySQL. It is Supabase PostgreSQL. Corrected here and in AGENTS.md.

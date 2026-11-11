@@ -5,7 +5,7 @@ You are pair-programming with a university student on the AP3 Midterm Project: a
 ## Read first, every session
 1. PROJECT_TRACKER.md: current status, decisions, open questions, progress log
 2. PROJECT_TASKS.md: the checklist
-3. PROJECT_REQUIREMENTS.md: what must be built (the original is ap3_project.docx; the docx wins on conflict)
+3. PROJECT_REQUIREMENTS.md: what must be built (the original is `ap3 project.docx`; the DOCX wins on conflict)
 4. CODING_STANDARDS.md: mandatory coding style. Read it before writing any code.
 
 Continue from "Next step" in the tracker.

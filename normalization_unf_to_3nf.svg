@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1760" height="1120" viewBox="0 0 1760 1120" role="img" aria-labelledby="title description">
+  <title id="title">AIS normalization from assignment source tables to implemented 3NF</title>
+  <desc id="description">Four columns compare the five separate source tables from the AP3 guideline at UNF, 1NF, and 2NF with the implemented 3NF design. No combined wide UNF table is invented. The application has 12 operational relations plus a separate users authentication relation.</desc>
+  <defs>
+    <style>
+      text { font-family: Arial, Helvetica, sans-serif; fill: #0f172a; }
+      .muted { fill: #475569; }
+      .title { font-size: 34px; font-weight: 700; fill: #fff; }
+      .subtitle { font-size: 18px; fill: #d1fae5; }
+      .stage { font-size: 26px; font-weight: 700; }
+      .tag { font-size: 14px; font-weight: 700; letter-spacing: 1px; }
+      .body { font-size: 17px; }
+      .small { font-size: 15px; }
+      .panel { fill: #fff; stroke: #cbd5e1; stroke-width: 2; rx: 18; }
+      .inner { fill: #f8fafc; stroke: #dbe4ee; stroke-width: 1.5; rx: 10; }
+    </style>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#0f766e"/>
+    </marker>
+  </defs>
+  <rect width="1760" height="1120" fill="#f1f5f9"/>
+  <rect width="1760" height="135" fill="#065f46"/>
+  <text x="48" y="60" class="title">Agriculture Information System</text>
+  <text x="50" y="98" class="subtitle">Normalization stages based on the five core tables in ap3 project.docx</text>
+  <g stroke="#0f766e" stroke-width="5" fill="none" marker-end="url(#arrow)">
+    <path d="M438 210 H458"/><path d="M868 210 H888"/><path d="M1298 210 H1318"/>
+  </g>
+  <g transform="translate(30 165)">
+    <rect class="panel" width="410" height="800"/>
+    <path d="M18 0 H392 Q410 0 410 18 V105 H0 V18 Q0 0 18 0" fill="#fee2e2"/>
+    <text x="24" y="38" class="tag" fill="#b91c1c">ASSIGNMENT SOURCE</text>
+    <text x="24" y="78" class="stage">UNF</text>
+    <text x="24" y="146" class="body" font-weight="700">Five separate starting tables</text>
+    <rect class="inner" x="18" y="170" width="374" height="410"/>
+    <text x="38" y="210" class="body">FARMER</text>
+    <text x="38" y="250" class="body">FARM</text>
+    <text x="38" y="290" class="body">CROP</text>
+    <text x="38" y="330" class="body">PLANTING</text>
+    <text x="38" y="370" class="body">HARVEST</text>
+    <text x="38" y="430" class="small muted">Each has its own ID key and listed fields.</text>
+    <text x="38" y="458" class="small muted">The guideline does not provide a single</text>
+    <text x="38" y="484" class="small muted">combined wide relation or nested groups.</text>
+    <text x="24" y="635" class="body" font-weight="700">Important</text>
+    <text x="24" y="672" class="small muted">The source tables are the starting point.</text>
+    <text x="24" y="700" class="small muted">No fictional wide UNF table is added.</text>
+  </g>
+  <g transform="translate(460 165)">
+    <rect class="panel" width="410" height="800"/>
+    <path d="M18 0 H392 Q410 0 410 18 V105 H0 V18 Q0 0 18 0" fill="#dbeafe"/>
+    <text x="24" y="38" class="tag" fill="#1d4ed8">ATOMIC VALUES</text>
+    <text x="24" y="78" class="stage">1NF</text>
+    <text x="24" y="146" class="body" font-weight="700">Keep the five relations</text>
+    <rect class="inner" x="18" y="170" width="374" height="410"/>
+    <text x="38" y="210" class="body">FARMER</text>
+    <text x="38" y="250" class="body">FARM</text>
+    <text x="38" y="290" class="body">CROP</text>
+    <text x="38" y="330" class="body">PLANTING</text>
+    <text x="38" y="370" class="body">HARVEST</text>
+    <text x="38" y="430" class="small muted">One value per field; no repeating groups</text>
+    <text x="38" y="458" class="small muted">are shown in the assignment schema.</text>
+    <text x="24" y="635" class="body" font-weight="700">Outcome</text>
+    <text x="24" y="672" class="small muted">The listed source fields are already scalar.</text>
+    <text x="24" y="700" class="small muted">No flattening step is specified.</text>
+  </g>
+  <g transform="translate(890 165)">
+    <rect class="panel" width="410" height="800"/>
+    <path d="M18 0 H392 Q410 0 410 18 V105 H0 V18 Q0 0 18 0" fill="#fef3c7"/>
+    <text x="24" y="38" class="tag" fill="#a16207">NO PARTIAL DEPENDENCIES</text>
+    <text x="24" y="78" class="stage">2NF</text>
+    <text x="24" y="146" class="body" font-weight="700">Keep the five relations</text>
+    <rect class="inner" x="18" y="170" width="374" height="410"/>
+    <text x="38" y="210" class="body">FARMER: farmer_id PK</text>
+    <text x="38" y="250" class="body">FARM: farm_id PK</text>
+    <text x="38" y="290" class="body">CROP: crop_id PK</text>
+    <text x="38" y="330" class="body">PLANTING: planting_id PK</text>
+    <text x="38" y="370" class="body">HARVEST: harvest_id PK</text>
+    <text x="38" y="430" class="small muted">Every listed primary key is a single ID.</text>
+    <text x="38" y="458" class="small muted">There is no composite key component.</text>
+    <text x="24" y="635" class="body" font-weight="700">Outcome</text>
+    <text x="24" y="672" class="small muted">No partial-key dependency can occur.</text>
+    <text x="24" y="700" class="small muted">Keep entity facts in their own table.</text>
+  </g>
+  <g transform="translate(1320 165)">
+    <rect class="panel" width="410" height="800"/>
+    <path d="M18 0 H392 Q410 0 410 18 V105 H0 V18 Q0 0 18 0" fill="#dcfce7"/>
+    <text x="24" y="38" class="tag" fill="#15803d">IMPLEMENTED DESIGN</text>
+    <text x="24" y="78" class="stage">3NF</text>
+    <text x="24" y="146" class="body" font-weight="700">12 operational relations</text>
+    <rect class="inner" x="18" y="170" width="374" height="410"/>
+    <text x="38" y="210" class="body">5 core agriculture tables</text>
+    <text x="38" y="250" class="body">+ 7 controlled-value lookups</text>
+    <text x="38" y="310" class="small muted">Lookup labels are stored once; core rows</text>
+    <text x="38" y="338" class="small muted">store the corresponding foreign keys.</text>
+    <text x="38" y="400" class="body" font-weight="700">Separate support table</text>
+    <text x="38" y="440" class="body">USERS (authentication)</text>
+    <text x="38" y="480" class="small muted">Application total: 13 relations.</text>
+    <text x="24" y="635" class="body" font-weight="700">Design note</text>
+    <text x="24" y="672" class="small muted">The controlled lookups follow the</text>
+    <text x="24" y="700" class="small muted">assignment's dropdown-table requirement.</text>
+  </g>
+  <text x="42" y="1035" class="small muted">UNF / 1NF / 2NF are documented from the five original source tables. The report includes each relation and its attributes.</text>
+  <text x="42" y="1065" class="small muted">3NF decomposition does not automatically detect or merge duplicate people or records.</text>
+</svg>

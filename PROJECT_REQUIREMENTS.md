@@ -1,6 +1,6 @@
 # Project Requirements: Agriculture Information System (AIS)
 
-Source: `ap3_project.docx` (AP3 Midterm Project, Cebu Technological University). This is a plain-text copy so AI tools can read it. If anything here conflicts with the .docx, the .docx wins.
+Source: [`ap3 project.docx`](ap3%20project.docx) (AP3 Midterm Project, Cebu Technological University). This is a plain-text copy so AI tools can read it. If anything here conflicts with the DOCX, the DOCX wins.
 
 **Goal:** Design and develop a working Agriculture Information System that demonstrates database normalization, relational design, secure data management, CRUD, reporting and dashboard visualization.
 **Database:** Supabase PostgreSQL. **Application:** web-based information system.

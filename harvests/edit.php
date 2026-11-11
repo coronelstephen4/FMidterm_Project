@@ -107,6 +107,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (!$errors) {
         try {
+            if ($harvestModel->hasDuplicate(
+                $plantingId,
+                $values['harvest_date'],
+                (float) $values['quantity_kg'],
+                (float) $values['selling_price_per_kg'],
+                $qualityGradeId,
+                $remarkId,
+                $harvestId
+            )) {
+                $errors[] = 'A harvest with the same planting, date, quantity, price, grade, and remark already exists.';
+            }
+        } catch (Throwable) {
+            $errors[] = 'Harvest records could not be checked right now. Please try again later.';
+        }
+    }
+
+    if (!$errors) {
+        try {
             $updated = $harvestModel->update(
                 $harvestId,
                 $plantingId,

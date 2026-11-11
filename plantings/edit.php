@@ -100,6 +100,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (!$errors) {
         try {
+            if ($plantingModel->hasDuplicate(
+                $farmId,
+                $cropId,
+                $values['planting_date'],
+                (float) $values['area_planted'],
+                (float) $values['seed_quantity'],
+                $values['expected_harvest_date'],
+                $statusId,
+                $plantingId
+            )) {
+                $errors[] = 'A planting with the same farm, crop, dates, quantities, and status already exists.';
+            }
+        } catch (Throwable) {
+            $errors[] = 'Planting records could not be checked right now. Please try again later.';
+        }
+    }
+
+    if (!$errors) {
+        try {
             $updated = $plantingModel->update(
                 $plantingId,
                 $farmId,

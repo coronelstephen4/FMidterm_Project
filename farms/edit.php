@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../includes/auth_check.php';
+require_once __DIR__ . '/../includes/text_helpers.php';
 requireAdmin();
 require_once __DIR__ . '/../config/Database.php';
 require_once __DIR__ . '/../models/Farm.php';
@@ -46,7 +47,9 @@ $errors = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     foreach ($values as $field => $currentValue) {
         if (isset($_POST[$field]) && is_string($_POST[$field])) {
-            $values[$field] = trim($_POST[$field]);
+            $values[$field] = in_array($field, ['farm_name', 'location'], true)
+                ? capitalizeInput($_POST[$field])
+                : trim($_POST[$field]);
         }
     }
 
@@ -78,6 +81,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             if (!$farmModel->hasValidReferences($farmerId, $irrigationTypeId, $soilTypeId)) {
                 $errors[] = 'Choose a valid farmer, soil type, and irrigation type.';
+            }
+        } catch (Throwable) {
+            $errors[] = 'Farm details could not be checked right now. Please try again later.';
+        }
+    }
+
+    if (!$errors) {
+        try {
+            if ($farmModel->hasDuplicateName($farmerId, $values['farm_name'], $farmId)) {
+                $errors[] = 'This farmer already has a farm with that name.';
             }
         } catch (Throwable) {
             $errors[] = 'Farm details could not be checked right now. Please try again later.';
@@ -140,11 +153,11 @@ require __DIR__ . '/../includes/header.php';
         </div>
         <div>
             <label for="farm_name" class="mb-1 block text-sm font-medium">Farm name</label>
-            <input type="text" id="farm_name" name="farm_name" maxlength="100" required value="<?= htmlspecialchars($values['farm_name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" class="w-full rounded-md border border-slate-300 px-3 py-2">
+            <input type="text" id="farm_name" name="farm_name" maxlength="100" required value="<?= htmlspecialchars($values['farm_name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" class="w-full capitalize rounded-md border border-slate-300 px-3 py-2">
         </div>
         <div>
             <label for="location" class="mb-1 block text-sm font-medium">Location</label>
-            <input type="text" id="location" name="location" maxlength="150" required value="<?= htmlspecialchars($values['location'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" class="w-full rounded-md border border-slate-300 px-3 py-2">
+            <input type="text" id="location" name="location" maxlength="150" required value="<?= htmlspecialchars($values['location'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" class="w-full capitalize rounded-md border border-slate-300 px-3 py-2">
         </div>
         <div>
             <label for="area_hectares" class="mb-1 block text-sm font-medium">Area (hectares)</label>
