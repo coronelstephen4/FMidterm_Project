@@ -16,13 +16,19 @@
 
 - **Phase:** 9 Final testing and submission
 - **Last updated:** 2026-11-12
-- **Currently working on:** Reviewing synthetic records and confirming their real replacements
-- **Next step:** Review the Plantings inventory. Crop ID 14 (`Mango`, variety `Apple`) is not in the seed script and remains unverified; obtain source confirmation before classifying it. Keep all data changes on hold until replacements are verified or removal is authorized.
+- **Currently working on:** Reviewing current seeded records and deciding how to replace them with verified real data
+- **Next step:** Obtain the verified real records for replacement, or confirm authorization to remove only the identifiable seeded rows while preserving unverified records. Keep migration 11 and other data changes on hold until the action is clear.
 
 ## Progress Log
 
 Newest entry at the top. Format:
 `[Date Time] What was done | Files changed | What is next`
+
+### 2026-11-12 03:40
+- User shared all five read-only inventories. Current counts are 22 farmers, 19 farms, 11 crops, 30 plantings, and 22 harvests. Visible farmer/farm rows and planting sequences match the archived demo seed patterns; crop ID 14 (`Mango` / `Apple`) is absent from the seed script; harvest count is two above the 20 seeded rows. The extra farmer, farm, crop, and harvest records are not all attributable from the screenshots.
+- No Supabase rows were changed. Do not delete unverified records. Need verified real replacement data or the user's authorization to remove only the identifiable seeded records.
+- Files changed: `PROJECT_TASKS.md`, `PROJECT_TRACKER.md`
+- Next: Confirm replacement dataset or removal scope, then prepare a reviewed migration that preserves unverified records.
 
 ### 2026-11-12 03:39
 - User shared the bottom of the Crops result. Crop ID 14 is `Mango` / `Apple` (30 growing days, Fruit, Wet Season), which is not among the 10 entries in the archived seed script. Its origin is unverified; no data was changed.
