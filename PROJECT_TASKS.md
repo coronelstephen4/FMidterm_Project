@@ -25,6 +25,7 @@ Work top to bottom. Do one task or one module at a time.
 - [x] Create `users` table and add one admin and one staff account (Supabase SQL Editor reported success)
 - [x] Add `created_at` and `updated_at` to the main tables (Supabase SQL Editor reported success)
 - [x] Add NOT NULL, UNIQUE and CHECK constraints (Supabase SQL Editor reported success)
+- [x] Check DOCX data requirement: demonstrate with records stored in the actual Supabase database; it does not explicitly prohibit sample/demo rows, so no deletion is required solely because records are synthetic
 - [x] Save every SQL script in the `database/` folder (includes archival `01_harvest_remarks_migration.sql`; do not rerun it)
 - [x] Run `database/08_normalize_lookup_columns.sql` in Supabase after reviewing its label-to-ID guards (user confirmed Supabase success; script safely skipped already-removed columns)
 - [x] Run `database/09_seed_demo_data.sql` in Supabase to add fictional demo farmers, farms, crops, plantings, and harvests (user screenshot shows 15 farmers, 15 farms, 10 crops, 30 plantings, and 20 harvests)
@@ -36,7 +37,6 @@ Work top to bottom. Do one task or one module at a time.
 - [x] Mirror the website's duplicate checks in Supabase with `database/18_prevent_duplicate_records.sql`; user screenshot confirms the five triggers were installed (information_schema displays one row per event)
 - [x] Remove generated numbered farm-name prefixes from all 16 affected farms; assign farm_id 7 a distinct owner-based name to satisfy the per-farmer uniqueness constraint
 - [x] Verify exact duplicate farmer cleanup in Supabase: the exact-identity audit returned no duplicate pairs, and no farms remain assigned to candidate IDs 23–26. The original script reported a temporary-table error in its post-commit output; migration 19 is corrected locally for future runs.
-- [~] Replace synthetic farmer, farm, crop, planting, and harvest data with verified real records; current inventory is 22 farmers, 19 farms, 11 crops, 30 plantings, and 22 harvests. Obtain the verified real dataset or agree on a cleanup scope for confirmed seeded rows and their dependents; preserve unverified farmers, farms, crop 14, and harvests 22–23 until their treatment is clear.
 
 ## Phase 2: Config and layout
 - [x] config/Database.php (PDO pgsql, credentials read from a private file, not hard-coded)

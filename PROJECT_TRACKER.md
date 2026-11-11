@@ -16,13 +16,19 @@
 
 - **Phase:** 9 Final testing and submission
 - **Last updated:** 2026-11-12
-- **Currently working on:** Planning replacement or cleanup of confirmed synthetic demo records without losing unverified records
-- **Next step:** User to provide verified replacement records, or confirm the cleanup scope. If removing seed rows, decide how to handle the four unverified farms attached to seeded farmers and harvests 22–23 attached to seeded plantings. Keep migration 11 and all data changes on hold until clear.
+- **Currently working on:** Following the source DOCX requirements for the final testing and submission phase
+- **Next step:** Complete outstanding Phase 9 workflows and screenshot evidence using the live Supabase-backed system. Keep the current demo and unverified records; the DOCX does not require deleting them solely because they are synthetic.
 
 ## Progress Log
 
 Newest entry at the top. Format:
 `[Date Time] What was done | Files changed | What is next`
+
+### 2026-11-12 04:05
+- Re-read the source DOCX and confirmed its data wording: the system must connect to Supabase and demonstrate features using actual database records. It does not explicitly prohibit synthetic sample/demo records or require their deletion.
+- Decision: Follow the DOCX as requested. Keep current seeded and unverified records; do not remove or replace them solely because they are synthetic. The prior cleanup recommendation is not a DOCX requirement. No Supabase data was changed.
+- Files changed: `PROJECT_TASKS.md`, `PROJECT_TRACKER.md`
+- Next: Continue remaining Phase 9 testing, screenshots, demo rehearsal, and final cleanup.
 
 ### 2026-11-12 03:50
 - Received the completed Supabase read-only audit. It confirms seed matches: farmers 8–22, farms 7–21, crops 4–13, plantings 3–32, and likely seeded harvests 2–21. The three older placeholder clues (`farm -14`, `AIS`, `FARM-LILOAN`) are absent from current data; migration 11 should remain unused.
