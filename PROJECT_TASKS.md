@@ -29,13 +29,14 @@ Work top to bottom. Do one task or one module at a time.
 - [x] Run `database/08_normalize_lookup_columns.sql` in Supabase after reviewing its label-to-ID guards (user confirmed Supabase success; script safely skipped already-removed columns)
 - [x] Run `database/09_seed_demo_data.sql` in Supabase to add fictional demo farmers, farms, crops, plantings, and harvests (user screenshot shows 15 farmers, 15 farms, 10 crops, 30 plantings, and 20 harvests)
 - [x] Run `database/10_remove_demo_labels_from_sample_records.sql` in Supabase to remove the Demo word from sample farmer/farm labels (user screenshot confirms success; verification queries returned 0 old labels)
-- [~] Resolve whether the three placeholder entries should be deleted or kept with verified replacement addresses; migration 11 is prepared but must not be run until this is clear
+- [x] Recheck the three previously reported placeholder clues in the current Supabase data; none were found, so leave migration 11 unapplied
+- [x] Run a read-only inventory of all five business tables and compare records/relationships with archived demo seed clues; uncertain additional records identified and preserved
 - [x] Apply the user's repeating Cogon/Cansaga/Maguikay address sequence to all 15 remaining AIS placeholder farmer addresses in Supabase and verify the results
 - [x] Capitalize the first character of text values across the five main modules and linked lookup labels in Supabase; verification found no lowercase initials
 - [x] Mirror the website's duplicate checks in Supabase with `database/18_prevent_duplicate_records.sql`; user screenshot confirms the five triggers were installed (information_schema displays one row per event)
 - [x] Remove generated numbered farm-name prefixes from all 16 affected farms; assign farm_id 7 a distinct owner-based name to satisfy the per-farmer uniqueness constraint
 - [x] Verify exact duplicate farmer cleanup in Supabase: the exact-identity audit returned no duplicate pairs, and no farms remain assigned to candidate IDs 23–26. The original script reported a temporary-table error in its post-commit output; migration 19 is corrected locally for future runs.
-- [~] Replace synthetic farmer, farm, crop, planting, and harvest data with verified real records; inventory reviewed (22 farmers, 19 farms, 11 crops, 30 plantings, 22 harvests). Obtain the verified real dataset or authorization to remove only confirmed seeded rows; keep unverified records for review.
+- [~] Replace synthetic farmer, farm, crop, planting, and harvest data with verified real records; current inventory is 22 farmers, 19 farms, 11 crops, 30 plantings, and 22 harvests. Obtain the verified real dataset or agree on a cleanup scope for confirmed seeded rows and their dependents; preserve unverified farmers, farms, crop 14, and harvests 22–23 until their treatment is clear.
 
 ## Phase 2: Config and layout
 - [x] config/Database.php (PDO pgsql, credentials read from a private file, not hard-coded)

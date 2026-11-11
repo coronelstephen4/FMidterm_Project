@@ -16,13 +16,19 @@
 
 - **Phase:** 9 Final testing and submission
 - **Last updated:** 2026-11-12
-- **Currently working on:** Reviewing current seeded records and deciding how to replace them with verified real data
-- **Next step:** Obtain the verified real records for replacement, or confirm authorization to remove only the identifiable seeded rows while preserving unverified records. Keep migration 11 and other data changes on hold until the action is clear.
+- **Currently working on:** Planning replacement or cleanup of confirmed synthetic demo records without losing unverified records
+- **Next step:** User to provide verified replacement records, or confirm the cleanup scope. If removing seed rows, decide how to handle the four unverified farms attached to seeded farmers and harvests 22–23 attached to seeded plantings. Keep migration 11 and all data changes on hold until clear.
 
 ## Progress Log
 
 Newest entry at the top. Format:
 `[Date Time] What was done | Files changed | What is next`
+
+### 2026-11-12 03:50
+- Received the completed Supabase read-only audit. It confirms seed matches: farmers 8–22, farms 7–21, crops 4–13, plantings 3–32, and likely seeded harvests 2–21. The three older placeholder clues (`farm -14`, `AIS`, `FARM-LILOAN`) are absent from current data; migration 11 should remain unused.
+- Preserved uncertain records: farmers 24, 25, 27–31; farms 22–24 and 27; crop 14 (`Manga` / `Apple`); harvests 22–23. Four uncertain farms have no plantings but belong to seeded farmers 8, 9, and 12. Harvests 22–23 depend on seeded plantings 30 and 32, so a demo cleanup needs an explicit decision about these links.
+- No data was modified. Files changed: `PROJECT_TASKS.md`, `PROJECT_TRACKER.md`
+- Next: Obtain verified replacement data or confirm a specific cleanup scope that resolves the dependent uncertain records before preparing any destructive SQL.
 
 ### 2026-11-12 03:40
 - User shared all five read-only inventories. Current counts are 22 farmers, 19 farms, 11 crops, 30 plantings, and 22 harvests. Visible farmer/farm rows and planting sequences match the archived demo seed patterns; crop ID 14 (`Mango` / `Apple`) is absent from the seed script; harvest count is two above the 20 seeded rows. The extra farmer, farm, crop, and harvest records are not all attributable from the screenshots.
