@@ -17,12 +17,17 @@
 - **Phase:** 9 Final testing and submission
 - **Last updated:** 2026-11-12
 - **Currently working on:** Reviewing synthetic records and confirming their real replacements
-- **Next step:** Inspect the remaining crop row (the query returned 11 rows while the seed script defines 10), then review Plantings. Obtain verified real-record mappings or authorization before changing any data; keep migration 11 on hold.
+- **Next step:** Review the Plantings inventory. Crop ID 14 (`Mango`, variety `Apple`) is not in the seed script and remains unverified; obtain source confirmation before classifying it. Keep all data changes on hold until replacements are verified or removal is authorized.
 
 ## Progress Log
 
 Newest entry at the top. Format:
 `[Date Time] What was done | Files changed | What is next`
+
+### 2026-11-12 03:39
+- User shared the bottom of the Crops result. Crop ID 14 is `Mango` / `Apple` (30 growing days, Fruit, Wet Season), which is not among the 10 entries in the archived seed script. Its origin is unverified; no data was changed.
+- Files changed: `PROJECT_TRACKER.md`
+- Next: Review the Plantings inventory, then seek source confirmation for crop ID 14 and verified replacement records or removal authorization before data cleanup.
 
 ### 2026-11-12 03:35
 - User ran the Crops inventory query; Supabase returned 11 rows. The visible crop names and varieties match the archived seed script, which defines 10 crops, so the remaining row needs review before classifying all crop records.
