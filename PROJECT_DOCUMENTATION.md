@@ -188,6 +188,12 @@ The implemented application has 12 operational relations: five core relations pl
 
 The assignment's original fixed-choice text attributes (`soil_type`, `irrigation_type`, `crop_category`, `recommended_season`, `status`, `quality_grade`, and `remarks`) are represented by foreign keys in the implemented design. Each label is kept once in its lookup relation, and application queries join the label for display. This implements the assignment's explicit lookup-table requirement; it does not imply that the assignment's five source tables had a repeating group or a partial dependency. The migration to lookup IDs was confirmed by the user as applied in Supabase (`database/08_normalize_lookup_columns.sql`).
 
+### 3NF dependency and contact-number check
+
+In each core relation, the single-column primary key identifies that row's remaining attributes (for example, `farmer_id` determines a farmer's name, contact number, address, and registration date). The related lookup labels depend on their lookup IDs and are reached through foreign keys. This avoids storing the same soil, irrigation, crop category, season, planting status, grade, or harvest remark text redundantly in every business row. The documented design therefore satisfies the assignment's 3NF goal for the listed attributes.
+
+`farmer.contact_number` is an ordinary farmer attribute, not a declared candidate key in `ap3 project.docx`. The guideline does not say that every farmer must have a globally unique phone number. Repeated phone values do not by themselves violate 3NF; they are a data-quality issue to review under the project's duplicate-entry rule. Do not add `UNIQUE(contact_number)` or merge farmers solely to force phone uniqueness. If the project owner later adopts a rule that one phone can belong to only one farmer, that is a separate business constraint and needs review of existing records before enforcement.
+
 ## 7. Data dictionary
 
 | Table | Column | Type | Meaning / rule |

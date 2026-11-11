@@ -111,6 +111,7 @@ Each module needs: model, list page with search, filter, sorting and pagination,
 - [x] Add guideline coverage, complete data dictionary, role permissions, operating workflow, and a truthful test/evidence status report
 - [x] Complete requirement coverage matrix, full data dictionary, record workflow, and truthful test-status summary based on the source DOCX
 - [x] Create an editable Word report aligned to `ap3 project.docx`, with a tabular normalization progression starting from the five specified core tables and a complete 13-relation inventory
+- [x] Audit the implemented 3NF design against `ap3 project.docx`; document that contact-number uniqueness is a separate business rule, not a 3NF requirement
 - [x] Replace the superseded infographic-only report's invented wide UNF relation with an accurate explanation of the five separate source relations; clarify that `users` is separate authentication support
 - [x] Keep actual screenshots, device captures, and unverified live-data outcomes marked as pending in the report
 - [x] Create `submission_materials/` folders for screenshot and final test evidence
