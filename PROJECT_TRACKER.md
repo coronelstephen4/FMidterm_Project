@@ -24,6 +24,11 @@
 Newest entry at the top. Format:
 `[Date Time] What was done | Files changed | What is next`
 
+### 2026-11-12 04:22
+- Aligned the remaining Phase 9 database test item with the DOCX: verify workflows against the current Supabase records; replacing demo rows is not required solely because they are synthetic.
+- Files changed: `PROJECT_TASKS.md`, `PROJECT_TRACKER.md`
+- Next: Complete end-to-end workflow testing, capture module/device screenshots, rehearse the demo, and finish submission cleanup.
+
 ### 2026-11-12 04:05
 - Re-read the source DOCX and confirmed its data wording: the system must connect to Supabase and demonstrate features using actual database records. It does not explicitly prohibit synthetic sample/demo records or require their deletion.
 - Decision: Follow the DOCX as requested. Keep current seeded and unverified records; do not remove or replace them solely because they are synthetic. The prior cleanup recommendation is not a DOCX requirement. No Supabase data was changed.

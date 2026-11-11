@@ -122,7 +122,7 @@ Each module needs: model, list page with search, filter, sorting and pagination,
 - [x] Keep local project guidance, documentation, and the source DOCX discoverable to workspace file mentions
 - [ ] Test CRUD, search, filter, sort, dropdowns, joins, login, dashboard and reports after migration 08
 - [x] Test invalid input and error cases (module checks and integer overflow boundary check completed)
-- [ ] Confirm the app runs against Supabase and passes the required workflows with the final approved dataset; seeded counts alone do not verify record authenticity
+- [ ] Confirm the app runs against Supabase and passes the required workflows using the current stored database records
 - [ ] Rehearse the demo
 - [ ] Final cleanup and submission
 - [x] Publish project guidance, documentation, source DOCX, and system updates to GitHub in commit `a77763f`; private credentials and screenshots remain excluded
