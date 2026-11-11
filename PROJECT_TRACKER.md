@@ -17,12 +17,17 @@
 - **Phase:** 9 Final testing and submission
 - **Last updated:** 2026-11-12
 - **Currently working on:** Reviewing synthetic records and confirming their real replacements
-- **Next step:** Review the Farmers, Farms, Crops, and Plantings results from `database/20_review_current_records.sql`; then obtain verified real-record mappings for the reported `farm -14`, `AIS`, and `FARM-LILOAN` entries, or authorization to remove confirmed synthetic rows. Keep migration 11 on hold until the placeholder decision is clear.
+- **Next step:** Review the Farms, Crops, and Plantings results from `database/20_review_current_records.sql`; then obtain verified real-record mappings for the reported `farm -14`, `AIS`, and `FARM-LILOAN` entries, or authorization to remove confirmed synthetic rows. Keep migration 11 on hold until the placeholder decision is clear.
 
 ## Progress Log
 
 Newest entry at the top. Format:
 `[Date Time] What was done | Files changed | What is next`
+
+### 2026-11-12 03:29
+- User ran the Farmers inventory query; Supabase returned 22 rows. The visible records (Ana Alonzo onward) use sequential demo-style contact numbers and registration dates matching the archived seed data. This supports that those visible entries are synthetic; it does not authorize changing or deleting them.
+- Files changed: `PROJECT_TRACKER.md`
+- Next: Review the Farms inventory, then Crops and Plantings. Obtain verified replacement data or user authorization before preparing destructive cleanup.
 
 ### 2026-11-12 03:24
 - User ran the inventory SQL in Supabase. The visible result is the Harvests query with 22 rows; its farmer, farm, and crop values match the demo-style data in the archived seed script. No data was changed.
