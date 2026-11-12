@@ -16,14 +16,140 @@
 
 - **Phase:** 9 Final testing and submission
 - **Last updated:** 2026-11-12
-- **Currently working on:** Final testing and submission; the 3NF schema review against the source DOCX is complete
-- **Next step:** Complete outstanding Phase 9 workflows and screenshot evidence using the live Supabase-backed system. Keep the current demo and unverified records; the DOCX does not require deleting them solely because they are synthetic.
+- **Currently working on:** Preparing the pending AIS code, documentation, and SQL changes for publication to the configured GitHub remote. Private database credentials remain excluded; the classmate reference PDF is not part of the AIS submission files.
+- **Next step:** Push the reviewed commit to `origin/main` and verify the remote branch.
 
 ## Progress Log
 
 Newest entry at the top. Format:
 `[Date Time] What was done | Files changed | What is next`
 
+### 2026-11-12 22:56
+- User's Supabase screenshot confirms the location update succeeded and returned 15 farms. All 15 former generated location labels now cycle across the six user-provided names; farm ID 13 is Cogon, Compostela, Cebu City.
+- Files changed: PROJECT_TASKS.md, PROJECT_TRACKER.md; Supabase farm.location data updated by the user-run SQL script
+- Next: Refresh the AIS Farms page and visually confirm the saved locations.
+### 2026-11-12 23:04
+- Reviewed the pending worktree and confirmed `origin` points to the AIS GitHub repository. The private credentials file is ignored. Excluding the untracked classmate reference PDF from publication; preparing the AIS documentation, report updates, and SQL audit/update scripts for push.
+- Files changed: PROJECT_TRACKER.md; no GitHub changes yet
+- Next: Commit the reviewed AIS files and push to `origin/main`.
+### 2026-11-12 22:53
+- Prepared a transactional SQL update for only locations matching the generated “Farm Location NN, Cebu” pattern. It cycles equally by farm_id through the six real location strings from the user's screenshot and returns updated farm IDs/names/locations for review.
+- Files changed: database/22_replace_generated_farm_locations.sql, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: User runs the script in Supabase SQL Editor and confirms the returned rows; then verify the Farm list and mark the data task complete.
+### 2026-11-12 22:47
+- Traced Farm ID 13's edit flow. `farms/edit.php` passes the submitted location to `Farm::update()`, which persists `location`; the only code generating “Farm Location NN, Cebu” is the archived demo seed script. No runtime PHP reset was found. Waiting for verified replacement location(s).
+- Files changed: PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Prepare a targeted SQL update only after the user confirms the actual location and whether other placeholders should be changed.
+### 2026-11-12 22:40
+- Reviewed the user's Supabase SQL Editor screenshot. All 13 relations have positive row counts: crop 14, crop_categories 5, farm 21, farmer 24, harvest 23, harvest_quality_grades 3, harvest_remarks 5, irrigation_types 3, planting 32, planting_statuses 2, recommended_seasons 3, soil_types 4, users 2. Marked the populated-table audit complete.
+- Files changed: PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Retain the read-only audit SQL for future checks; investigate individual-column completeness separately if needed.
+### 2026-11-12 22:28
+- Added a read-only SQL audit that returns row counts and a HAS DATA/EMPTY status for all 13 required relations. Marked the data check in progress; existing seed scripts are not proof of current contents.
+- Files changed: database/21_audit_all_relation_row_counts.sql, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Run the audit in Supabase SQL Editor; only confirm after all 13 counts are greater than zero.
+### 2026-11-12 22:26
+- Reviewed the user's updated Farmers and Farms screenshot and audited output columns and joins across all six reports. Required report fields use NOT NULL source columns and complete joins; only planting-status and quality-grade summaries intentionally retain categories with zero counts.
+- Files changed: PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Keep incomplete farmer/farm relationships out of the joined report; address any row-level issue the user finds in another report.
+### 2026-11-12 22:17
+- Read the AP3 DOCX requirements and audited all six report queries. Changed Farmers and Farms to use required farm and lookup joins, and changed planting-status lookup to an inner join because its FK is NOT NULL. Removed display fallbacks for those fields. PHP syntax checks passed; no database records were modified.
+- Files changed: models/Report.php, reports/farmers_farms.php, reports/crops_per_farm.php, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Refresh Farmers and Farms and verify all displayed values against the live result; keep farmers without farms in the Farmers module.
+### 2026-11-12 22:08
+- Ran PHP syntax checks on the shared header and all report PHP files; all passed. Checked the local report URL, which correctly redirected to login without an authenticated session. Headless Chrome and Edge could not create a PDF because their GPU processes failed, so visual preview verification remains pending.
+- Files changed: PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Verify print previews in an authenticated browser session.
+### 2026-11-12 22:03
+- Set wide detail reports to landscape and switched print tables to automatic column sizing with 8 pt text; summary reports retain portrait orientation.
+- Files changed: includes/header.php, four detail reports, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Confirm the landscape previews are readable and include every matching row.
+### 2026-11-12 22:00
+- Changed the shared print page box to zero margins with explicit 10 mm content padding, alongside temporarily clearing the document title, to suppress Chrome's repeated title and URL headers while retaining printable margins.
+- Files changed: includes/header.php, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Reopen a report print preview and confirm the URL/title header is gone while the report heading and full rows remain readable.
+### 2026-11-12 21:54
+- Removed the redundant “Report” suffix from all six report document titles so browser tabs and browser-generated print headers use concise report names.
+- Files changed: six report pages, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Reopen a report print preview and confirm the concise title appears.
+### 2026-11-12 21:46
+- Updated Print report on all six reports to open a print view containing every row matching the active filters and sort order. Date filters carry through on both summary reports; on-screen pagination remains at 10 rows.
+- Files changed: includes/report_actions.php, includes/header.php, six report pages, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Confirm each report's complete result set appears in the print preview and check portrait PDF output.
+### 2026-11-12 21:42
+- Removed the Print all results link, unpaginated query mode, and automatic print-on-load behavior. Current-page report printing remains available.
+- Files changed: includes/report_actions.php, includes/header.php, four report pages, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Confirm current-page report printing produces upright portrait output.
+### 2026-11-12 21:26
+- Added Print all results to Farmers and Farms, Crops Planted per Farm, Plantings by Status, and Harvest Records. It preserves active filters and sort order, loads all matching rows in a new tab, then opens the print dialog. Print CSS repeats table headers across pages.
+- Files changed: includes/report_actions.php, includes/header.php, four report pages, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Verify the all-results flow and printed pagination in the browser.
+### 2026-11-12 21:18
+- After the user restored Microsoft Print to PDF, set AIS report print CSS to A4 portrait with compact, wrapping table columns so the report and restored printer use portrait output.
+- Files changed: includes/header.php, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: In Chrome Print, set More settings > Layout to Portrait, regenerate a report PDF, and confirm the text is upright.
+### 2026-11-12 21:13
+- Removed Microsoft Print to PDF from the Windows printer list at the user’s request after its output continued rotating the report. Chrome’s built-in Save as PDF destination remains available.
+- Files changed: PROJECT_TASKS.md, PROJECT_TRACKER.md; Windows printer entry removed
+- Next: Reopen Chrome’s print dialog, select Save as PDF, and confirm the generated page is upright.
+### 2026-11-12 21:10
+- The regenerated PDF remained sideways after changing Microsoft Print to PDF default orientation. Restored its original Portrait preference. Evidence shows the Chrome preview is landscape while the exported PDF is portrait with sideways content; the remaining setting is Chrome More settings > Layout, which is controlled by the print dialog.
+- Files changed: PROJECT_TASKS.md, PROJECT_TRACKER.md; Windows printer preference restored
+- Next: Set Chrome print Layout to Portrait for readable portrait output, or use Landscape to match the current report preview, then confirm the saved PDF.
+### 2026-11-12 21:06
+- Diagnosed the rotation mismatch: the report preview was landscape but Microsoft Print to PDF defaulted to Portrait. With user approval, changed that printer default to Landscape and restored the app print layout to A4 landscape with readable table sizing.
+- Files changed: includes/header.php, PROJECT_TASKS.md, PROJECT_TRACKER.md; Windows Microsoft Print to PDF preference updated
+- Next: Generate a fresh PDF and confirm its page and text are landscape/upright.
+### 2026-11-12 21:02
+- Reviewed the latest print preview and saved PDF screenshots. Chrome preview is still landscape while the saved PDF page is portrait with its content sideways. The destination remains Microsoft Print to PDF; the system-level layout setting is not visible because More settings is collapsed. App CSS changes alone have not resolved it.
+- Files changed: PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: In the print dialog, expand More settings and set Layout to Portrait before printing to Microsoft Print to PDF; verify the new PDF orientation.
+### 2026-11-12 20:53
+- Adjusted report printing to A4 portrait with fixed-width, compact, wrapping table columns to prevent Microsoft Print to PDF from rotating landscape report pages. Screen layout is unchanged.
+- Files changed: includes/header.php, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Reprint the report to Microsoft Print to PDF and confirm the saved page stays upright.
+### 2026-11-12 20:41
+- Set print pages to A4 landscape, enforced horizontal text orientation, and aligned report table cells for consistent print output.
+- Files changed: includes/header.php, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Reopen Chrome print preview and save with the built-in Save as PDF destination to confirm page orientation.
+### 2026-11-12 20:38
+- Updated print CSS so report text prints in a dark, readable color even when Night mode is active. Table rows and headers also receive print-safe text colors.
+- Files changed: includes/header.php, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Check the PDF preview again with Print report.
+### 2026-11-12 19:13
+- Clarified that “Save as Docs” means a Google destination in Chrome Print. Removed the separate Word-compatible .doc download button because the app cannot add entries to Chrome’s print destination list. Print report remains beside All reports on each report page.
+- Files changed: includes/report_actions.php, includes/header.php, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: User can install Chrome’s Save to Google Drive extension to expose that destination; continue remaining Phase 9 workflow tests and screenshots.
+### 2026-11-12 19:10
+- Moved Print report and Save as Docs out of the global menu and into the toolbar next to All reports on each report page. The three-line menu now remains for appearance and logout.
+- Files changed: includes/header.php, includes/report_actions.php, six reports, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Verify report printing and .doc downloads in the browser; continue Phase 9 workflows and screenshots.
+### 2026-11-12 19:03
+- Expanded the printer action from report pages to every signed-in page. It now appears as Print page in the shared three-line Settings menu; Save as Docs remains available on report pages.
+- Files changed: includes/header.php, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Resume Phase 9 workflow testing and screenshot evidence.
+### 2026-11-12 19:01
+- Verified the local XAMPP PDO connection using the private configuration and a read-only SELECT 1/current database/schema query. The connection succeeded and returned postgres/public. The earlier failure was from the sandboxed network check; no credential values were displayed, and no database data was changed.
+- Files changed: PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Continue Phase 9 workflow tests and screenshot evidence using the local system.
+### 2026-11-12 18:58
+- Added Print report (printer icon) and Save as Docs actions to the three-line Settings menu on all six report pages. Print uses the existing landscape print layout. Save as Docs downloads the current filtered report view as a Word-compatible .doc file that opens in Word/WPS; it is not a .docx package.
+- Chose .doc because XAMPP PHP has no ZIP extension and the user did not select a format after the clarification prompt. No extra packages were added.
+- Files changed: includes/header.php, six reports, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Verify both menu actions in the browser after restoring the local database connection, then continue Phase 9 workflows and screenshots.
+### 2026-11-12 18:12
+- Moved the report print action into the three-line Settings menu and added a printer icon; it appears on all six report pages. Asked which downloadable document format “Save as Docs” should use because native PHP has no ZIP extension for generating DOCX packages.
+- Files changed: includes/header.php, six reports, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Finish the document export after the user chooses .docx or compatible .doc; then return to Phase 9 workflow verification.
+### 2026-11-12 18:10
+- Added print-specific styling for all six reports.
+- Files changed: includes/header.php, includes/print_button.php, six reports, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Verify the print flow in a browser when the XAMPP database connection is available; continue remaining Phase 9 workflow tests and screenshots.
+### 2026-11-12 18:05
+- Reviewed the original AP3 DOCX and current Supabase schema. All 13 expected relations are present; the source requires created_at and updated_at where appropriate and does not require deleted_at.
+- Local PHP syntax scan passed and the signed-out dashboard route redirected to login. Local PDO could not connect; the private config host differs from the AIS project, and a connection attempt using the AIS host in memory also failed. No credentials were displayed and no application code or database data was changed.
+- Files changed: PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Verify the private connection settings/network, then complete live workflow tests, screenshots, demo rehearsal and submission cleanup.
 ### 2026-11-12 04:35
 - Reviewed the implemented core and lookup relations against the DOCX 3NF requirement. The current normalized lookup design already meets the documented requirement; repeated farmer phone numbers do not violate 3NF, and the guideline does not require a unique-phone constraint.
 - Clarified the functional-dependency and phone-number rationale in the project documentation. No schema migration or Supabase data change is needed for 3NF.

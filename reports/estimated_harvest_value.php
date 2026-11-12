@@ -6,6 +6,7 @@ require_once __DIR__ . '/../models/Report.php';
 
 $dateFrom = isset($_GET['date_from']) && is_string($_GET['date_from']) ? trim($_GET['date_from']) : '';
 $dateTo = isset($_GET['date_to']) && is_string($_GET['date_to']) ? trim($_GET['date_to']) : '';
+$autoPrint = isset($_GET['print_all'], $_GET['auto_print']) && $_GET['print_all'] === '1' && $_GET['auto_print'] === '1';
 $summary = ['harvest_count' => 0, 'total_quantity_kg' => 0, 'estimated_value' => 0];
 $cropTotals = [];
 $pageError = null;
@@ -31,7 +32,11 @@ if ($dateError === null) {
     }
 }
 
-$pageTitle = 'Estimated Harvest Value Report';
+$printAllUrl = $pageError === null && $dateError === null ? '?' . http_build_query([
+    'date_from' => $dateFrom, 'date_to' => $dateTo,
+    'print_all' => '1', 'auto_print' => '1'
+]) : '';
+$pageTitle = 'Estimated harvest value';
 require __DIR__ . '/../includes/header.php';
 ?>
 <div class="flex flex-wrap items-center justify-between gap-3">
@@ -39,7 +44,7 @@ require __DIR__ . '/../includes/header.php';
         <h1 class="text-2xl font-bold text-slate-900">Estimated harvest value</h1>
         <p class="mt-1 text-sm text-slate-600">Estimated value is calculated as quantity (kg) multiplied by selling price per kg.</p>
     </div>
-    <a href="/FMidterm_Project/reports/" class="rounded-md border border-slate-300 px-4 py-2 font-semibold hover:bg-white">All reports</a>
+    <?php require __DIR__ . '/../includes/report_actions.php'; ?>
 </div>
 
 <?php if ($pageError): ?>

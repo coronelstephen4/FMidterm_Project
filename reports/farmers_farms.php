@@ -9,6 +9,8 @@ $address = isset($_GET['address']) && is_string($_GET['address']) ? trim($_GET['
 $sort = isset($_GET['sort']) && is_string($_GET['sort']) ? $_GET['sort'] : 'farmer_id';
 $direction = isset($_GET['direction']) && is_string($_GET['direction']) ? $_GET['direction'] : 'ASC';
 $page = isset($_GET['page']) && is_string($_GET['page']) ? max(1, (int) $_GET['page']) : 1;
+$printAll = isset($_GET['print_all']) && $_GET['print_all'] === '1';
+$autoPrint = $printAll && isset($_GET['auto_print']) && $_GET['auto_print'] === '1';
 $perPage = 10;
 $rows = [];
 $totalRows = 0;
@@ -17,17 +19,26 @@ $pageError = null;
 try {
     $report = new Report((new Database())->connect());
     $totalRows = $report->countFarmersAndFarms($search, $address);
-    $totalPages = max(1, (int) ceil($totalRows / $perPage));
+    $resultLimit = $printAll ? max(1, $totalRows) : $perPage;
+    if ($printAll) {
+        $page = 1;
+    }
+    $totalPages = max(1, (int) ceil($totalRows / $resultLimit));
     $page = min($page, $totalPages);
     $rows = $report->getFarmersAndFarms(
-        $search, $address, $sort, $direction, $perPage, ($page - 1) * $perPage
+        $search, $address, $sort, $direction, $resultLimit, ($page - 1) * $resultLimit
     );
 } catch (Throwable) {
     $pageError = 'The Farmers and Farms report could not be loaded. Please try again later.';
     $totalPages = 1;
 }
 
-$pageTitle = 'Farmers and Farms Report';
+$printAllUrl = $pageError === null ? '?' . http_build_query([
+    'search' => $search, 'address' => $address, 'sort' => $sort, 'direction' => $direction,
+    'print_all' => '1', 'auto_print' => '1'
+]) : '';
+$pageTitle = 'Farmers and their farms';
+$printOrientation = 'landscape';
 require __DIR__ . '/../includes/header.php';
 $sortLabels = [
     'farmer_id' => 'Farmer ID', 'farmer_name' => 'Farmer', 'address' => 'Address',
@@ -37,9 +48,9 @@ $sortLabels = [
 <div class="flex flex-wrap items-center justify-between gap-3">
     <div>
         <h1 class="text-2xl font-bold text-slate-900">Farmers and their farms</h1>
-        <p class="mt-1 text-sm text-slate-600">Farmers without a registered farm are included.</p>
+        <p class="mt-1 text-sm text-slate-600">Farmers with registered farms are listed. Farmers without farms remain available in the Farmers module.</p>
     </div>
-    <a href="/FMidterm_Project/reports/" class="rounded-md border border-slate-300 px-4 py-2 font-semibold hover:bg-white">All reports</a>
+    <?php require __DIR__ . '/../includes/report_actions.php'; ?>
 </div>
 
 <?php if ($pageError): ?>
@@ -86,19 +97,19 @@ $sortLabels = [
                     <td class="px-4 py-3"><?= (int) $row['farmer_id'] ?></td>
                     <td class="whitespace-nowrap px-4 py-3"><?= htmlspecialchars($row['first_name'] . ' ' . $row['last_name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
                     <td class="px-4 py-3"><?= htmlspecialchars($row['address'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
-                    <td class="px-4 py-3"><?= htmlspecialchars($row['farm_name'] ?? 'No farm registered', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
-                    <td class="px-4 py-3"><?= htmlspecialchars($row['location'] ?? '—', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
-                    <td class="px-4 py-3"><?= $row['area_hectares'] === null ? '—' : htmlspecialchars((string) $row['area_hectares'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
+                    <td class="px-4 py-3"><?= htmlspecialchars($row['farm_name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
+                    <td class="px-4 py-3"><?= htmlspecialchars($row['location'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
+                    <td class="px-4 py-3"><?= htmlspecialchars((string) $row['area_hectares'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
                     <td class="px-4 py-3"><?= htmlspecialchars($row['contact_number'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
-                    <td class="px-4 py-3"><?= htmlspecialchars($row['soil_type_name'] ?? '—', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
-                    <td class="px-4 py-3"><?= htmlspecialchars($row['irrigation_type_name'] ?? '—', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
+                    <td class="px-4 py-3"><?= htmlspecialchars($row['soil_type_name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
+                    <td class="px-4 py-3"><?= htmlspecialchars($row['irrigation_type_name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
                 </tr>
             <?php endforeach; endif; ?>
         </tbody>
     </table>
 </div>
 
-<div class="mt-4 flex items-center justify-between text-sm text-slate-600">
+<div class="no-print mt-4 flex items-center justify-between text-sm text-slate-600">
     <p><?= $totalRows ?> result<?= $totalRows === 1 ? '' : 's' ?></p>
     <div class="flex items-center gap-2">
         <?php if ($page > 1): ?><a class="rounded-md border border-slate-300 px-3 py-2 hover:bg-white" href="?<?= htmlspecialchars(http_build_query(['search' => $search, 'address' => $address, 'sort' => $sort, 'direction' => $direction, 'page' => $page - 1]), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>">Previous</a><?php endif; ?>

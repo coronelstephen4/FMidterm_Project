@@ -76,9 +76,67 @@ $navigation = [
             main .overflow-x-auto th,
             main .overflow-x-auto td { white-space: nowrap; }
         }
+        @media print {
+            @page { size: A4 portrait; margin: 0; }
+            @page report-wide { size: A4 landscape; margin: 0; }
+            html, body { background: #fff !important; color: #111827 !important; }
+            body { min-height: auto !important; margin: 0 !important; padding: 10mm !important; }
+            body[data-print-orientation="landscape"] main { page: report-wide; }
+            body > header,
+            body > footer,
+            .no-print,
+            main form { display: none !important; }
+            main { max-width: none !important; margin: 0 !important; padding: 0 !important; }
+            main, main * {
+                color: #111827 !important;
+                writing-mode: horizontal-tb !important;
+                text-orientation: mixed !important;
+            }
+            html.night-mode main .text-slate-900,
+            html.night-mode main .text-slate-800,
+            html.night-mode main .text-slate-700,
+            html.night-mode main .text-slate-600,
+            html.night-mode main .text-slate-500,
+            html.night-mode main .text-emerald-800,
+            html.night-mode main .text-emerald-900,
+            html.night-mode main .text-blue-800,
+            html.night-mode main .text-red-800,
+            html.night-mode main .text-red-700 { color: #111827 !important; }
+            html.night-mode main table tbody tr:hover { color: #111827 !important; background: #fff !important; }
+            main .overflow-x-auto {
+                overflow: visible !important;
+                border: 1px solid #cbd5e1 !important;
+                box-shadow: none !important;
+            }
+            main table {
+                width: 100% !important;
+                min-width: 0 !important;
+                border-collapse: collapse !important;
+                table-layout: auto !important;
+                font-size: 8pt !important;
+            }
+            main thead { display: table-header-group; }
+            main tr { break-inside: avoid; }
+            main th, main td {
+                border: 1px solid #cbd5e1 !important;
+                padding: 5px !important;
+                color: #111827 !important;
+                background: #fff !important;
+                white-space: normal !important;
+                overflow-wrap: anywhere !important;
+                text-align: left !important;
+                vertical-align: middle !important;
+            }
+            main .bg-white { background: #fff !important; box-shadow: none !important; }
+            main .bg-slate-50,
+            main .bg-slate-100,
+            main .bg-emerald-50,
+            main .bg-emerald-100 { background: #fff !important; }
+            main a { color: #111827 !important; text-decoration: none !important; }
+        }
     </style>
 </head>
-<body class="min-h-screen bg-slate-50 text-slate-800">
+<body data-auto-print="<?= !empty($autoPrint) ? 'true' : 'false' ?>" data-print-orientation="<?= htmlspecialchars($printOrientation ?? 'portrait', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" class="min-h-screen bg-slate-50 text-slate-800">
     <header class="bg-emerald-800 text-white shadow">
         <div class="mx-auto max-w-[1680px] px-3 py-3 sm:px-6 sm:py-4 lg:px-8">
             <div class="flex flex-wrap items-center justify-between gap-2 sm:gap-3">
@@ -180,6 +238,16 @@ $navigation = [
             };
 
             setNightMode(document.documentElement.classList.contains('night-mode'));
+            if (document.body.dataset.autoPrint === 'true') {
+                window.addEventListener('load', () => {
+                    const originalTitle = document.title;
+                    document.title = '';
+                    window.addEventListener('afterprint', () => {
+                        document.title = originalTitle;
+                    }, { once: true });
+                    window.print();
+                }, { once: true });
+            }
             nightModeToggle.addEventListener('click', () => {
                 setNightMode(!document.documentElement.classList.contains('night-mode'));
             });

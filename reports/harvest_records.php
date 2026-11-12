@@ -13,6 +13,8 @@ $search = isset($_GET['search']) && is_string($_GET['search']) ? trim($_GET['sea
 $sort = isset($_GET['sort']) && is_string($_GET['sort']) ? $_GET['sort'] : 'harvest_date';
 $direction = isset($_GET['direction']) && is_string($_GET['direction']) ? $_GET['direction'] : 'DESC';
 $page = isset($_GET['page']) && is_string($_GET['page']) ? max(1, (int) $_GET['page']) : 1;
+$printAll = isset($_GET['print_all']) && $_GET['print_all'] === '1';
+$autoPrint = $printAll && isset($_GET['auto_print']) && $_GET['auto_print'] === '1';
 $perPage = 10;
 $qualityGrades = [];
 $rows = [];
@@ -35,10 +37,14 @@ try {
     $qualityGrades = $report->getHarvestQualityOptions();
     if ($dateError === null) {
         $totalRows = $report->countHarvestRecords($qualityGradeId, $dateFrom, $dateTo, $search);
-        $totalPages = max(1, (int) ceil($totalRows / $perPage));
+        $resultLimit = $printAll ? max(1, $totalRows) : $perPage;
+        if ($printAll) {
+            $page = 1;
+        }
+        $totalPages = max(1, (int) ceil($totalRows / $resultLimit));
         $page = min($page, $totalPages);
         $rows = $report->getHarvestRecords(
-            $qualityGradeId, $dateFrom, $dateTo, $search, $sort, $direction, $perPage, ($page - 1) * $perPage
+            $qualityGradeId, $dateFrom, $dateTo, $search, $sort, $direction, $resultLimit, ($page - 1) * $resultLimit
         );
     } else {
         $totalPages = 1;
@@ -48,7 +54,13 @@ try {
     $totalPages = 1;
 }
 
-$pageTitle = 'Harvest Records Report';
+$printAllUrl = $pageError === null && $dateError === null ? '?' . http_build_query([
+    'quality_grade_id' => $qualityGradeId, 'date_from' => $dateFrom, 'date_to' => $dateTo,
+    'search' => $search, 'sort' => $sort, 'direction' => $direction,
+    'print_all' => '1', 'auto_print' => '1'
+]) : '';
+$pageTitle = 'Harvest records';
+$printOrientation = 'landscape';
 require __DIR__ . '/../includes/header.php';
 $sortLabels = [
     'harvest_date' => 'Harvest date', 'farmer_name' => 'Farmer', 'farm_name' => 'Farm',
@@ -60,7 +72,7 @@ $sortLabels = [
         <h1 class="text-2xl font-bold text-slate-900">Harvest records</h1>
         <p class="mt-1 text-sm text-slate-600">Harvest yield details joined to their planting, crop, farm, and farmer.</p>
     </div>
-    <a href="/FMidterm_Project/reports/" class="rounded-md border border-slate-300 px-4 py-2 font-semibold hover:bg-white">All reports</a>
+    <?php require __DIR__ . '/../includes/report_actions.php'; ?>
 </div>
 
 <?php if ($pageError): ?>
@@ -138,7 +150,7 @@ $sortLabels = [
     </table>
 </div>
 
-<div class="mt-4 flex items-center justify-between text-sm text-slate-600">
+<div class="no-print mt-4 flex items-center justify-between text-sm text-slate-600">
     <p><?= $totalRows ?> harvest record<?= $totalRows === 1 ? '' : 's' ?></p>
     <div class="flex items-center gap-2">
         <?php if ($page > 1): ?><a class="rounded-md border border-slate-300 px-3 py-2 hover:bg-white" href="?<?= htmlspecialchars(http_build_query(['quality_grade_id' => $qualityGradeId, 'date_from' => $dateFrom, 'date_to' => $dateTo, 'search' => $search, 'sort' => $sort, 'direction' => $direction, 'page' => $page - 1]), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>">Previous</a><?php endif; ?>

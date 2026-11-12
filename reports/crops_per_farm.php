@@ -11,6 +11,8 @@ $search = isset($_GET['search']) && is_string($_GET['search']) ? trim($_GET['sea
 $sort = isset($_GET['sort']) && is_string($_GET['sort']) ? $_GET['sort'] : 'farm_name';
 $direction = isset($_GET['direction']) && is_string($_GET['direction']) ? $_GET['direction'] : 'ASC';
 $page = isset($_GET['page']) && is_string($_GET['page']) ? max(1, (int) $_GET['page']) : 1;
+$printAll = isset($_GET['print_all']) && $_GET['print_all'] === '1';
+$autoPrint = $printAll && isset($_GET['auto_print']) && $_GET['auto_print'] === '1';
 $perPage = 10;
 $farms = [];
 $rows = [];
@@ -33,10 +35,14 @@ try {
     $farms = $report->getFarmOptions();
     if ($dateError === null) {
         $totalRows = $report->countCropsPlantedPerFarm($farmId, $dateFrom, $dateTo, $search);
-        $totalPages = max(1, (int) ceil($totalRows / $perPage));
+        $resultLimit = $printAll ? max(1, $totalRows) : $perPage;
+        if ($printAll) {
+            $page = 1;
+        }
+        $totalPages = max(1, (int) ceil($totalRows / $resultLimit));
         $page = min($page, $totalPages);
         $rows = $report->getCropsPlantedPerFarm(
-            $farmId, $dateFrom, $dateTo, $search, $sort, $direction, $perPage, ($page - 1) * $perPage
+            $farmId, $dateFrom, $dateTo, $search, $sort, $direction, $resultLimit, ($page - 1) * $resultLimit
         );
     } else {
         $totalPages = 1;
@@ -46,7 +52,13 @@ try {
     $totalPages = 1;
 }
 
-$pageTitle = 'Crops Planted per Farm Report';
+$printAllUrl = $pageError === null && $dateError === null ? '?' . http_build_query([
+    'farm_id' => $farmId, 'date_from' => $dateFrom, 'date_to' => $dateTo,
+    'search' => $search, 'sort' => $sort, 'direction' => $direction,
+    'print_all' => '1', 'auto_print' => '1'
+]) : '';
+$pageTitle = 'Crops planted per farm';
+$printOrientation = 'landscape';
 require __DIR__ . '/../includes/header.php';
 $sortLabels = [
     'farm_name' => 'Farm', 'farmer_name' => 'Farmer', 'crop_name' => 'Crop',
@@ -58,7 +70,7 @@ $sortLabels = [
         <h1 class="text-2xl font-bold text-slate-900">Crops planted per farm</h1>
         <p class="mt-1 text-sm text-slate-600">Filter planting records by farm and planting date.</p>
     </div>
-    <a href="/FMidterm_Project/reports/" class="rounded-md border border-slate-300 px-4 py-2 font-semibold hover:bg-white">All reports</a>
+    <?php require __DIR__ . '/../includes/report_actions.php'; ?>
 </div>
 
 <?php if ($pageError): ?>
@@ -128,7 +140,7 @@ $sortLabels = [
                     <td class="px-4 py-3"><?= htmlspecialchars($row['variety'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
                     <td class="whitespace-nowrap px-4 py-3"><?= htmlspecialchars($row['planting_date'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
                     <td class="whitespace-nowrap px-4 py-3"><?= htmlspecialchars((string) $row['area_planted'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
-                    <td class="px-4 py-3"><?= htmlspecialchars($row['status_name'] ?? '—', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
+                    <td class="px-4 py-3"><?= htmlspecialchars($row['status_name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
                     <td class="px-4 py-3"><?= htmlspecialchars($row['location'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
                     <td class="whitespace-nowrap px-4 py-3"><?= htmlspecialchars($row['expected_harvest_date'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
                 </tr>
@@ -137,7 +149,7 @@ $sortLabels = [
     </table>
 </div>
 
-<div class="mt-4 flex items-center justify-between text-sm text-slate-600">
+<div class="no-print mt-4 flex items-center justify-between text-sm text-slate-600">
     <p><?= $totalRows ?> planting record<?= $totalRows === 1 ? '' : 's' ?></p>
     <div class="flex items-center gap-2">
         <?php if ($page > 1): ?><a class="rounded-md border border-slate-300 px-3 py-2 hover:bg-white" href="?<?= htmlspecialchars(http_build_query(['farm_id' => $farmId, 'date_from' => $dateFrom, 'date_to' => $dateTo, 'search' => $search, 'sort' => $sort, 'direction' => $direction, 'page' => $page - 1]), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>">Previous</a><?php endif; ?>

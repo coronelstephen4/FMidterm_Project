@@ -9,7 +9,7 @@ class Report {
     public function countFarmersAndFarms(string $search, string $address): int {
         $sql = "SELECT COUNT(*)
                 FROM farmer fm
-                LEFT JOIN farm f ON f.farmer_id = fm.farmer_id
+                INNER JOIN farm f ON f.farmer_id = fm.farmer_id
                 WHERE (:has_address = FALSE OR fm.address ILIKE :address_filter)
                   AND (:has_search = FALSE OR CONCAT_WS(' ', fm.first_name, fm.last_name, fm.contact_number,
                        fm.address, f.farm_name, f.location) ILIKE :search_filter)";
@@ -46,9 +46,9 @@ class Report {
                        fm.address, fm.date_registered, f.farm_id, f.farm_name, f.location,
                        f.area_hectares, st.soil_type_name, it.irrigation_type_name
                 FROM farmer fm
-                LEFT JOIN farm f ON f.farmer_id = fm.farmer_id
-                LEFT JOIN soil_types st ON st.soil_type_id = f.soil_type_id
-                LEFT JOIN irrigation_types it ON it.irrigation_type_id = f.irrigation_type_id
+                INNER JOIN farm f ON f.farmer_id = fm.farmer_id
+                INNER JOIN soil_types st ON st.soil_type_id = f.soil_type_id
+                INNER JOIN irrigation_types it ON it.irrigation_type_id = f.irrigation_type_id
                 WHERE (:has_address = FALSE OR fm.address ILIKE :address_filter)
                   AND (:has_search = FALSE OR CONCAT_WS(' ', fm.first_name, fm.last_name, fm.contact_number,
                        fm.address, f.farm_name, f.location) ILIKE :search_filter)
@@ -117,7 +117,7 @@ class Report {
                 INNER JOIN farm f ON f.farm_id = p.farm_id
                 INNER JOIN farmer fm ON fm.farmer_id = f.farmer_id
                 INNER JOIN crop c ON c.crop_id = p.crop_id
-                LEFT JOIN planting_statuses ps ON ps.status_id = p.status_id
+                INNER JOIN planting_statuses ps ON ps.status_id = p.status_id
                 WHERE (:farm_id = 0 OR f.farm_id = :selected_farm_id)
                   AND (:has_date_from = FALSE OR p.planting_date >= :date_from)
                   AND (:has_date_to = FALSE OR p.planting_date <= :date_to)

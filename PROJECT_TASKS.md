@@ -36,6 +36,7 @@ Work top to bottom. Do one task or one module at a time.
 - [x] Capitalize the first character of text values across the five main modules and linked lookup labels in Supabase; verification found no lowercase initials
 - [x] Mirror the website's duplicate checks in Supabase with `database/18_prevent_duplicate_records.sql`; user screenshot confirms the five triggers were installed (information_schema displays one row per event)
 - [x] Remove generated numbered farm-name prefixes from all 16 affected farms; assign farm_id 7 a distinct owner-based name to satisfy the per-farmer uniqueness constraint
+- [x] Run `database/22_replace_generated_farm_locations.sql`; user screenshot confirms all 15 generated farm locations were replaced and returned
 - [x] Verify exact duplicate farmer cleanup in Supabase: the exact-identity audit returned no duplicate pairs, and no farms remain assigned to candidate IDs 23–26. The original script reported a temporary-table error in its post-commit output; migration 19 is corrected locally for future runs.
 
 ## Phase 2: Config and layout
@@ -72,11 +73,14 @@ Each module needs: model, list page with search, filter, sorting and pagination,
 
 ## Phase 6: Reports (all with filters, e.g. date range)
 - [x] Farmers and their farms
+- [x] Keep the Farmers and Farms report limited to complete farmer/farm/lookup relationships; keep unassigned farmers in the Farmers module
+- [x] Run a read-only Supabase row-count audit; user screenshot confirms all 13 required relations contain data
 - [x] Crops planted per farm
 - [x] Plantings by status
 - [x] Harvest records
 - [x] Total harvested quantity
 - [x] Estimated harvest value (quantity_kg x selling_price_per_kg)
+- [x] Audit all six report tables so displayed detail fields come from required joined records, with no null-placeholder cells
 
 ## Phase 7: Quality pass
 - [x] Validation on every form (required, numeric ranges, valid dates, foreign keys exist)
@@ -100,6 +104,19 @@ Each module needs: model, list page with search, filter, sorting and pagination,
 - [x] Add an agriculture logo mark and styled system name to the shared header
 - [x] Clean dashboard layout by removing shortcut buttons duplicated in the main navigation
 - [x] Remove the optional Settings page because it is not required by the DOCX
+- [x] Add print-friendly output to all six reports
+- [x] Put Print report beside All reports in each of the six report toolbars
+- [x] Make Print report include all rows matching current filters and sorting; keep screen pagination at 10 rows per page
+- [x] Apply the all-matching-rows Print report flow to all six reports, preserving date filters on summary reports
+- [x] Remove redundant “Report” suffixes from all six report document titles used in print headers and browser tabs
+- [x] Suppress the repeated browser-generated report title in print headers for all six reports
+- [x] Remove browser header/footer URL area from report print pages using zero-margin page boxes and explicit content padding
+- [x] Print the four wide detail reports in landscape and retain portrait orientation for the two summary reports
+- [x] Force readable dark text colors in print output regardless of Light or Night mode
+- [x] Set report print CSS to A4 portrait with compact, wrapping table columns
+- [x] Keep Microsoft Print to PDF available after the user restored it
+- [~] Confirm a saved PDF is upright using Chrome Save as PDF
+- [x] Make Print page available from the three-line Settings menu across all signed-in system pages
 
 ## Phase 8: Documentation
 - [x] Title, description, objectives, functional requirements
@@ -120,10 +137,13 @@ Each module needs: model, list page with search, filter, sorting and pagination,
 - [x] User guide
 
 ## Phase 9: Final testing and submission
+- [~] Publish the pending AIS report updates, final documentation, and SQL audit/update scripts to GitHub; keep private credentials and the classmate reference PDF excluded
 - [x] Keep local project guidance, documentation, and the source DOCX discoverable to workspace file mentions
-- [ ] Test CRUD, search, filter, sort, dropdowns, joins, login, dashboard and reports after migration 08
+- [~] Verify all six Print report previews in an authenticated browser, including full filtered rows and page layout
+- [~] Test CRUD, search, filter, sort, dropdowns, joins, login, dashboard and reports after migration 08
 - [x] Test invalid input and error cases (module checks and integer overflow boundary check completed)
-- [ ] Confirm the app runs against Supabase and passes the required workflows using the current stored database records
+- [x] Verify local XAMPP PDO connection to Supabase with a read-only SELECT
+- [~] Confirm the app passes the required workflows using the current stored database records
 - [ ] Rehearse the demo
 - [ ] Final cleanup and submission
 - [x] Publish project guidance, documentation, source DOCX, and system updates to GitHub in commit `a77763f`; private credentials and screenshots remain excluded
