@@ -137,7 +137,7 @@ Each module needs: model, list page with search, filter, sorting and pagination,
 - [x] User guide
 
 ## Phase 9: Final testing and submission
-- [~] Publish the pending AIS report updates, final documentation, and SQL audit/update scripts to GitHub; keep private credentials and the classmate reference PDF excluded
+- [x] Publish the pending AIS report updates, final documentation, and SQL audit/update scripts to GitHub in commit `1bda119`; keep private credentials and the classmate reference PDF excluded
 - [x] Keep local project guidance, documentation, and the source DOCX discoverable to workspace file mentions
 - [~] Verify all six Print report previews in an authenticated browser, including full filtered rows and page layout
 - [~] Test CRUD, search, filter, sort, dropdowns, joins, login, dashboard and reports after migration 08
