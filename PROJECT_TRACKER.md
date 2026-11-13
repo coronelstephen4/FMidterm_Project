@@ -16,13 +16,18 @@
 
 - **Phase:** 9 Final testing and submission
 - **Last updated:** 2026-11-14
-- **Currently working on:** Verifying the `roles` lookup integration after the user's Supabase migration.
-- **Next step:** Test Admin and Staff login against `users.role_id`, refresh the editable Word/PDF ERD and data dictionary, then prepare the manual GitHub update.
+- **Currently working on:** Verifying the `roles` lookup integration after the user's Supabase migration and GitHub push.
+- **Next step:** Test Admin and Staff login against `users.role_id`, then refresh the editable Word/PDF ERD and data dictionary.
 
 ## Progress Log
 
 Newest entry at the top. Format:
 `[Date Time] What was done | Files changed | What is next`
+
+### 2026-11-14 01:26
+- User committed and pushed 19 files to `main` in commit `fd69bb5` (`Add normalized roles lookup and validation updates`). Verification with `git status --short` shows only `Reference ERD.jfif` and `SYSTEM_DOCUMENTATION.pdf` remain untracked; neither was included in the push.
+- Files changed: PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Test Admin and Staff login against `users.role_id`, then refresh the editable Word/PDF ERD and data dictionary.
 
 ### 2026-11-14 01:17
 - Prepared the `roles` lookup and `users.role_id` migration, updated the User model to join the role label, and updated the Markdown ERDs and data dictionaries. The source DOCX requires two roles but does not prescribe a separate role table; this is a normalized implementation extension matching the supplied reference ERD.

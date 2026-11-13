@@ -154,3 +154,4 @@ Each module needs: model, list page with search, filter, sorting and pagination,
 - [ ] Rehearse the demo
 - [ ] Final cleanup and submission
 - [x] Publish project guidance, documentation, source DOCX, and system updates to GitHub in commit `a77763f`; private credentials and screenshots remain excluded
+- [x] Publish the normalized roles migration, User model, validation updates, audit script, and Markdown docs to GitHub in commit `fd69bb5`; credentials, classmate reference image, and unrefreshed PDF excluded
