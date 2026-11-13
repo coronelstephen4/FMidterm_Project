@@ -130,5 +130,6 @@ The dropdown shows `remark_description`; the harvest record stores the numeric `
 - `harvest.remarks` was migrated to `harvest_remarks` and `harvest.remark_id`.
 - Lookup tables and foreign-key IDs were added for the other controlled values.
 - `public.users`, audit timestamps, and integrity constraints were added.
+- The source DOCX does not specify a role lookup table. As an implementation extension, `roles` was added with `users.role_id` so existing Admin/Staff access control uses a normalized foreign-key relationship. The user confirmed migration 23 in Supabase; its screenshot shows the foreign key, role mappings, and old-column removal checks all true.
 - The guarded `database/08_normalize_lookup_columns.sql` migration was confirmed successful in Supabase after it was updated to handle legacy columns already removed.
 - The user's Supabase screenshots confirm demo rows are present: 15 farmers, 15 farms, 10 crops, 30 plantings, and 20 harvests.

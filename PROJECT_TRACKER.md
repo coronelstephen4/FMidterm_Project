@@ -15,14 +15,34 @@
 ## Current Status
 
 - **Phase:** 9 Final testing and submission
-- **Last updated:** 2026-11-12
-- **Currently working on:** The report updates, final system documentation, and SQL audit/update scripts are published to GitHub in commit `1bda119` on `main`.
-- **Next step:** Refresh the Farms page to confirm the updated locations for Farm IDs 13 and 18; continue pending authenticated print-preview and end-to-end workflow checks.
+- **Last updated:** 2026-11-14
+- **Currently working on:** Verifying the `roles` lookup integration after the user's Supabase migration.
+- **Next step:** Test Admin and Staff login against `users.role_id`, refresh the editable Word/PDF ERD and data dictionary, then prepare the manual GitHub update.
 
 ## Progress Log
 
 Newest entry at the top. Format:
 `[Date Time] What was done | Files changed | What is next`
+
+### 2026-11-14 01:17
+- Prepared the `roles` lookup and `users.role_id` migration, updated the User model to join the role label, and updated the Markdown ERDs and data dictionaries. The source DOCX requires two roles but does not prescribe a separate role table; this is a normalized implementation extension matching the supplied reference ERD.
+- The user's Supabase screenshot confirms migration 23 ran: the foreign-key, copied-role, and old-column-removal checks all return true. No GitHub changes were made.
+- The migration copies existing `users.role` values and verifies every account before dropping the old text column in one transaction. RLS is enabled on `roles`.
+- XAMPP PHP syntax passed for all 52 PHP files; local migration-order/security checks and `git diff --check` passed. Live Admin/Staff login tests and refreshed Word/PDF exports remain pending.
+- Files changed: database/23_role_lookup_table.sql, database/21_audit_all_relation_row_counts.sql, models/User.php, PROJECT_DOCUMENTATION.md, FINAL_SYSTEM_DOCUMENTATION.md, PROJECT_REQUIREMENTS.md, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Test Admin and Staff login, update the Word/PDF exports, then teach the manual GitHub commit/push.
+
+### 2026-11-13 23:03
+- Audited all five modules' create/edit validation. Added friendly handling for PostgreSQL duplicate conflicts across all modules and blocked future farmer registration dates.
+- XAMPP PHP lint passed for all 52 PHP files; duplicate SQLSTATE test passed for 23505 and 23503; `git diff --check` passed. No live database/browser workflow test was run.
+- Files changed: includes/validation_helpers.php, 10 module create/edit pages, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Retry the Farm form once and confirm duplicate validation is clear; then continue Farm location confirmation and pending authenticated workflow checks.
+
+### 2026-11-13 22:52
+- Added server-side and date-picker validation to reject harvest dates after today on create and edit; past dates must still be on or after the planting date.
+- XAMPP PHP syntax checks passed for both pages; a local date-boundary check confirmed yesterday passes and tomorrow is rejected. Live browser/database testing remains pending.
+- Files changed: harvests/create.php, harvests/edit.php, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Refresh the Farms page to confirm Farm IDs 13 and 18; continue authenticated print-preview and end-to-end workflow checks.
 
 ### 2026-11-12 22:56
 - User's Supabase screenshot confirms the location update succeeded and returned 15 farms. All 15 former generated location labels now cycle across the six user-provided names; farm ID 13 is Cogon, Compostela, Cebu City.

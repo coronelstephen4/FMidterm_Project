@@ -59,6 +59,7 @@ erDiagram
     PLANTING_STATUSES ||--o{ PLANTING : classifies
     HARVEST_QUALITY_GRADES ||--o{ HARVEST : grades
     HARVEST_REMARKS ||--o{ HARVEST : describes
+    ROLES ||--o{ USERS : assigns
 
     FARMER {
         integer farmer_id PK
@@ -118,8 +119,12 @@ erDiagram
         integer user_id PK
         varchar username UK
         varchar password_hash
-        varchar role
+        integer role_id FK
         timestamptz created_at
+    }
+    ROLES {
+        integer role_id PK
+        varchar role_name UK
     }
     SOIL_TYPES {
         smallint soil_type_id PK
@@ -151,7 +156,7 @@ erDiagram
     }
 ```
 
-`USERS` authenticates application users. `created_at` and `updated_at` are maintained for the five business tables. The current application does not record the user responsible for each edit.
+`USERS` authenticates application users and references `ROLES` for authorization. `created_at` and `updated_at` are maintained for the five business tables. The current application does not record the user responsible for each edit.
 
 ## 6. Normalization (UNF to 3NF)
 
@@ -168,7 +173,7 @@ This comparison follows the five starting relations explicitly listed in `ap3 pr
 
 ### 3NF relation inventory
 
-The implemented application has 12 operational relations: five core relations plus seven controlled-value lookup relations. `users` is a separate authentication-support relation and is not part of the five-table agriculture normalization exercise. The database therefore has 13 application relations in total.
+The implemented application has 12 agriculture relations: five core relations plus seven controlled-value lookup relations. `users` and `roles` support authentication and authorization and are separate from the five-table agriculture normalization exercise. The database therefore has 14 application relations in total.
 
 | Relation | Attributes (PK/FK marked) |
 |---|---|
@@ -184,7 +189,8 @@ The implemented application has 12 operational relations: five core relations pl
 | planting_statuses | status_id (PK), status_name (UK) |
 | harvest_quality_grades | quality_grade_id (PK), quality_grade_name (UK) |
 | harvest_remarks | remark_id (PK), remark_description (UK) |
-| users (authentication support) | user_id (PK), username (UK), password_hash, role, created_at |
+| users (authentication support) | user_id (PK), username (UK), password_hash, role_id (FK), created_at |
+| roles (authorization lookup) | role_id (PK), role_name (UK; `admin` or `staff`) |
 
 The assignment's original fixed-choice text attributes (`soil_type`, `irrigation_type`, `crop_category`, `recommended_season`, `status`, `quality_grade`, and `remarks`) are represented by foreign keys in the implemented design. Each label is kept once in its lookup relation, and application queries join the label for display. This implements the assignment's explicit lookup-table requirement; it does not imply that the assignment's five source tables had a repeating group or a partial dependency. The migration to lookup IDs was confirmed by the user as applied in Supabase (`database/08_normalize_lookup_columns.sql`).
 
@@ -259,8 +265,10 @@ In each core relation, the single-column primary key identifies that row's remai
 | users | user_id | integer PK | Identity for an application account |
 | users | username | varchar(50) UNIQUE | Login name |
 | users | password_hash | varchar(255) | Password hash, never plaintext |
-| users | role | varchar(20) | `admin` or `staff` |
+| users | role_id | integer FK | References `roles.role_id` for the account's authorization role |
 | users | created_at | timestamptz | Account creation time |
+| roles | role_id | integer PK | Identity for an authorization role |
+| roles | role_name | varchar(30) UNIQUE | `admin` or `staff`; referenced by user accounts |
 
 ### Lookup values
 
@@ -273,6 +281,7 @@ In each core relation, the single-column primary key identifies that row's remai
 | planting_statuses | Harvested; Growing |
 | harvest_quality_grades | Grade A; Grade B; Grade C |
 | harvest_remarks | Good Harvest; Acceptable Quality; Low Yield; Poor Quality; Damaged Harvest |
+| roles | admin; staff |
 
 ## 8. Relationships and constraints
 
@@ -285,6 +294,7 @@ In each core relation, the single-column primary key identifies that row's remai
 | CROP | 1:M | PLANTING | A crop/variety may be used in multiple plantings. |
 | PLANTING | 1:M | HARVEST | A planting may have multiple harvest records. |
 | Each lookup table | 1:M | Related core table | A lookup label may be referenced by multiple business records. |
+| ROLES | 1:M | USERS | Each account has one role; a role may be assigned to multiple accounts. |
 
 ### Integrity rules
 
@@ -293,7 +303,7 @@ In each core relation, the single-column primary key identifies that row's remai
 - Farm area, crop growing period, planting area, seed quantity, and harvest quantity must be positive. Harvest price must be zero or positive.
 - A planting's expected harvest date must be later than its planting date. The application also rejects a harvest date earlier than the planting date.
 - Farm name is unique per farmer. Crop name and variety are unique together. Lookup labels and usernames are unique.
-- `users.role` is restricted to `admin` or `staff`; user passwords are stored as hashes.
+- `users.role_id` references `roles.role_id`; role labels are restricted to `admin` or `staff`. User passwords are stored as hashes.
 - `created_at` and `updated_at` are present on the five core business tables. A database trigger refreshes `updated_at` when a row changes. User-change attribution is not currently recorded.
 - Deletes that would leave dependent records are rejected and shown with a friendly message; the system does not silently cascade-delete related data.
 
@@ -361,7 +371,7 @@ Use `submission_materials/test-results/README.md` as the final test report templ
 
 ## 12. Data quality and final readiness
 
-- The 3NF design separates the five core business entities and seven fixed-value lookup relations. The separate `users` table supports authentication. This gives 12 normalized business relations plus `users` (13 tables total); the guideline does not require a particular total such as 15.
+- The 3NF design separates five core business entities and seven fixed-value lookup relations. `users` and `roles` support authentication and authorization, for 14 application relations total. The DOCX does not require a particular total such as 15.
 - Duplicate rows are a data-quality problem, not proof by themselves that a schema is outside 3NF. The website and Supabase reject new duplicates. A merge script is prepared for exact farmer duplicates only: identical normalized name, contact number, and address. It keeps the lowest ID, reassigns linked farms first, and aborts if farm names collide. Differently named farmers who share a contact/address are not merged automatically. Run `database/19_merge_exact_duplicate_farmers.sql` in Supabase and review its mapping and remaining-candidate results.
 - No records were removed by the duplicate audit work. The prepared placeholder cleanup script `database/11_delete_placeholder_farmer_records.sql` is on hold until the intended records and their dependent rows are confirmed.
 - The user requires all business records to be real. Current seeded/test data must not be described as real until each record is verified or replaced with user-approved information.

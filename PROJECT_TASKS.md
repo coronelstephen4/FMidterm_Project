@@ -23,6 +23,7 @@ Work top to bottom. Do one task or one module at a time.
 - [x] Verify existing fixed-value text values copied to their lookup IDs (query returned 0 populated rows and 0 unmapped rows for all six fields)
 - [x] Confirm demonstration data in the five core tables (Supabase screenshots show 15 farmers, 15 farms, 10 crops, 30 plantings, and 20 harvests)
 - [x] Create `users` table and add one admin and one staff account (Supabase SQL Editor reported success)
+- [x] Add a normalized `roles` lookup and `users.role_id` foreign key; user screenshot confirms migration 23 and all three verification flags are true
 - [x] Add `created_at` and `updated_at` to the main tables (Supabase SQL Editor reported success)
 - [x] Add NOT NULL, UNIQUE and CHECK constraints (Supabase SQL Editor reported success)
 - [x] Check DOCX data requirement: demonstrate with records stored in the actual Supabase database; it does not explicitly prohibit sample/demo rows, so no deletion is required solely because records are synthetic
@@ -54,6 +55,7 @@ Work top to bottom. Do one task or one module at a time.
 - [x] Show a logout link in shared navigation for signed-in users
 - [x] Hide protected module navigation from signed-out visitors
 - [x] Role rules: Admin can view, create, edit and delete; Staff can view only (write routes and controls are Admin-only)
+- [~] Read authorization roles through the `roles` lookup in the user model and confirm both logins after the Supabase migration
 
 ## Phase 4: Modules (do Farmers first and use it as the template for the rest)
 Each module needs: model, list page with search, filter, sorting and pagination, create, edit, view, delete with confirmation (Admin only), validation, success/error messages.
@@ -74,7 +76,8 @@ Each module needs: model, list page with search, filter, sorting and pagination,
 ## Phase 6: Reports (all with filters, e.g. date range)
 - [x] Farmers and their farms
 - [x] Keep the Farmers and Farms report limited to complete farmer/farm/lookup relationships; keep unassigned farmers in the Farmers module
-- [x] Run a read-only Supabase row-count audit; user screenshot confirms all 13 required relations contain data
+- [x] Run a read-only Supabase row-count audit for the original 13 relations; user screenshot confirms those relations contain data
+- [~] Rerun the 14-relation audit, including `roles`, after migration 23 is applied
 - [x] Crops planted per farm
 - [x] Plantings by status
 - [x] Harvest records
@@ -84,6 +87,9 @@ Each module needs: model, list page with search, filter, sorting and pagination,
 
 ## Phase 7: Quality pass
 - [x] Validation on every form (required, numeric ranges, valid dates, foreign keys exist)
+- [x] Show clear duplicate messages when database duplicate constraints catch simultaneous create/edit submissions in all five modules
+- [x] Prevent farmer registration dates from being set in the future
+- [x] Prevent harvest records from being dated in the future
 - [x] Friendly error messages; no credentials or technical errors shown to users
 - [x] Add persistent light/night mode switch beside the role badge
 - [x] Improve night-mode contrast for green dashboard links, totals, and status counts
@@ -127,7 +133,8 @@ Each module needs: model, list page with search, filter, sorting and pagination,
 - [x] Table relationships and constraints
 - [x] Add guideline coverage, complete data dictionary, role permissions, operating workflow, and a truthful test/evidence status report
 - [x] Complete requirement coverage matrix, full data dictionary, record workflow, and truthful test-status summary based on the source DOCX
-- [x] Create an editable Word report aligned to `ap3 project.docx`, with a tabular normalization progression starting from the five specified core tables and a complete 13-relation inventory
+- [x] Create an editable Word report aligned to `ap3 project.docx`, with a tabular normalization progression starting from the five specified core tables and the original 13-relation inventory
+- [~] Refresh the editable Word report and PDF ERD/data dictionary to include `roles` after migration 23 is confirmed
 - [x] Audit the implemented 3NF design against `ap3 project.docx`; document that contact-number uniqueness is a separate business rule, not a 3NF requirement
 - [x] Replace the superseded infographic-only report's invented wide UNF relation with an accurate explanation of the five separate source relations; clarify that `users` is separate authentication support
 - [x] Keep actual screenshots, device captures, and unverified live-data outcomes marked as pending in the report

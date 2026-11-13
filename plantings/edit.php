@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../includes/auth_check.php';
+require_once __DIR__ . '/../includes/validation_helpers.php';
 requireAdmin();
 require_once __DIR__ . '/../config/Database.php';
 require_once __DIR__ . '/../models/Planting.php';
@@ -137,8 +138,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['success'] = 'Planting record updated successfully.';
             header('Location: /FMidterm_Project/plantings/view.php?id=' . $plantingId);
             exit;
-        } catch (Throwable) {
-            $errors[] = 'Planting record could not be updated. Please check the details and try again.';
+        } catch (Throwable $error) {
+            $errors[] = isDuplicateDatabaseError($error)
+                ? 'A planting with the same farm, crop, dates, quantities, and status already exists.'
+                : 'Planting record could not be updated. Please check the details and try again.';
         }
     }
 }

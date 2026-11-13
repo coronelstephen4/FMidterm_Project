@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../includes/auth_check.php';
 require_once __DIR__ . '/../includes/text_helpers.php';
+require_once __DIR__ . '/../includes/validation_helpers.php';
 requireAdmin();
 require_once __DIR__ . '/../config/Database.php';
 require_once __DIR__ . '/../models/Crop.php';
@@ -96,8 +97,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['success'] = 'Crop created successfully.';
             header('Location: /FMidterm_Project/crops/view.php?id=' . $cropId);
             exit;
-        } catch (Throwable) {
-            $errors[] = 'Crop could not be saved. Please check the details and try again.';
+        } catch (Throwable $error) {
+            $errors[] = isDuplicateDatabaseError($error)
+                ? 'This crop and variety are already registered.'
+                : 'Crop could not be saved. Please check the details and try again.';
         }
     }
 }

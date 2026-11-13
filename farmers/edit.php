@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../includes/auth_check.php';
 require_once __DIR__ . '/../includes/text_helpers.php';
+require_once __DIR__ . '/../includes/validation_helpers.php';
 requireAdmin();
 require_once __DIR__ . '/../config/Database.php';
 require_once __DIR__ . '/../models/Farmer.php';
@@ -70,6 +71,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         || count($dateParts) !== 3
         || !checkdate((int) ($dateParts[1] ?? 0), (int) ($dateParts[2] ?? 0), (int) ($dateParts[0] ?? 0))) {
         $errors[] = 'Enter a valid registration date.';
+    } elseif ($values['date_registered'] > date('Y-m-d')) {
+        $errors[] = 'Registration date cannot be in the future.';
     }
 
     if (!$errors) {
@@ -96,8 +99,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 header('Location: /FMidterm_Project/farmers/view.php?id=' . $farmerId);
                 exit;
             }
-        } catch (Throwable) {
-            $errors[] = 'Farmer could not be updated. Please check the details and try again.';
+        } catch (Throwable $error) {
+            $errors[] = isDuplicateDatabaseError($error)
+                ? 'A farmer with a matching contact and address, or the same name and address, already exists. Review the existing record before saving.'
+                : 'Farmer could not be updated. Please check the details and try again.';
         }
     }
 }
@@ -140,7 +145,7 @@ require __DIR__ . '/../includes/header.php';
         </div>
         <div>
             <label for="date_registered" class="mb-1 block text-sm font-medium">Date registered</label>
-            <input type="date" id="date_registered" name="date_registered" required value="<?= htmlspecialchars($values['date_registered'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" class="w-full rounded-md border border-slate-300 px-3 py-2 sm:max-w-xs">
+            <input type="date" id="date_registered" name="date_registered" max="<?= date('Y-m-d') ?>" required value="<?= htmlspecialchars($values['date_registered'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" class="w-full rounded-md border border-slate-300 px-3 py-2 sm:max-w-xs">
         </div>
         <div class="flex flex-wrap gap-3">
             <button type="submit" class="rounded-md bg-emerald-700 px-4 py-2 font-semibold text-white hover:bg-emerald-800">Save Changes</button>

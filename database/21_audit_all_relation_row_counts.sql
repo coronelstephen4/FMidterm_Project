@@ -1,4 +1,5 @@
--- Read-only audit of the 13 required Agriculture Information System relations.
+-- Read-only audit of all 14 current Agriculture Information System relations.
+-- Run after database/23_role_lookup_table.sql has been applied.
 -- Run this in the Supabase SQL Editor and review every row before claiming
 -- that all tables contain data. This script does not insert, update, or delete.
 
@@ -53,4 +54,8 @@ UNION ALL
 SELECT 'users', COUNT(*)::BIGINT,
        CASE WHEN COUNT(*) > 0 THEN 'HAS DATA' ELSE 'EMPTY - ACTION REQUIRED' END
 FROM public.users
+UNION ALL
+SELECT 'roles', COUNT(*)::BIGINT,
+       CASE WHEN COUNT(*) > 0 THEN 'HAS DATA' ELSE 'EMPTY - ACTION REQUIRED' END
+FROM public.roles
 ORDER BY table_name;

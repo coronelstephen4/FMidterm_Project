@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../includes/auth_check.php';
+require_once __DIR__ . '/../includes/validation_helpers.php';
 requireAdmin();
 require_once __DIR__ . '/../config/Database.php';
 require_once __DIR__ . '/../models/Harvest.php';
@@ -83,6 +84,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     if (!isValidHarvestDate($values['harvest_date'])) {
         $errors[] = 'Enter a valid harvest date.';
+    } elseif ($values['harvest_date'] > date('Y-m-d')) {
+        $errors[] = 'Harvest date cannot be in the future.';
     }
     if ($plantingId < 1 || $qualityGradeId < 1 || $remarkId < 1) {
         $errors[] = 'Select a valid planting, quality grade, and harvest remark.';
@@ -142,8 +145,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['success'] = 'Harvest record updated successfully.';
             header('Location: /FMidterm_Project/harvests/view.php?id=' . $harvestId);
             exit;
-        } catch (Throwable) {
-            $errors[] = 'Harvest record could not be updated. Please check the details and try again.';
+        } catch (Throwable $error) {
+            $errors[] = isDuplicateDatabaseError($error)
+                ? 'A harvest with the same planting, date, quantity, price, grade, and remark already exists.'
+                : 'Harvest record could not be updated. Please check the details and try again.';
         }
     }
 }
@@ -180,7 +185,7 @@ require __DIR__ . '/../includes/header.php';
         <div class="grid gap-5 sm:grid-cols-2">
             <div>
                 <label for="harvest_date" class="mb-1 block text-sm font-medium">Harvest date</label>
-                <input type="date" id="harvest_date" name="harvest_date" required value="<?= htmlspecialchars($values['harvest_date'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" class="w-full rounded-md border border-slate-300 px-3 py-2">
+                <input type="date" id="harvest_date" name="harvest_date" max="<?= date('Y-m-d') ?>" required value="<?= htmlspecialchars($values['harvest_date'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" class="w-full rounded-md border border-slate-300 px-3 py-2">
             </div>
             <div>
                 <label for="quantity_kg" class="mb-1 block text-sm font-medium">Quantity (kg)</label>

@@ -7,9 +7,10 @@ class User {
     }
 
     public function getByUsername(string $username): ?array {
-        $sql = "SELECT user_id, username, password_hash, role
-                FROM public.users
-                WHERE username = :username";
+        $sql = "SELECT u.user_id, u.username, u.password_hash, r.role_name AS role
+                FROM public.users u
+                JOIN public.roles r ON u.role_id = r.role_id
+                WHERE u.username = :username";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute(["username" => $username]);
 
@@ -18,9 +19,10 @@ class User {
     }
 
     public function getById(int $user_id): ?array {
-        $sql = "SELECT user_id, username, role, created_at
-                FROM public.users
-                WHERE user_id = :user_id";
+        $sql = "SELECT u.user_id, u.username, r.role_name AS role, u.created_at
+                FROM public.users u
+                JOIN public.roles r ON u.role_id = r.role_id
+                WHERE u.user_id = :user_id";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute(["user_id" => $user_id]);
 
@@ -34,8 +36,10 @@ class User {
         }
 
         $password_hash = password_hash($password, PASSWORD_DEFAULT);
-        $sql = "INSERT INTO public.users (username, password_hash, role)
-                VALUES (:username, :password_hash, :role)
+        $sql = "INSERT INTO public.users (username, password_hash, role_id)
+                SELECT :username, :password_hash, role_id
+                FROM public.roles
+                WHERE role_name = :role
                 RETURNING user_id";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([

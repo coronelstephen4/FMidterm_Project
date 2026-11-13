@@ -9,11 +9,11 @@
 
 ## 1. Project Title and Description
 
-The **Agriculture Information System - AP3 Midterm Project, Cebu Technological University** is a web application for maintaining farmer, farm, crop, planting, and harvest records. Users authenticate as `admin` or `staff`. The five operational modules provide record lists, forms, detail pages, and deletion routes; related values are displayed through SQL joins. The dashboard summarizes database records and the Reports area contains six report views.
+The **Agriculture Information System - AP3 Midterm Project, Cebu Technological University** is a web application for maintaining farmer, farm, crop, planting, and harvest records. Users authenticate through the `roles` lookup as `admin` or `staff`. The five operational modules provide record lists, forms, detail pages, and deletion routes; related values are displayed through SQL joins. The dashboard summarizes database records and the Reports area contains six report views.
 
 ### Architecture
 
-Apache serves native PHP pages. Page scripts check the session/role, construct a PDO connection from `config/Database.php`, instantiate OOP model classes with that PDO connection, validate submitted values, and render HTML with Tailwind CDN. Models use prepared statements for database operations. PostgreSQL in Supabase stores business rows, lookup rows, user accounts, constraints, and audit timestamps. Dynamic HTML values are escaped with `htmlspecialchars()`.
+Apache serves native PHP pages. Page scripts check the session/role, construct a PDO connection from `config/Database.php`, instantiate OOP model classes with that PDO connection, validate submitted values, and render HTML with Tailwind CDN. Models use prepared statements for database operations. PostgreSQL in Supabase stores business rows, lookup rows, user accounts, role assignments, constraints, and audit timestamps. Dynamic HTML values are escaped with `htmlspecialchars()`.
 
 ### Repository structure
 
@@ -119,6 +119,7 @@ erDiagram
     PLANTING_STATUSES ||--o{ PLANTING : classifies
     HARVEST_QUALITY_GRADES ||--o{ HARVEST : grades
     HARVEST_REMARKS ||--o{ HARVEST : describes
+    ROLES ||--o{ USERS : assigns
     FARMER {
         int farmer_id PK
     }
@@ -168,12 +169,16 @@ erDiagram
     }
     USERS {
         int user_id PK
+        int role_id FK
+    }
+    ROLES {
+        int role_id PK
     }
 ```
 
-Text cardinalities: one farmer can own zero or many farms; each farm references one farmer. One farm can have zero or many plantings; each planting references one farm. One crop can appear in zero or many plantings; each planting references one crop. One planting can have zero or many harvest rows; each harvest references one planting. Each lookup row can be used by zero or many rows of its associated core table; each associated core row references one lookup row. `users` is a separate authentication relation and has no business-table foreign key.
+Text cardinalities: one farmer can own zero or many farms; each farm references one farmer. One farm can have zero or many plantings; each planting references one farm. One crop can appear in zero or many plantings; each planting references one crop. One planting can have zero or many harvest rows; each harvest references one planting. Each lookup row can be used by zero or many rows of its associated core table; each associated core row references one lookup row. One role can be assigned to zero or many user accounts; each account references one role.
 
-The 13 relations are five core (`farmer`, `farm`, `crop`, `planting`, `harvest`), seven lookups, and `users`.
+The 14 relations are five core (`farmer`, `farm`, `crop`, `planting`, `harvest`), seven agriculture lookups, and two authentication relations (`users`, `roles`).
 
 ## 5. Database Normalization (UNF through 3NF)
 
@@ -184,15 +189,15 @@ The source guideline supplies five separate core table structures, not one combi
 | UNF (assignment starting point) | The five separate relations are FARMER(farmer_id, first_name, last_name, contact_number, address, date_registered); FARM(farm_id, farmer_id, farm_name, location, area_hectares, soil_type, irrigation_type); CROP(crop_id, crop_name, variety, crop_category, growing_period_days, recommended_season); PLANTING(planting_id, farm_id, crop_id, planting_date, area_planted, seed_quantity, expected_harvest_date, status); HARVEST(harvest_id, planting_id, harvest_date, quantity_kg, selling_price_per_kg, quality_grade, remarks). Each supplied column is scalar; no repeating group is specified. |
 | 1NF | Keep each value atomic and one value per row/column. The listed fields already meet this representation; no structural split is needed at this stage. |
 | 2NF | Each of the five relations has a single-column primary key. Since no composite key is used, there is no dependency on only part of a key. Keep attributes with their identified farmer, farm, crop, planting, or harvest entity. |
-| 3NF implemented | Retain the five entity relations, add audit timestamps, and replace fixed-choice labels with foreign keys into seven lookup relations. A lookup label depends on its lookup key rather than being repeated in every business row. `users` supports authentication separately and is outside the agriculture assignment's five-relation normalization exercise. |
+| 3NF implemented | Retain the five entity relations, add audit timestamps, and replace fixed-choice labels with foreign keys into seven lookup relations. A lookup label depends on its lookup key rather than being repeated in every business row. `users` and `roles` support authentication/authorization separately and are outside the agriculture assignment's five-relation normalization exercise. |
 
 The changes from assignment labels to IDs are: `farm.soil_type` → `soil_type_id`; `farm.irrigation_type` → `irrigation_type_id`; `crop.crop_category` → `crop_category_id`; `crop.recommended_season` → `recommended_season_id`; `planting.status` → `status_id`; `harvest.quality_grade` → `quality_grade_id`; and `harvest.remarks` → `remark_id`. Migration `database/08_normalize_lookup_columns.sql` removes legacy label columns only after checking the label-to-ID mappings; migration 01 creates the harvest remarks lookup and relationship, and migration 02 creates the other fixed-value lookups and relationships.
 
-For each core relation, the row key determines its non-key attributes. For example, `farmer_id` identifies the farmer's name, contact, address, and registration date. Lookup names are determined by lookup IDs. This avoids transitive storage of fixed-value labels in the business row. The separate `users` table does not alter those dependencies. Repeated contact numbers are not themselves a 3NF violation because the assignment does not define contact number as a candidate key.
+For each core relation, the row key determines its non-key attributes. For example, `farmer_id` identifies the farmer's name, contact, address, and registration date. Lookup names are determined by lookup IDs. This avoids transitive storage of fixed-value labels in the business row. The separate `users` and `roles` relations do not alter the agriculture dependencies. Repeated contact numbers are not themselves a 3NF violation because the assignment does not define contact number as a candidate key.
 
 ## 6. Complete Data Dictionary
 
-**DDL coverage note:** the repository has no initial `CREATE TABLE` migration for the five core tables. Their original column types and integer identity primary keys below are taken from the assignment schema reproduced in `PROJECT_REQUIREMENTS.md`; migrations 01–08 show the later lookup, constraint, and audit changes. The nullable/NOT NULL state of core fields is based on migration 07. Migration 01/02 lookup definitions are explicit. `users` is explicit in migration 05. This distinction is retained rather than presenting assignment definitions as if they came from an absent baseline SQL file. `CURRENT_TIMESTAMP` applies to timestamp defaults where shown. `—` means no explicit default is declared in the included DDL. Lookup IDs have primary keys but no identity/default declaration in migrations 01/02.
+**DDL coverage note:** the repository has no initial `CREATE TABLE` migration for the five core tables. Their original column types and integer identity primary keys below are taken from the assignment schema reproduced in `PROJECT_REQUIREMENTS.md`; migrations 01–08 show the later lookup, constraint, and audit changes. The nullable/NOT NULL state of core fields is based on migration 07. Migration 01/02 lookup definitions are explicit. `users` is initially created in migration 05; migration 23 adds the `roles` lookup and replaces the text role field with `users.role_id`. This role migration is prepared but remains pending user execution in Supabase. `CURRENT_TIMESTAMP` applies to timestamp defaults where shown. `—` means no explicit default is declared in the included DDL. Lookup IDs have primary keys but no identity/default declaration in migrations 01/02.
 
 ### `farmer`
 
@@ -284,10 +289,14 @@ For each core relation, the row key determines its non-key attributes. For examp
 | users.user_id | integer | PK | NOT NULL | GENERATED BY DEFAULT AS IDENTITY | Account identifier |
 | users.username | varchar(50) | UNIQUE | NOT NULL | — | Login name |
 | users.password_hash | varchar(255) | — | NOT NULL | — | PHP password hash |
-| users.role | varchar(20) | CHECK: admin/staff | NOT NULL | — | Authorization role |
+| users.role_id | integer | FK → roles.role_id | NOT NULL | — | Authorization role lookup |
 | users.created_at | timestamptz | — | NOT NULL | CURRENT_TIMESTAMP | Account creation time |
+| roles.role_id | integer | PK | NOT NULL | identity-generated | Role identifier |
+| roles.role_name | varchar(30) | UNIQUE, CHECK: admin/staff | NOT NULL | — | Authorization role name |
 
 Migration 02 seeds lookup labels as follows: soil `Loam`, `Clay Loam`, `Sandy Loam`, `Clay`; irrigation `Rainfed`, `Irrigated`, `Drip Irrigation`; categories `Cereal`, `Vegetable`, `Fruit`, `Legume`, `Root Crop`; seasons `Wet Season`, `Dry Season`, `Year Round`; statuses `Harvested`, `Growing`; grades `Grade A`, `Grade B`, `Grade C`. Migration 01's remarks are `Good Harvest`, `Acceptable Quality`, `Low Yield`, `Poor Quality`, `Damaged Harvest`.
+
+Migration 23 adds `roles` with `admin` and `staff`, backfills `users.role_id` from the previous `users.role` values, validates the mapping, and then drops the old text column. The user confirmed the migration in Supabase; the screenshot shows the foreign-key, old-column removal, and user-role validation checks all true.
 
 ## 7. Table Relationships and Constraints
 
@@ -308,13 +317,14 @@ The included migrations declare foreign keys without `ON DELETE` clauses, so Pos
 | harvest.planting_id → planting.planting_id | Planting 1:M Harvest | NO ACTION/default; referenced planting deletion is blocked |
 | harvest.quality_grade_id → harvest_quality_grades.quality_grade_id | Grade 1:M Harvest | NO ACTION/default |
 | harvest.remark_id → harvest_remarks.remark_id | Remark 1:M Harvest | NO ACTION/default |
+| users.role_id → roles.role_id | Role 1:M User | ON DELETE RESTRICT |
 
 ### Declared primary, unique, not-null, and check constraints
 
-- **Primary keys:** `farmer.farmer_id`, `farm.farm_id`, `crop.crop_id`, `planting.planting_id`, `harvest.harvest_id`, `soil_types.soil_type_id`, `irrigation_types.irrigation_type_id`, `crop_categories.crop_category_id`, `recommended_seasons.recommended_season_id`, `planting_statuses.status_id`, `harvest_quality_grades.quality_grade_id`, `harvest_remarks.remark_id`, and `users.user_id`. Core and `users` identifiers are integer identity columns in the assignment schema/migration 05; lookup key types are shown in Section 6. Lookup scripts define IDs as PKs but do not show identity/default declarations.
-- **Unique:** `users.username`; each lookup label; `(farm.farmer_id, farm.farm_name)`; `(crop.crop_name, crop.variety)`.
-- **Not null:** business fields marked required by migration 07, lookup labels/IDs in migrations 01/02, and all `users` fields in migration 05.
-- **Checks:** required farmer names/contact/address and farm/crop strings must not be blank; farm area > 0; crop growing period > 0; planting area and seed quantity > 0; expected harvest date > planting date; harvest quantity > 0; selling price ≥ 0; `users.role IN ('admin','staff')`.
+- **Primary keys:** the five core IDs, seven lookup IDs, `roles.role_id`, and `users.user_id`. Core and account identifiers use integer identity columns; lookup key types are shown in Section 6.
+- **Unique:** `users.username`, `roles.role_name`, each agriculture lookup label, `(farm.farmer_id, farm.farm_name)`, and `(crop.crop_name, crop.variety)`.
+- **Not null:** required business fields, lookup labels/IDs, `roles.role_name`, and all account fields including `users.role_id`.
+- **Checks:** required farmer names/contact/address and farm/crop strings must not be blank; farm area > 0; crop growing period > 0; planting area and seed quantity > 0; expected harvest date > planting date; harvest quantity > 0; selling price ≥ 0; `roles.role_name IN ('admin','staff')`.
 - **Audit:** migration 06 supplies `created_at` and `updated_at` defaults and installs `set_updated_at()` before-update triggers on the five core tables.
 - **Duplicate triggers:** migration 18 installs trigger guards for five core relations. Farmer matching is normalized contact plus address OR normalized full name plus address; farm uses owner/name; crop uses name/variety; planting and harvest compare all business fields in their respective records. These triggers raise unique-violation errors; they are not declared UNIQUE constraints.
 

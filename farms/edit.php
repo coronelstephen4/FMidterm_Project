@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../includes/auth_check.php';
 require_once __DIR__ . '/../includes/text_helpers.php';
+require_once __DIR__ . '/../includes/validation_helpers.php';
 requireAdmin();
 require_once __DIR__ . '/../config/Database.php';
 require_once __DIR__ . '/../models/Farm.php';
@@ -116,8 +117,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['success'] = 'Farm updated successfully.';
             header('Location: /FMidterm_Project/farms/view.php?id=' . $farmId);
             exit;
-        } catch (Throwable) {
-            $errors[] = 'Farm could not be updated. Please check the details and try again.';
+        } catch (Throwable $error) {
+            $errors[] = isDuplicateDatabaseError($error)
+                ? 'This farmer already has a farm with that name. Check the farm list before trying again.'
+                : 'Farm could not be updated. Please check the details and try again.';
         }
     }
 }
