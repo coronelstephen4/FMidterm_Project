@@ -1,0 +1,2 @@
+-- SUPERSEDED. Do not run this old trigger-removal script.
+-- The current reviewed rule is in database/30_farmer_name_address_duplicate_rule.sql.

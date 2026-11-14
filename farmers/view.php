@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../includes/auth_check.php';
+require_once __DIR__ . '/../includes/country_phone.php';
 requireLogin();
 require_once __DIR__ . '/../config/Database.php';
 require_once __DIR__ . '/../models/Farmer.php';
@@ -57,7 +58,7 @@ require __DIR__ . '/../includes/header.php';
             </div>
             <div class="grid gap-1 px-5 py-4 sm:grid-cols-3">
                 <dt class="font-medium text-slate-600">Contact number</dt>
-                <dd class="sm:col-span-2"><?= htmlspecialchars($farmer['contact_number'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></dd>
+                <dd class="sm:col-span-2"><?= htmlspecialchars(phoneDisplayValue((string) $farmer['contact_number']), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></dd>
             </div>
             <div class="grid gap-1 px-5 py-4 sm:grid-cols-3">
                 <dt class="font-medium text-slate-600">Address</dt>

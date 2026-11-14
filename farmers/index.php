@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../includes/auth_check.php';
+require_once __DIR__ . '/../includes/country_phone.php';
 requireLogin();
 require_once __DIR__ . '/../config/Database.php';
 require_once __DIR__ . '/../models/Farmer.php';
@@ -116,7 +117,7 @@ require __DIR__ . '/../includes/header.php';
                         <td class="whitespace-nowrap px-4 py-3"><?= htmlspecialchars($farmer['last_name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
                         <td class="px-4 py-3"><?= htmlspecialchars($farmer['address'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
                         <td class="whitespace-nowrap px-4 py-3"><?= htmlspecialchars($farmer['date_registered'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
-                        <td class="whitespace-nowrap px-4 py-3"><?= htmlspecialchars($farmer['contact_number'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
+                        <td class="whitespace-nowrap px-4 py-3"><?= htmlspecialchars(phoneDisplayValue((string) $farmer['contact_number']), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
                         <td class="whitespace-nowrap px-4 py-3">
                             <a class="font-medium text-emerald-800 hover:underline" href="/FMidterm_Project/farmers/view.php?id=<?= (int) $farmer['farmer_id'] ?>">View</a>
                             <?php if (isAdmin()): ?>

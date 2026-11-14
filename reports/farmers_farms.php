@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../includes/auth_check.php';
+require_once __DIR__ . '/../includes/country_phone.php';
 requireLogin();
 require_once __DIR__ . '/../config/Database.php';
 require_once __DIR__ . '/../models/Report.php';
@@ -100,7 +101,7 @@ $sortLabels = [
                     <td class="px-4 py-3"><?= htmlspecialchars($row['farm_name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
                     <td class="px-4 py-3"><?= htmlspecialchars($row['location'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
                     <td class="px-4 py-3"><?= htmlspecialchars((string) $row['area_hectares'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
-                    <td class="px-4 py-3"><?= htmlspecialchars($row['contact_number'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
+                    <td class="px-4 py-3"><?= htmlspecialchars(phoneDisplayValue((string) $row['contact_number']), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
                     <td class="px-4 py-3"><?= htmlspecialchars($row['soil_type_name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
                     <td class="px-4 py-3"><?= htmlspecialchars($row['irrigation_type_name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
                 </tr>

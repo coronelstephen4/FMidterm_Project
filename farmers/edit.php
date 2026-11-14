@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../includes/auth_check.php';
 require_once __DIR__ . '/../includes/text_helpers.php';
 require_once __DIR__ . '/../includes/validation_helpers.php';
+require_once __DIR__ . '/../includes/Validator.php';
 requireAdmin();
 require_once __DIR__ . '/../config/Database.php';
 require_once __DIR__ . '/../models/Farmer.php';
@@ -15,6 +16,7 @@ if ($farmerId < 1) {
     exit;
 }
 
+$pdo = null;
 try {
     $database = new Database();
     $farmerModel = new Farmer($database->connect());
@@ -31,67 +33,34 @@ if (!$farmer) {
     exit;
 }
 
+$phoneParts = phoneFormParts((string) $farmer['contact_number']);
 $values = [
     'first_name' => $farmer['first_name'],
     'last_name' => $farmer['last_name'],
-    'contact_number' => $farmer['contact_number'],
+    'country_iso' => $phoneParts['country_iso'],
+    'contact_number' => $phoneParts['national_number'],
     'address' => $farmer['address'],
     'date_registered' => $farmer['date_registered']
 ];
 $errors = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    foreach ($values as $field => $currentValue) {
-        if (isset($_POST[$field]) && is_string($_POST[$field])) {
-            $values[$field] = in_array($field, ['first_name', 'last_name', 'address'], true)
-                ? capitalizeInput($_POST[$field])
-                : trim($_POST[$field]);
-        }
-    }
-
-    foreach (['first_name', 'last_name', 'contact_number', 'address', 'date_registered'] as $field) {
-        if ($values[$field] === '') {
-            $errors[] = 'All fields are required.';
-            break;
-        }
-    }
-
-    if (mb_strlen($values['first_name']) > 50 || mb_strlen($values['last_name']) > 50) {
-        $errors[] = 'Names must be 50 characters or fewer.';
-    }
-    if (mb_strlen($values['contact_number']) > 20) {
-        $errors[] = 'Contact number must be 20 characters or fewer.';
-    }
-    if (mb_strlen($values['address']) > 150) {
-        $errors[] = 'Address must be 150 characters or fewer.';
-    }
-
-    $dateParts = explode('-', $values['date_registered']);
-    if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $values['date_registered'])
-        || count($dateParts) !== 3
-        || !checkdate((int) ($dateParts[1] ?? 0), (int) ($dateParts[2] ?? 0), (int) ($dateParts[0] ?? 0))) {
-        $errors[] = 'Enter a valid registration date.';
-    } elseif ($values['date_registered'] > date('Y-m-d')) {
-        $errors[] = 'Registration date cannot be in the future.';
-    }
+    $values = Validator::readFields(array_keys($values), $_POST);
+    $validator = new Validator();
+    $validated = $validator->validateFarmer($values, $farmer);
+    $errors = $validator->errors();
 
     if (!$errors) {
         try {
-            if ($farmerModel->hasDuplicate(
-                $values['first_name'],
-                $values['last_name'],
-                $values['contact_number'],
-                $values['address'],
-                $farmerId
-            )) {
-                $errors[] = 'A farmer with a matching contact and address, or the same name and address, already exists. Review the existing record before saving.';
+            if (!$validator->validateFarmerDuplicate($farmerModel, $values, $farmerId)) {
+                $errors = $validator->errors();
             } else {
                 $farmerModel->update(
                     $farmerId,
-                    $values['first_name'],
-                    $values['last_name'],
-                    $values['contact_number'],
-                    $values['address'],
+                    capitalizeInput($values['first_name']),
+                    capitalizeInput($values['last_name']),
+                    $validated['contact_number'],
+                    capitalizeInput($values['address']),
                     $values['date_registered']
                 );
 
@@ -101,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         } catch (Throwable $error) {
             $errors[] = isDuplicateDatabaseError($error)
-                ? 'A farmer with a matching contact and address, or the same name and address, already exists. Review the existing record before saving.'
+                ? 'A farmer with the same name and address already exists. Review the existing record before adding another.'
                 : 'Farmer could not be updated. Please check the details and try again.';
         }
     }
@@ -127,24 +96,37 @@ require __DIR__ . '/../includes/header.php';
     <form method="post" action="/FMidterm_Project/farmers/edit.php?id=<?= $farmerId ?>" class="mt-6 space-y-5 rounded-lg bg-white p-6 shadow-sm ring-1 ring-slate-200">
         <div class="grid gap-5 sm:grid-cols-2">
             <div>
-                <label for="first_name" class="mb-1 block text-sm font-medium">First name</label>
-                <input type="text" id="first_name" name="first_name" maxlength="50" required value="<?= htmlspecialchars($values['first_name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" class="w-full capitalize rounded-md border border-slate-300 px-3 py-2">
+                <label for="first_name" class="mb-1 block text-sm font-medium">First name <span class="text-rose-600" aria-hidden="true">*</span></label>
+                <input type="text" id="first_name" name="first_name" minlength="2" maxlength="50" pattern="[\p{L} .'-]+" required value="<?= htmlspecialchars($values['first_name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" class="w-full capitalize rounded-md border border-slate-300 px-3 py-2">
             </div>
             <div>
-                <label for="last_name" class="mb-1 block text-sm font-medium">Last name</label>
-                <input type="text" id="last_name" name="last_name" maxlength="50" required value="<?= htmlspecialchars($values['last_name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" class="w-full capitalize rounded-md border border-slate-300 px-3 py-2">
+                <label for="last_name" class="mb-1 block text-sm font-medium">Last name <span class="text-rose-600" aria-hidden="true">*</span></label>
+                <input type="text" id="last_name" name="last_name" minlength="2" maxlength="50" pattern="[\p{L} .'-]+" required value="<?= htmlspecialchars($values['last_name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" class="w-full capitalize rounded-md border border-slate-300 px-3 py-2">
             </div>
         </div>
         <div>
-            <label for="contact_number" class="mb-1 block text-sm font-medium">Contact number</label>
-            <input type="text" id="contact_number" name="contact_number" maxlength="20" required value="<?= htmlspecialchars($values['contact_number'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" class="w-full rounded-md border border-slate-300 px-3 py-2">
+            <label for="contact_number" class="mb-1 block text-sm font-medium">Contact number <span class="text-rose-600" aria-hidden="true">*</span></label>
+            <div class="grid gap-2 sm:grid-cols-[minmax(12rem,0.8fr)_1.2fr]">
+                <div class="relative">
+                    <img id="country_flag" src="https://flagcdn.com/w40/<?= strtolower(htmlspecialchars($values['country_iso'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')) ?>.png" alt="Country flag" width="24" height="18" class="pointer-events-none absolute left-3 top-1/2 z-10 h-[18px] w-6 -translate-y-1/2 rounded-sm object-cover">
+                    <select id="country_iso" name="country_iso" aria-label="Country calling code" required class="w-full rounded-md border border-slate-300 py-2 pl-12 pr-3">
+                    <?php foreach (countryPhoneOptions() as $iso => $country): ?>
+                        <option value="<?= htmlspecialchars($iso, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" data-dial="<?= htmlspecialchars($country['dial_code'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" data-trunk="<?= htmlspecialchars($country['trunk'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" data-name="<?= htmlspecialchars($country['name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" <?= $values['country_iso'] === $iso ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($country['name'] . ' (+' . $country['dial_code'] . ')', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
+                        </option>
+                    <?php endforeach; ?>
+                    </select>
+                </div>
+                <input type="tel" id="contact_number" name="contact_number" inputmode="tel" <?= $phoneParts['supported'] ? 'pattern="[0-9 +().-]+"' : '' ?> maxlength="24" required value="<?= htmlspecialchars($values['contact_number'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" placeholder="Mobile or phone number" class="w-full rounded-md border border-slate-300 px-3 py-2">
+            </div>
+            <p id="phone_preview" class="mt-1 text-sm text-slate-500" aria-live="polite"></p>
         </div>
         <div>
-            <label for="address" class="mb-1 block text-sm font-medium">Address</label>
-            <textarea id="address" name="address" maxlength="150" required rows="3" class="w-full capitalize rounded-md border border-slate-300 px-3 py-2"><?= htmlspecialchars($values['address'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></textarea>
+            <label for="address" class="mb-1 block text-sm font-medium">Address <span class="text-rose-600" aria-hidden="true">*</span></label>
+            <textarea id="address" name="address" minlength="5" maxlength="150" required rows="3" class="w-full capitalize rounded-md border border-slate-300 px-3 py-2"><?= htmlspecialchars($values['address'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></textarea>
         </div>
         <div>
-            <label for="date_registered" class="mb-1 block text-sm font-medium">Date registered</label>
+            <label for="date_registered" class="mb-1 block text-sm font-medium">Date registered <span class="text-rose-600" aria-hidden="true">*</span></label>
             <input type="date" id="date_registered" name="date_registered" max="<?= date('Y-m-d') ?>" required value="<?= htmlspecialchars($values['date_registered'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" class="w-full rounded-md border border-slate-300 px-3 py-2 sm:max-w-xs">
         </div>
         <div class="flex flex-wrap gap-3">
@@ -152,5 +134,30 @@ require __DIR__ . '/../includes/header.php';
             <a href="/FMidterm_Project/farmers/view.php?id=<?= $farmerId ?>" class="rounded-md border border-slate-300 px-4 py-2 font-semibold hover:bg-slate-50">Cancel</a>
         </div>
     </form>
+    <script>
+        (() => {
+            const country = document.getElementById('country_iso');
+            const phone = document.getElementById('contact_number');
+            const preview = document.getElementById('phone_preview');
+            const flag = document.getElementById('country_flag');
+            const updatePreview = () => {
+                const option = country.selectedOptions[0];
+                let digits = phone.value.replace(/\D/g, '');
+                const dial = option.dataset.dial || '';
+                const trunk = option.dataset.trunk || '';
+                flag.src = `https://flagcdn.com/w40/${country.value.toLowerCase()}.png`;
+                flag.alt = `${option.dataset.name} flag`;
+                if (digits.startsWith(dial) && digits.length > dial.length) digits = digits.slice(dial.length);
+                if (trunk && digits.startsWith(trunk)) digits = digits.slice(trunk.length);
+                const grouped = digits.length === 10
+                    ? `${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`
+                    : digits.replace(/(.{3})/g, '$1 ').trim();
+                preview.textContent = digits ? `Saved as +${dial} ${grouped}` : `Country code: +${dial}`;
+            };
+            country.addEventListener('change', updatePreview);
+            phone.addEventListener('input', updatePreview);
+            updatePreview();
+        })();
+    </script>
 </div>
 <?php require __DIR__ . '/../includes/footer.php'; ?>

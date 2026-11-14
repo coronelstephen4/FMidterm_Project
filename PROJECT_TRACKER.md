@@ -1,4 +1,4 @@
-﻿# Project Tracker: FMidterm_Project
+# Project Tracker: FMidterm_Project
 
 **Project:** Agriculture Information System (AIS), AP3 Midterm, Cebu Technological University
 **Location:** C:\xampp\htdocs\FMidterm_Project (run at http://localhost/FMidterm_Project/)
@@ -16,14 +16,175 @@
 
 - **Phase:** 9 Final testing and submission
 - **Last updated:** 2026-11-14
-- **Currently working on:** Verifying the `roles` lookup integration after the user's Supabase migration and GitHub push.
-- **Next step:** Test Admin and Staff login against `users.role_id`, then refresh the editable Word/PDF ERD and data dictionary.
+- **Currently working on:** Farmer contact form country flags and calling-code selection; duplicate checks use normalized first name + last name + address.
+- **Next step:** Visually check the flag selector in the browser. Separately, review the duplicate-pair SELECT in `database/30_farmer_name_address_duplicate_rule.sql` before running its SQL in Supabase.
 
 ## Progress Log
 
 Newest entry at the top. Format:
 `[Date Time] What was done | Files changed | What is next`
 
+### 2026-11-14 16:18
+- Replaced the country-code abbreviation in the Farmer create/edit selector with a flag image that updates from the selected country ISO code. Kept the existing country calling-code options and E.164 input behavior. PHP lint passed for both changed pages.
+- Files changed: farmers/create.php, farmers/edit.php, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Visually verify the flag selector in the browser.
+
+### 2026-11-14 16:09
+- Changed Farmer create/edit validation to block only when normalized first name, last name, and address match; phone is excluded, and unchanged identity details bypass duplicate rejection. Added the matching SQL trigger replacement plus a read-only duplicate-pair pre-check. No Supabase SQL was run. Audited other duplicate rules: Farm checks farmer+farm name (also a declared composite UNIQUE); Crop/Variety match normalized unique labels; Planting and Harvest guards compare exact multi-field records and can block repeats of non-unique attributes. PHP lint passed for all four changed PHP files.
+- Files changed: models/Farmer.php, includes/Validator.php, farmers/create.php, farmers/edit.php, database/29_remove_farmer_duplicate_heuristic.sql, database/30_farmer_name_address_duplicate_rule.sql, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Review the pre-check rows and run database/30_farmer_name_address_duplicate_rule.sql in Supabase if approved; test the four listed create/edit cases.
+
+### 2026-11-14 16:02
+- At the time, removed the Farmer duplicate heuristic and prepared a trigger-removal script. This decision was superseded by the 16:09 user request for a name+address rule; the old SQL file now says not to run it.
+- Files changed: farmers/create.php, farmers/edit.php, models/Farmer.php, database/29_remove_farmer_duplicate_heuristic.sql, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next (superseded): See the 16:09 entry for the current Farmer duplicate rule and SQL script.
+
+### 2026-11-14 15:53
+- Added a country/flag and calling-code selector to Farmer create/edit with Philippines selected by default, live international-format preview, and E.164 storage for new/changed contact numbers. Farmer list, detail, and farmer/farms report display the country flag and formatted number. Application duplicate checks normalize legacy Philippine 09 numbers against +639 E.164 numbers; prepared a matching database trigger update script. No Supabase SQL was run. PHP lint passed for all eight changed PHP files.
+- Files changed: includes/country_phone.php, includes/Validator.php, models/Farmer.php, farmers/create.php, farmers/edit.php, farmers/index.php, farmers/view.php, reports/farmers_farms.php, database/28_form_validation_constraints.sql, database/29_farmer_e164_duplicate_guard.sql, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next (superseded by the 16:02 decision): The E.164 duplicate-trigger replacement was not run; use `database/29_remove_farmer_duplicate_heuristic.sql` instead. Visually verify country selection and phone preview, then handle the open Crop Variety crop-ID selector requirement.
+### 2026-11-14 15:35
+- Updated the optional constraints script to defer the farmer mobile-format CHECK because six existing rows fail it; the PHP validator still checks new/changed contacts and permits an unchanged legacy value during edit. This avoids a CHECK that could block unrelated updates to those rows. No live database changes were made.
+- Files changed: database/28_form_validation_constraints.sql, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Review all pre-check outputs and audit whether any other proposed constraints persisted during the failed SQL Editor run before rerunning any DDL.
+### 2026-11-14 15:33
+- User's catalog SELECT returned no row for `farmer_contact_mobile_format`; that constraint is absent. Updated Farmer edit validation to preserve an unchanged legacy invalid contact while requiring any changed contact to pass normalization/format rules. Lint passed for Validator.php and farmers/edit.php. Other constraints from the earlier multi-statement execution were not checked by this result.
+- Files changed: includes/Validator.php, farmers/edit.php, PROJECT_TRACKER.md
+- Next: Review the six invalid contact rows and query whether any other proposed constraints were left behind; do not rerun the SQL until existing values are reviewed.
+### 2026-11-14 15:31
+- User's read-only contact audit returned six farmer rows with values failing the normalized mobile format (IDs 24, 30, 31, 32, 35, 36). The screenshot shows only the row-query output; the constraint catalog status query result is not visible. Advised running that status SELECT separately and leaving all DDL unapplied until the six values are reviewed.
+- Files changed: PROJECT_TRACKER.md
+- Next: Check whether `farmer_contact_mobile_format` exists and whether it is validated; decide how to handle the six existing contact values before considering CHECK validation.
+### 2026-11-14 15:30
+- User screenshot shows execution of the form-validation SQL stopped while validating `farmer_contact_mobile_format` because at least one existing contact number is not normalized to `09xxxxxxxxx`. The screenshot does not prove whether the preceding NOT VALID constraint persisted; advised read-only checks for violating rows and catalog status. No database action taken by Codex.
+- Files changed: PROJECT_TRACKER.md
+- Next: Review the invalid contact rows and constraint status using SELECT only; do not rerun DDL until existing values and execution state are understood.
+### 2026-11-14 15:22
+- Added shared server-side required/format validation, trimmed form values, existing-ID checks for submitted dropdowns, inline browser hints, visible required markers, and generic login failures across business create/edit forms and login. Existing duplicate checks remain in place. Added optional review-only CHECK SQL with all SELECT pre-checks grouped before the proposed constraints; it has not been run. PHP lint passed for all changed PHP files, though the system PHP CLI emitted unrelated startup warnings because installed extensions do not match its PHP build.
+- Files changed: includes/Validator.php, farmers/create.php, farmers/edit.php, farms/create.php, farms/edit.php, crops/create.php, crops/edit.php, plantings/create.php, plantings/edit.php, harvests/create.php, harvests/edit.php, auth/login.php, database/28_form_validation_constraints.sql, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Separate Crop and Crop Variety form flows so the variety editor can choose a validated existing crop ID. Review SQL pre-check rows before choosing to run the database script.
+### 2026-11-14 15:07
+- Reviewed create/edit duplicate logic and matching database guards for Farmer, Farm, Crop/Variety, Planting, and Harvest. Excluded current IDs are applied for edits; normalized text rules agree for farmer/farm/crop/variety; planting/harvest checks compare the same business fields in PHP and triggers; SQLSTATE 23505 maps to friendly duplicate messages. No validation code change was needed. Existing Farmer duplicates are historical rows and remain visible until reviewed.
+- Files changed: PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Continue ERD/report alignment; keep legacy farmer duplicate cleanup separate and review-only unless requested.
+
+### 2026-11-14 15:02
+- Audited duplicate prevention across Farmer, Farm, Crop/Crop Variety, Planting, and Harvest. Each create/edit page calls its model duplicate check and maps SQLSTATE 23505 to a friendly duplicate message; Supabase trigger scripts cover the same five business modules, with crop/planting guards updated for the 3NF `crop_variety` / `variety_id` schema. PHP lint passed for all five models and ten create/edit pages. Farmer screenshot rows have distinct IDs; existing likely duplicate records remain for review and are not removed automatically.
+- Files changed: PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Continue ERD/report alignment; review existing farmer duplicate candidates only if the user requests data cleanup.
+
+### 2026-11-14 14:58
+- Reviewed the Farmers screenshot and create/edit validation. Farmer IDs are distinct; repeated-looking names/contact/address are existing data duplicates, not duplicate primary keys. `Farmer::hasDuplicate()` checks likely duplicates on create/edit, and the installed `farmer_duplicate_guard` protects database inserts/updates. Existing rows are not automatically removed; leave them for identity/relationship review.
+- Files changed: PROJECT_TRACKER.md
+- Next: If requested, audit existing farmer duplicate candidates before any data cleanup.
+
+### 2026-11-14 14:52
+- User screenshot confirms `database/27_verify_and_enforce_erd_constraints.sql` completed and all four checks are true: farm farmer/name UNIQUE, allowed role-name CHECK, normalized crop-name unique index, and normalized variety-name-per-crop unique index. Marked the constraint task complete. No data rows were changed by the script.
+- Files changed: PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Update the constraints ERD and final report; verify remaining identity/default labels from the live catalog.
+
+### 2026-11-14 14:55
+- Prepared a transactional, rerunnable SQL script for the ERD constraint gaps. It checks for duplicate farm names per farmer, invalid roles, normalized duplicate crop names, and normalized duplicate variety names per crop; if clear, it adds missing farm uniqueness and role checks plus normalized crop/variety unique indexes. The script was not run in Supabase.
+- Files changed: database/27_verify_and_enforce_erd_constraints.sql, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: User runs the script in Supabase and shares the four verification results; resolve any preflight errors before proceeding.
+
+### 2026-11-14 14:48
+- Reviewed the user's constraints ERD against local migrations. The 3NF relationships and crop/variety/planting structure are consistent. The diagram omits `UNIQUE(farm_id, farm_name)` as defined in migration 07 and the `roles.role_name IN ('admin','staff')` CHECK in migration 23; it labels user/role IDs as IDENTITY ALWAYS although migrations declare GENERATED BY DEFAULT. The farmer date default and several baseline ID defaults require live catalog confirmation because their initial CREATE TABLE DDL is not in the repo.
+- Files changed: PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Confirm actual constraint/default metadata using read-only catalog queries, then correct the constraints ERD.
+
+### 2026-11-14 14:20
+- Confirmed the crop-to-crop_variety migration is already applied in Supabase: 12 crop rows, 14 variety rows, 32 plantings, and zero orphan links. PHP model reads work with the new schema. Documentation refresh is still in progress; the Markdown ERD/data dictionary and SVG need a final consistency pass, and the editable Word report remains pending.
+- Files changed: PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Finish the ERD/data dictionary and SVG updates, then refresh the editable Word report.
+
+### 2026-11-14 14:32
+- Read the original AP3 DOCX and compared its normalization, lookup, relationship, integrity, and documentation requirements with the crop 3NF migration and existing schema scripts. The split is relationally sound: CROP stores crop name/category; CROP_VARIETY stores variety/growing-period/season; PLANTING references the selected variety. Prior read-only live checks showed 12 crops, 14 varieties, 32 plantings, and no orphan links. Found stale ERD/report files that still show `crop.variety`, `crop.recommended_season_id`, and `planting.crop_id`; a full current live catalog audit remains necessary before claiming every deployed constraint is error-free.
+- Files changed: PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Align all ERD and final documentation files with the verified schema; run a fresh read-only Supabase catalog audit when available.
+
+### 2026-11-14 14:09
+- SQL Editor screenshots showed errors involving `crop_map` and the already-removed `crop.variety`; read-only checks confirm the migration is fully applied: 12 crops, 14 varieties, 32 plantings, and zero orphan links. Crop and planting duplicate guards now target `crop_name` and `variety_id`. Read-only PHP model checks passed for Crop, Planting, Harvest, and all changed report joins. Added an already-applied guard and removed the temporary `crop_map` dependency from the local one-time SQL script; do not rerun it.
+- Files changed: database/crop_3nf_migration.sql, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Update the ERD and data dictionary for `crop_variety` and `planting.variety_id`, then verify write workflows with the updated schema.
+
+### 2026-11-14 13:56
+- Updated the Crop model and pages to read and write `crop_variety`, with crop name/category stored on the parent `crop` row. Crop CRUD now uses variety IDs and preserves shared crop-category semantics. PHP lint passed for all six changed PHP files; SQL remains unapplied and dependent modules still use the old schema.
+- Files changed: models/Crop.php, crops/index.php, crops/create.php, crops/edit.php, crops/view.php, crops/delete.php, PROJECT_TRACKER.md
+- Next: Update Planting model/forms to use `variety_id`, then convert Harvest, dashboard, and reports.
+
+### 2026-11-14 14:02
+- Updated Planting CRUD to store `variety_id`; updated Harvest, dashboard, and report queries to join `planting.variety_id` through `crop_variety` to `crop`. Lint passed for all 12 affected PHP files, and the PHP scan found no remaining old `p.crop_id` or `c.variety` SQL references. Database migration remains unapplied.
+- Files changed: models/Planting.php, plantings/create.php, plantings/edit.php, models/Harvest.php, models/Report.php, index.php, PROJECT_TRACKER.md
+- Next: Review the full SQL/code integration, then have the user run the SQL in Supabase and verify the new schema before marking this task complete.
+
+### 2026-11-14 13:48
+- Revised the pending crop 3NF SQL draft to check for unsafe normalized-name/category or variety merges, remove crop and planting guards before dependent schema changes, and restore the planting duplicate guard using `variety_id`. The SQL has not been run; project PHP still uses the old schema.
+- Files changed: database/crop_3nf_migration.sql, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Update crop/planting/harvest/dashboard/report PHP references for `crop_variety`; review the coordinated code and SQL before the student runs the migration.
+
+### 2026-11-14 12:52
+- User screenshot confirms migration 25 succeeded: `user_audit_columns_removed`, `timestamps_retained`, and `users_role_relationship_retained` are all true. Marked database migration complete and updated current Markdown schema documentation.
+- Files changed: PROJECT_TASKS.md, PROJECT_DOCUMENTATION.md, FINAL_SYSTEM_DOCUMENTATION.md, PROJECT_TRACKER.md
+- Next: Refresh the editable Word report after it is closed in WPS; then verify Admin/Staff workflows against the updated schema.
+
+### 2026-11-14 03:52
+- Rechecked migration 25 against the constraint names generated by migration 24. It drops only creator/editor constraints and columns, leaves business/lookup FKs and role assignment intact, and returns checks for removed columns, timestamps, and `users.role_id`. All 53 PHP files still pass syntax checks; no active PHP or current Markdown ERD/data-dictionary references remain. Supabase execution still requires the user to run the SQL Editor script.
+- Files changed: database/25_remove_user_audit_links.sql, PROJECT_TRACKER.md
+- Next: Run migration 25 in Supabase and confirm all three result flags are true; then refresh the Word report after it is no longer open in WPS.
+
+### 2026-11-14 03:48
+- Re-read `ap3 project.docx`: it requires `created_at`/`updated_at` timestamps and says recording the responsible user is encouraged, not required. Following the user's request, removed `created_by`/`updated_by` from all five models, create/edit calls, and detail pages; prepared migration 25 to drop the ten columns and their FKs. Updated Markdown ERDs/data dictionaries and replaced the audit ERD with a 3NF ERD. PHP syntax passed for all 53 files; `git diff --check` and SVG XML parsing passed. The editable Word report is open in WPS and could not be safely overwritten; migration 25 and Word refresh remain pending.
+- Files changed: database/25_remove_user_audit_links.sql, five models, ten create/edit pages, five detail pages, PROJECT_DOCUMENTATION.md, FINAL_SYSTEM_DOCUMENTATION.md, PROJECT_TASKS.md, PROJECT_TRACKER.md, submission_materials/ais_user_audit_erd.svg (removed), submission_materials/ais_3nf_erd.svg
+- Next: Run migration 25 in Supabase and confirm no `created_by`/`updated_by` columns remain, then refresh the Word report.
+
+### 2026-11-14 03:46
+- Compared `Reference ERD.jfif` with the current 3NF schema. Its `APP_USER` corresponds to `public.users`; its `created_by`/`updated_by` foreign keys are already present on all five core tables (10 user FKs confirmed by the earlier read-only schema audit). No duplicate user column or migration is needed. Audit fields remain nullable for legacy rows without a known actor.
+- Files changed: PROJECT_TRACKER.md
+- Next: Sign in as Admin and Staff to verify role permissions, then continue authenticated system logic checks.
+
+### 2026-11-14 03:42
+- Changed login submissions and logout to require a session CSRF token; logout rejects GET requests and the shared navigation submits logout by POST. Four PHP files passed syntax checks and `git diff --check` found no whitespace errors.
+- Files changed: includes/csrf.php, includes/header.php, auth/login.php, auth/logout.php, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Sign in as Admin and Staff to verify role permissions, then continue to the next system module.
+
+### 2026-11-14 02:35
+- Added `created_by` and `updated_by` foreign keys from each of the five business tables to `users`; application create/edit calls now save the signed-in user, and detail pages show creator/editor names. Historical rows remain NULL because their original account is unknown.
+- Prepared `database/24_link_records_to_users.sql`; it has not been run in Supabase. Updated both Markdown system documents and the task checklist. Editable Word/PDF exports remain pending.
+- Files changed: database/24_link_records_to_users.sql, five models, ten create/edit pages, five detail pages, PROJECT_DOCUMENTATION.md, FINAL_SYSTEM_DOCUMENTATION.md, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Run migration 24 in Supabase and confirm success; refresh the Word/PDF documentation exports.
+
+### 2026-11-14 02:39
+- User screenshot confirms `database/24_link_records_to_users.sql` ran successfully in Supabase (`Success. No rows returned`). Marked the audit-link database and module tasks complete. The earlier role/login connection check remains pending.
+- Files changed: PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Refresh the editable Word report and PDF ERD/data dictionary for `users` audit links.
+
+### 2026-11-14 02:50
+- Refreshed `FINAL_SYSTEM_DOCUMENTATION.docx` with the confirmed user-audit relationships and regenerated `SYSTEM_DOCUMENTATION.pdf` from the current Markdown documentation. Added `submission_materials/ais_user_audit_erd.svg` to show business links, lookup relationships, `created_by`/`updated_by` links, and the role lookup.
+- Files changed: FINAL_SYSTEM_DOCUMENTATION.docx, SYSTEM_DOCUMENTATION.pdf, submission_materials/ais_user_audit_erd.svg, PROJECT_DOCUMENTATION.md, FINAL_SYSTEM_DOCUMENTATION.md, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Test Admin and Staff login, then continue authenticated module, report, and dashboard workflows.
+
+### 2026-11-14 03:11
+- Reviewed the migration 24 integration against the DOCX and 3NF. Supabase read-only checks found all 10 audit columns, all 10 `users` foreign keys, and all 10 `RESTRICT` delete rules. Model reads for all five modules and Admin/Staff role lookups passed. XAMPP PHP 8.2 lint passed for all 52 PHP files.
+- Fixed missing user-ID arguments in Planting and Harvest create handlers. Rebuilt the Word report after finding and correcting invalid XML namespace output; all five DOCX XML parts parse, the ERD SVG parses, and the PDF signature is valid. Full password login and write workflows remain pending.
+- Files changed: plantings/create.php, harvests/create.php, FINAL_SYSTEM_DOCUMENTATION.docx, FINAL_SYSTEM_DOCUMENTATION.md, PROJECT_DOCUMENTATION.md, PROJECT_TASKS.md, PROJECT_TRACKER.md, SYSTEM_DOCUMENTATION.pdf
+- Next: Sign in as Admin and Staff, then continue populated-data CRUD, report, and dashboard checks.
+
+### 2026-11-14 03:23
+- Visually reviewed the refreshed ERD; corrected relationship-label direction and spacing. Added an explicit 3NF explanation: audit IDs depend on each record key, while usernames and role names remain stored in `users` and `roles`. Refreshed the PDF and editable Word report; their XML/PDF structures remain valid.
+- Files changed: submission_materials/ais_user_audit_erd.svg, FINAL_SYSTEM_DOCUMENTATION.docx, FINAL_SYSTEM_DOCUMENTATION.md, PROJECT_DOCUMENTATION.md, SYSTEM_DOCUMENTATION.pdf, PROJECT_TRACKER.md
+- Next: Sign in as Admin and Staff, then continue populated-data CRUD, report, and dashboard checks.
+
+### 2026-11-14 03:36
+- User clarified that the untracked `SYSTEM_DOCUMENTATION.pdf` was not theirs and deleted it. Confirmed it is absent; do not restore or recreate it unless the user asks. The editable Word report and ERD SVG remain available.
+- Files changed: PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Sign in as Admin and Staff, then continue populated-data CRUD, report, and dashboard checks.
+
+### 2026-11-14 01:34
+- Read PROJECT_TASKS.md, PROJECT_TRACKER.md, CODING_STANDARDS.md, PROJECT_REQUIREMENTS.md, and the original `ap3 project.docx`; the DOCX agrees with the requirements copy on the major system requirements.
+- Attempted the next `roles` integration check with XAMPP PHP 8.2, but its database connection failed before either account could be checked. Admin/Staff password login verification remains pending; no credential values or raw connection details were exposed.
+- Files changed: PROJECT_TRACKER.md
+- Next: Retry role/login verification when Supabase is reachable, then refresh the editable Word/PDF ERD and data dictionary.
 ### 2026-11-14 01:26
 - User committed and pushed 19 files to `main` in commit `fd69bb5` (`Add normalized roles lookup and validation updates`). Verification with `git status --short` shows only `Reference ERD.jfif` and `SYSTEM_DOCUMENTATION.pdf` remain untracked; neither was included in the push.
 - Files changed: PROJECT_TASKS.md, PROJECT_TRACKER.md

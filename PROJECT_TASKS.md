@@ -24,6 +24,8 @@ Work top to bottom. Do one task or one module at a time.
 - [x] Confirm demonstration data in the five core tables (Supabase screenshots show 15 farmers, 15 farms, 10 crops, 30 plantings, and 20 harvests)
 - [x] Create `users` table and add one admin and one staff account (Supabase SQL Editor reported success)
 - [x] Add a normalized `roles` lookup and `users.role_id` foreign key; user screenshot confirms migration 23 and all three verification flags are true
+- [x] Apply migration 24 to add optional user audit links (historical change; migration 25 removes them to match the requested ERD)
+- [x] Run `database/25_remove_user_audit_links.sql` in Supabase; screenshot confirms audit columns removed, timestamps retained, and users-to-roles FK retained
 - [x] Add `created_at` and `updated_at` to the main tables (Supabase SQL Editor reported success)
 - [x] Add NOT NULL, UNIQUE and CHECK constraints (Supabase SQL Editor reported success)
 - [x] Check DOCX data requirement: demonstrate with records stored in the actual Supabase database; it does not explicitly prohibit sample/demo rows, so no deletion is required solely because records are synthetic
@@ -40,6 +42,11 @@ Work top to bottom. Do one task or one module at a time.
 - [x] Run `database/22_replace_generated_farm_locations.sql`; user screenshot confirms all 15 generated farm locations were replaced and returned
 - [x] Verify exact duplicate farmer cleanup in Supabase: the exact-identity audit returned no duplicate pairs, and no farms remain assigned to candidate IDs 23–26. The original script reported a temporary-table error in its post-commit output; migration 19 is corrected locally for future runs.
 
+- [x] Apply the crop-to-crop_variety 3NF migration. Live read-only checks confirm 12 crop rows, 14 variety rows, 32 plantings, and zero orphan links; updated PHP reads work against Supabase.
+- [x] Compare the AP3 DOCX requirements with the crop 3NF design and local schema migration; the decomposition preserves crop-to-planting meaning through crop_variety, but stale ERD/report files still need updating.
+- [~] Check the constraints ERD against database migrations: relationships/3NF match, but the farm composite UNIQUE and roles allowed-names CHECK are not shown; identity/default labels need catalog confirmation.
+- [x] Run `database/27_verify_and_enforce_erd_constraints.sql` in Supabase; screenshot confirms the farm UNIQUE, role CHECK, normalized crop-name and per-crop variety indexes all verify true.
+
 ## Phase 2: Config and layout
 - [x] config/Database.php (PDO pgsql, credentials read from a private file, not hard-coded)
 - [x] config/db_credentials.example.php and .gitignore entry for the real credentials file
@@ -53,6 +60,7 @@ Work top to bottom. Do one task or one module at a time.
 - [x] auth/login.php (Tailwind form, password_verify, session with user_id and role)
 - [x] auth/logout.php
 - [x] Show a logout link in shared navigation for signed-in users
+- [x] Use POST with a session CSRF token for login and logout actions
 - [x] Hide protected module navigation from signed-out visitors
 - [x] Role rules: Admin can view, create, edit and delete; Staff can view only (write routes and controls are Admin-only)
 - [~] Read authorization roles through the `roles` lookup in the user model and confirm both logins after the Supabase migration
@@ -64,6 +72,7 @@ Each module needs: model, list page with search, filter, sorting and pagination,
 - [x] Crops: models/Crop.php, crops/ pages, filter by crop category
 - [x] Plantings: models/Planting.php, plantings/ pages, JOIN farm + farmer + crop, filter by status, check expected_harvest_date is after planting_date
 - [x] Harvests: models/Harvest.php, models/Lookup.php, harvests/ pages, remarks dropdown from lookup table, filter by quality grade, check harvest_date is not before planting_date
+- [x] Keep creator/editor user IDs out of the five agriculture modules; retain `created_at` and `updated_at` timestamps
 - [x] Block or handle deletes that would break foreign keys (e.g. farmer with farms)
 
 ## Phase 5: Dashboard
@@ -87,8 +96,11 @@ Each module needs: model, list page with search, filter, sorting and pagination,
 
 ## Phase 7: Quality pass
 - [x] Validation on every form (required, numeric ranges, valid dates, foreign keys exist)
-- [x] Show clear duplicate messages when database duplicate constraints catch simultaneous create/edit submissions in all five modules
+- [x] Show the friendly Farmer duplicate message only when normalized first name, last name, and address all match; contact/address matches alone are allowed
 - [x] Prevent farmer registration dates from being set in the future
+- [~] Add country/flag and calling-code selection to Farmer create/edit, showing a graphical flag for every available country option and normalizing new or changed contacts to E.164; use the revised name+address duplicate rule in PHP and have the student review/run `database/30_farmer_name_address_duplicate_rule.sql` (Supabase not changed by Codex)
+- [~] Add one shared required/format Validator to every Farmer, Farm, Crop/Variety, Planting, Harvest create/edit handler and login; field validation and safe messages are implemented, but the current combined Crop/Variety form still needs a separate existing-crop-ID selector to fully match the requested Crop Variety form rules
+- [~] Review and run `database/28_form_validation_constraints.sql` only after reviewing pre-check rows; contact-format CHECK is intentionally deferred until six legacy values are confirmed, and no SQL was run by Codex
 - [x] Prevent harvest records from being dated in the future
 - [x] Friendly error messages; no credentials or technical errors shown to users
 - [x] Add persistent light/night mode switch beside the role badge
@@ -98,8 +110,11 @@ Each module needs: model, list page with search, filter, sorting and pagination,
 - [x] Keep Apply buttons clearly visible in night mode
 - [x] Keep Clear button text visible on hover in night mode
 - [x] Capitalize farmer, farm, and crop text inputs on create/edit forms at display and save time; keep numeric/date fields and controlled dropdowns unchanged
-- [x] Show a duplicate-record error on create/edit for repeated farmer, farm, crop, planting, or harvest details; keep existing duplicate farmer rows for review
-- [x] Flag farmer repeats by normalized contact plus address or matching full name plus address; add a read-only duplicate audit for all five core tables
+- [x] Align Farmer identity validation with the ERD: `farmer_id` is the PK and contact/name/address are not UNIQUE; retain duplicate validation for the other business modules
+- [x] Review duplicate validation across all five business modules after the crop/variety split; create/edit checks remain aligned with the Supabase guards, and PHP lint passed for all five models and ten create/edit pages
+- [x] Review duplicate validation logic for create/edit exclusions, normalized comparisons, database error messages, and 3NF crop-variety links; no implementation gap found
+- [x] Revise Farmer duplicate detection to normalized first_name + last_name + address, excluding its own ID on edit and allowing unchanged edits; matching trigger SQL with a pre-check is prepared for student review
+- [x] Audit possible duplicate business records across the five core tables without changing existing rows
 - [x] Add a shared three-line Settings menu with appearance control and Log out
 - [x] Expand the shared desktop layout to match the user's marked content width while retaining responsive padding
 - [~] Responsive check: student to capture on physical iOS and Android phones, simulate tablet at 768 CSS px in browser emulation, and check desktop at 1440 CSS px; simulated tablet must be labeled accurately
@@ -125,6 +140,7 @@ Each module needs: model, list page with search, filter, sorting and pagination,
 - [x] Make Print page available from the three-line Settings menu across all signed-in system pages
 
 ## Phase 8: Documentation
+- [~] Refresh the ERD and data dictionary for the applied crop-to-crop_variety 3NF schema; Supabase is verified, but the final Markdown/SVG consistency pass and editable Word report remain
 - [x] Title, description, objectives, functional requirements
 - [x] ERD
 - [x] Document explicit UNF, 1NF, 2NF, and 3NF table structures; migration 08 was confirmed successful in Supabase
@@ -134,7 +150,8 @@ Each module needs: model, list page with search, filter, sorting and pagination,
 - [x] Add guideline coverage, complete data dictionary, role permissions, operating workflow, and a truthful test/evidence status report
 - [x] Complete requirement coverage matrix, full data dictionary, record workflow, and truthful test-status summary based on the source DOCX
 - [x] Create an editable Word report aligned to `ap3 project.docx`, with a tabular normalization progression starting from the five specified core tables and the original 13-relation inventory
-- [~] Refresh the editable Word report and PDF ERD/data dictionary to include `roles` after migration 23 is confirmed
+- [~] Refresh the editable Word report to show the current schema without creator/editor user fields
+- [ ] Create a PDF ERD/data dictionary export only if required; the previous untracked `SYSTEM_DOCUMENTATION.pdf` was not the user's file and was deleted
 - [x] Audit the implemented 3NF design against `ap3 project.docx`; document that contact-number uniqueness is a separate business rule, not a 3NF requirement
 - [x] Replace the superseded infographic-only report's invented wide UNF relation with an accurate explanation of the five separate source relations; clarify that `users` is separate authentication support
 - [x] Keep actual screenshots, device captures, and unverified live-data outcomes marked as pending in the report
@@ -150,6 +167,7 @@ Each module needs: model, list page with search, filter, sorting and pagination,
 - [~] Test CRUD, search, filter, sort, dropdowns, joins, login, dashboard and reports after migration 08
 - [x] Test invalid input and error cases (module checks and integer overflow boundary check completed)
 - [x] Verify local XAMPP PDO connection to Supabase with a read-only SELECT
+- [x] Remove migration 24 app integration: model queries and CRUD signatures no longer use creator/editor fields; user screenshot confirms migration 25 and retained timestamps/role relationship
 - [~] Confirm the app passes the required workflows using the current stored database records
 - [ ] Rehearse the demo
 - [ ] Final cleanup and submission

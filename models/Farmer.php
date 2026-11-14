@@ -90,10 +90,10 @@ class Farmer {
     }
 
     public function getById(int $farmer_id): ?array {
-        $sql = "SELECT farmer_id, first_name, last_name, contact_number, address, date_registered,
-                       created_at, updated_at
-                FROM farmer
-                WHERE farmer_id = :farmer_id";
+        $sql = "SELECT f.farmer_id, f.first_name, f.last_name, f.contact_number, f.address,
+                       f.date_registered, f.created_at, f.updated_at
+                FROM farmer f
+                WHERE f.farmer_id = :farmer_id";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute(["farmer_id" => $farmer_id]);
 
@@ -104,28 +104,40 @@ class Farmer {
     public function hasDuplicate(
         string $first_name,
         string $last_name,
-        string $contact_number,
         string $address,
         ?int $exclude_farmer_id = null
     ): bool {
-        // Flag likely duplicate people even when a name or registration date
-        // was entered differently. A shared contact and address is a review
-        // candidate; matching full name and address is also a likely duplicate.
-        $sql = "SELECT EXISTS (
-                    SELECT 1 FROM farmer
-                    WHERE (
-                        (regexp_replace(BTRIM(contact_number), '\\D', '', 'g') =
-                         regexp_replace(BTRIM(:candidate_contact), '\\D', '', 'g')
-                         AND LOWER(REGEXP_REPLACE(BTRIM(address), '\\s+', ' ', 'g')) =
-                             LOWER(REGEXP_REPLACE(BTRIM(:candidate_address_contact), '\\s+', ' ', 'g')))
-                        OR
-                        (LOWER(BTRIM(first_name)) = LOWER(BTRIM(:first_name))
-                         AND LOWER(BTRIM(last_name)) = LOWER(BTRIM(:last_name))
-                         AND LOWER(REGEXP_REPLACE(BTRIM(address), '\\s+', ' ', 'g')) =
-                             LOWER(REGEXP_REPLACE(BTRIM(:candidate_address_name), '\\s+', ' ', 'g')))
-                    )";
+        $normalized = static function (string $column): string {
+            return "LOWER(REGEXP_REPLACE(REGEXP_REPLACE(BTRIM($column), '[[:space:]]*,[[:space:]]*', ',', 'g'), '[[:space:]]+', ' ', 'g'))";
+        };
+
         if ($exclude_farmer_id !== null) {
-            $sql .= ' AND farmer_id <> :exclude_farmer_id';
+            $sameRecordSql = 'SELECT EXISTS (
+                SELECT 1 FROM farmer AS current_row
+                WHERE current_row.farmer_id = :farmer_id
+                  AND ' . $normalized('current_row.first_name') . ' = ' . $normalized(':first_name') . '
+                  AND ' . $normalized('current_row.last_name') . ' = ' . $normalized(':last_name') . '
+                  AND ' . $normalized('current_row.address') . ' = ' . $normalized(':address') . ')';
+            $sameRecord = $this->pdo->prepare($sameRecordSql);
+            $sameRecord->execute([
+                'farmer_id' => $exclude_farmer_id,
+                'first_name' => $first_name,
+                'last_name' => $last_name,
+                'address' => $address
+            ]);
+            $unchanged = $sameRecord->fetchColumn();
+            if ($unchanged === true || $unchanged === 't' || $unchanged === '1') {
+                return false;
+            }
+        }
+
+        $sql = 'SELECT EXISTS (
+                    SELECT 1 FROM farmer AS other
+                    WHERE ' . $normalized('other.first_name') . ' = ' . $normalized(':first_name') . '
+                      AND ' . $normalized('other.last_name') . ' = ' . $normalized(':last_name') . '
+                      AND ' . $normalized('other.address') . ' = ' . $normalized(':address');
+        if ($exclude_farmer_id !== null) {
+            $sql .= ' AND other.farmer_id <> :exclude_farmer_id';
         }
         $sql .= ')';
 
@@ -133,9 +145,7 @@ class Farmer {
         $params = [
             'first_name' => $first_name,
             'last_name' => $last_name,
-            'candidate_contact' => $contact_number,
-            'candidate_address_contact' => $address,
-            'candidate_address_name' => $address
+            'address' => $address
         ];
         if ($exclude_farmer_id !== null) {
             $params['exclude_farmer_id'] = $exclude_farmer_id;
@@ -153,8 +163,12 @@ class Farmer {
         string $address,
         string $date_registered
     ): int {
-        $sql = "INSERT INTO farmer (first_name, last_name, contact_number, address, date_registered)
-                VALUES (:first_name, :last_name, :contact_number, :address, :date_registered)
+        $sql = "INSERT INTO farmer (
+                    first_name, last_name, contact_number, address, date_registered
+                )
+                VALUES (
+                    :first_name, :last_name, :contact_number, :address, :date_registered
+                )
                 RETURNING farmer_id";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
