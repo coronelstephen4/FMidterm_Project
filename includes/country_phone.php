@@ -95,5 +95,5 @@ function phoneDisplayValue(string $storedNumber): string {
         $digits = substr($digits, 0, 3) . ' ' . substr($digits, 3, 3) . ' ' . substr($digits, 6);
     }
 
-    return $country['flag'] . ' +' . $country['dial_code'] . ' ' . $digits;
+    return '+' . $country['dial_code'] . ' ' . $digits;
 }

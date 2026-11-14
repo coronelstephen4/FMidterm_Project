@@ -1,0 +1,7 @@
+.git
+config/db_credentials.php
+submission_materials/
+*.md
+**/*.md
+*.docx
+**/*.docx

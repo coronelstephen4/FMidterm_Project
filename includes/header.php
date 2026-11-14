@@ -3,12 +3,16 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+require_once __DIR__ . '/csrf.php';
+require_once __DIR__ . '/../config/Timezone.php';
+
 $pageTitle = $pageTitle ?? 'Agriculture Information System';
 $appBaseUrl = '/FMidterm_Project';
 $successMessage = $_SESSION['success'] ?? null;
 $errorMessage = $_SESSION['error'] ?? null;
+$warningMessage = $_SESSION['warning'] ?? null;
 
-unset($_SESSION['success'], $_SESSION['error']);
+unset($_SESSION['success'], $_SESSION['error'], $_SESSION['warning']);
 
 $navigation = [
     ['label' => 'Dashboard', 'url' => '/', 'icon' => '<path d="M3.75 3.75h6.5v6.5h-6.5v-6.5Zm10 0h6.5v4h-6.5v-4Zm0 7.5h6.5v9h-6.5v-9Zm-10 3h6.5v6h-6.5v-6Z" />'],
@@ -215,12 +219,15 @@ $navigation = [
                                 </button>
                             </div>
                             <div class="my-2 border-t border-slate-200"></div>
-                            <a href="<?= $appBaseUrl ?>/auth/logout.php" class="flex items-center gap-2 rounded-md px-2 py-2 text-sm font-medium text-red-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-600">
+                            <form method="post" action="<?= $appBaseUrl ?>/auth/logout.php">
+                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrfToken(), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>">
+                                <button type="submit" class="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm font-medium text-red-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-600">
                                 <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6A2.25 2.25 0 0 0 5.25 5.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3-3H9m0 0 3-3m-3 3 3 3" />
                                 </svg>
                                 Log out
-                            </a>
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </nav>
@@ -287,6 +294,12 @@ $navigation = [
         <?php if (is_string($successMessage) && $successMessage !== ''): ?>
             <div class="mb-5 rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-800" role="status" aria-live="polite">
                 <?= htmlspecialchars($successMessage, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if (is_string($warningMessage) && $warningMessage !== ''): ?>
+            <div class="mb-5 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-amber-900" role="status" aria-live="polite">
+                <?= htmlspecialchars($warningMessage, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
             </div>
         <?php endif; ?>
 

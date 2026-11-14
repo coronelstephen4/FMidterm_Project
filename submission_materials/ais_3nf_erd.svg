@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="980" viewBox="0 0 1600 980" role="img" aria-labelledby="title desc">
+  <title id="title">Agriculture Information System 3NF ERD</title>
+  <desc id="desc">Five core agriculture entities connected by business foreign keys, seven lookup entities, and a separate users and roles relationship for authentication.</desc>
+  <defs>
+    <style>
+      .box { fill: #fff; stroke: #64748b; stroke-width: 2; rx: 10; }
+      .core { fill: #ecfdf5; stroke: #15803d; stroke-width: 2; }
+      .lookup { fill: #f8fafc; stroke: #94a3b8; stroke-width: 2; }
+      .auth { fill: #f5f3ff; stroke: #7c3aed; stroke-width: 2; }
+      .head { font: bold 19px Arial, sans-serif; fill: #14532d; }
+      .label { font: 15px Arial, sans-serif; fill: #334155; }
+      .small { font: 14px Arial, sans-serif; fill: #475569; }
+      .line { fill: none; stroke: #475569; stroke-width: 2; }
+    </style>
+  </defs>
+  <rect width="1600" height="980" fill="#fff" />
+  <text x="50" y="48" class="head" font-size="30">Agriculture Information System - 3NF ERD</text>
+  <text x="50" y="78" class="small">Business and lookup foreign keys are shown. Users connect to roles for authorization; no user audit IDs are stored in agriculture records.</text>
+
+  <!-- Core business relationships -->
+  <path class="line" d="M300 205 H380" /><text x="322" y="192" class="small">1:M</text>
+  <path class="line" d="M630 205 H710" /><text x="652" y="192" class="small">1:M</text>
+  <path class="line" d="M960 205 H1040" /><text x="982" y="192" class="small">1:M</text>
+  <path class="line" d="M1290 205 H1370" /><text x="1312" y="192" class="small">1:M</text>
+
+  <!-- Core entities -->
+  <g transform="translate(50 125)"><rect class="box core" width="250" height="205"/><text x="18" y="34" class="head">FARMER</text><text x="18" y="75" class="label">PK farmer_id: DEFAULT nextval</text><text x="18" y="108" class="label">first_name, last_name</text><text x="18" y="141" class="label">contact_number, address</text><text x="18" y="174" class="label">date_registered, timestamps</text></g>
+  <g transform="translate(380 125)"><rect class="box core" width="250" height="205"/><text x="18" y="34" class="head">FARM</text><text x="18" y="75" class="label">PK farm_id: DEFAULT nextval</text><text x="18" y="108" class="label">FK farmer_id</text><text x="18" y="141" class="label">FK soil_type_id</text><text x="18" y="174" class="label">FK irrigation_type_id</text></g>
+  <g transform="translate(710 125)"><rect class="box core" width="250" height="205"/><text x="18" y="34" class="head">CROP</text><text x="18" y="75" class="label">PK crop_id: DEFAULT nextval</text><text x="18" y="108" class="label">crop_name, variety</text><text x="18" y="141" class="label">FK crop_category_id</text><text x="18" y="174" class="label">FK recommended_season_id</text></g>
+  <g transform="translate(1040 125)"><rect class="box core" width="250" height="205"/><text x="18" y="34" class="head">PLANTING</text><text x="18" y="75" class="label">PK planting_id: DEFAULT nextval</text><text x="18" y="108" class="label">FK farm_id, crop_id</text><text x="18" y="141" class="label">planting_date, area, seed</text><text x="18" y="174" class="label">expected_harvest_date</text></g>
+  <g transform="translate(1370 125)"><rect class="box core" width="210" height="205"/><text x="18" y="34" class="head">HARVEST</text><text x="18" y="75" class="label">PK harvest_id: DEFAULT nextval</text><text x="18" y="108" class="label">FK planting_id</text><text x="18" y="141" class="label">FK grade_id, remark_id</text><text x="18" y="174" class="label">date, quantity, price</text></g>
+
+  <!-- Lookup relationships -->
+  <path class="line" d="M505 440 V330"/><path class="line" d="M575 440 V350 H520 V330"/>
+  <path class="line" d="M800 440 V330"/><path class="line" d="M870 440 V365 H850 V330"/>
+  <path class="line" d="M1165 440 V330"/><path class="line" d="M1435 440 V330"/><path class="line" d="M1510 440 V360 H1490 V330"/>
+  <g transform="translate(350 440)"><rect class="box lookup" width="300" height="110"/><text x="16" y="34" class="head">FARM LOOKUPS</text><text x="16" y="68" class="label">soil_types, irrigation_types</text><text x="16" y="94" class="small">Referenced by FARM</text></g>
+  <g transform="translate(700 440)"><rect class="box lookup" width="300" height="110"/><text x="16" y="34" class="head">CROP LOOKUPS</text><text x="16" y="68" class="label">crop_categories, recommended_seasons</text><text x="16" y="94" class="small">Referenced by CROP</text></g>
+  <g transform="translate(1050 440)"><rect class="box lookup" width="230" height="110"/><text x="16" y="34" class="head">PLANTING STATUS</text><text x="16" y="68" class="label">planting_statuses</text><text x="16" y="94" class="small">Referenced by PLANTING</text></g>
+  <g transform="translate(1330 440)"><rect class="box lookup" width="250" height="110"/><text x="16" y="34" class="head">HARVEST LOOKUPS</text><text x="16" y="68" class="label">quality_grades, remarks</text><text x="16" y="94" class="small">Referenced by HARVEST</text></g>
+
+  <!-- Authentication remains separate from agriculture records -->
+  <path class="line" d="M760 730 H840"/><text x="780" y="715" class="small">role_id</text>
+  <g transform="translate(520 670)"><rect class="box auth" width="240" height="150"/><text x="18" y="36" class="head">USERS</text><text x="18" y="78" class="label">PK user_id: IDENTITY</text><text x="18" y="112" class="label">username, password_hash</text><text x="18" y="138" class="label">FK role_id</text></g>
+  <g transform="translate(840 670)"><rect class="box auth" width="240" height="150"/><text x="18" y="36" class="head">ROLES</text><text x="18" y="78" class="label">PK role_id: IDENTITY</text><text x="18" y="112" class="label">UK role_name</text><text x="18" y="138" class="small">admin or staff</text></g>
+  <text x="50" y="920" class="small">Crop variety also uses IDENTITY; harvest_remarks uses DEFAULT nextval; the six remaining lookup IDs are manually assigned SMALLINT values.</text>
+  <text x="50" y="945" class="small">All agriculture record timestamps are created_at and updated_at. Fixed values use lookup IDs. Parent records with dependent rows cannot be deleted.</text>
+</svg>

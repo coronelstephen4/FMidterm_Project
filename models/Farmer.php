@@ -101,61 +101,6 @@ class Farmer {
         return $farmer ?: null;
     }
 
-    public function hasDuplicate(
-        string $first_name,
-        string $last_name,
-        string $address,
-        ?int $exclude_farmer_id = null
-    ): bool {
-        $normalized = static function (string $column): string {
-            return "LOWER(REGEXP_REPLACE(REGEXP_REPLACE(BTRIM($column), '[[:space:]]*,[[:space:]]*', ',', 'g'), '[[:space:]]+', ' ', 'g'))";
-        };
-
-        if ($exclude_farmer_id !== null) {
-            $sameRecordSql = 'SELECT EXISTS (
-                SELECT 1 FROM farmer AS current_row
-                WHERE current_row.farmer_id = :farmer_id
-                  AND ' . $normalized('current_row.first_name') . ' = ' . $normalized(':first_name') . '
-                  AND ' . $normalized('current_row.last_name') . ' = ' . $normalized(':last_name') . '
-                  AND ' . $normalized('current_row.address') . ' = ' . $normalized(':address') . ')';
-            $sameRecord = $this->pdo->prepare($sameRecordSql);
-            $sameRecord->execute([
-                'farmer_id' => $exclude_farmer_id,
-                'first_name' => $first_name,
-                'last_name' => $last_name,
-                'address' => $address
-            ]);
-            $unchanged = $sameRecord->fetchColumn();
-            if ($unchanged === true || $unchanged === 't' || $unchanged === '1') {
-                return false;
-            }
-        }
-
-        $sql = 'SELECT EXISTS (
-                    SELECT 1 FROM farmer AS other
-                    WHERE ' . $normalized('other.first_name') . ' = ' . $normalized(':first_name') . '
-                      AND ' . $normalized('other.last_name') . ' = ' . $normalized(':last_name') . '
-                      AND ' . $normalized('other.address') . ' = ' . $normalized(':address');
-        if ($exclude_farmer_id !== null) {
-            $sql .= ' AND other.farmer_id <> :exclude_farmer_id';
-        }
-        $sql .= ')';
-
-        $stmt = $this->pdo->prepare($sql);
-        $params = [
-            'first_name' => $first_name,
-            'last_name' => $last_name,
-            'address' => $address
-        ];
-        if ($exclude_farmer_id !== null) {
-            $params['exclude_farmer_id'] = $exclude_farmer_id;
-        }
-        $stmt->execute($params);
-
-        $exists = $stmt->fetchColumn();
-        return $exists === true || $exists === 't' || $exists === '1';
-    }
-
     public function create(
         string $first_name,
         string $last_name,

@@ -69,6 +69,10 @@ All primary keys are `integer` IDENTITY.
 - CROP 1:M PLANTING
 - PLANTING 1:M HARVEST
 
+### Current normalized implementation and documented deviation
+- The implemented 3NF schema deliberately decomposes the DOCX's direct CROP 1:M PLANTING relationship into CROP 1:M CROP_VARIETY 1:M PLANTING. Crop name/category stay with the crop; variety name, growing period, and recommended season stay with the crop-specific variety; each planting references its selected variety. This avoids repeating crop-level data for each variety and keeps variety attributes dependent on the crop-variety key.
+- The intended crop-to-planting relationship remains available through `crop_variety`; this is a normalization refinement of the DOCX relationship, not a change to the planting workflow.
+
 ### Lookup table required by the docx: harvest_remarks
 | remark_id | remark_description |
 |---|---|
@@ -98,7 +102,7 @@ The dropdown shows `remark_description`; the harvest record stores the numeric `
    - Charts, cards or tables as useful. All values come from the database (no hard-coding).
    - Navigation from the dashboard to every module.
 6. **Authentication and access control.** Login page. Only authorized users reach protected pages. At least two roles (Administrator and Staff) with some functions restricted by role. Passwords never stored as plain text.
-7. **Input validation** before saving. Required fields not empty. Numeric fields valid with min/max. Valid dates and logical date relationships. Foreign keys must point to existing records. Validate in the app and, where appropriate, with database constraints.
+7. **Input validation** before saving. Required fields not empty. Numeric fields valid with min/max; planted area cannot exceed farm area. Valid dates and logical date relationships. Expected harvest date is listed in the DOCX and remains stored, prefilled from planting date plus the selected variety's growing period. Harvest dates cannot precede planting or be in the future; an earlier-than-usual harvest shows a non-blocking warning. Planting status is selected manually from `planting_statuses` and is not changed automatically by harvest records. Grade/remark inconsistencies show a non-blocking warning. Foreign keys must point to existing records. Validate in the app and, where appropriate, with database constraints.
 8. **Search, filter, sort.** Search in each major module. Filters such as farmers by address, farms by irrigation type, crops by category, plantings by status, harvests by quality grade. Sorting on useful columns.
 9. **Reports** (from database queries, filterable by date range or other criteria):
    - Farmers and their farms
@@ -132,4 +136,7 @@ The dropdown shows `remark_description`; the harvest record stores the numeric `
 - `public.users`, audit timestamps, and integrity constraints were added.
 - The source DOCX does not specify a role lookup table. As an implementation extension, `roles` was added with `users.role_id` so existing Admin/Staff access control uses a normalized foreign-key relationship. The user confirmed migration 23 in Supabase; its screenshot shows the foreign key, role mappings, and old-column removal checks all true.
 - The guarded `database/08_normalize_lookup_columns.sql` migration was confirmed successful in Supabase after it was updated to handle legacy columns already removed.
-- The user's Supabase screenshots confirm demo rows are present: 15 farmers, 15 farms, 10 crops, 30 plantings, and 20 harvests.
+- The original demo seed batch contains 15 farmers, 15 farms, 10 crops, 30 plantings, and 20 harvests; these are historical seed counts, not the current totals.
+- Current verified live row-count snapshot (user screenshots, 2026-11-15 05:21): 18 farmers, 19 farms, 10 crops, 10 crop varieties, 31 plantings, and 22 harvests. Farmers without a farm at this snapshot: IDs 25 and 38; they remain pending the user's decision.
+- Duplicate policy: Farmer and Farm use their composite rules. Planting duplicates are same farm, variety, and planting date; Harvest duplicates are same planting and harvest date. These are application-level checks. SQL 36 covers Farmer and Farm only and remains pending review; no Planting or Harvest index is requested.
+- User-provided primary-key audit (2026-11-15): farmer, farm, crop, planting, harvest, and harvest_remarks use `DEFAULT nextval`; crop_variety, roles, and users use IDENTITY; the six remaining lookup IDs are manually assigned SMALLINT values. `database/34_review_identity_pk_migration.sql` covers only farmer, farm, crop, planting, and harvest and remains unapplied.

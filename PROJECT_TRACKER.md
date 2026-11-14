@@ -15,14 +15,125 @@
 ## Current Status
 
 - **Phase:** 9 Final testing and submission
-- **Last updated:** 2026-11-14
-- **Currently working on:** Shared print layout and summaries for all six reports. Implementation is complete; authenticated Chrome print-preview verification remains pending.
-- **Next step:** In Chrome 157.0.8103.52, preview each report with no filters, a filter, and no results; preview one report over two pages. Confirm every-page counters, running title, Manila generated time, hidden screen-only content, repeated table headings, and end summary. If margin boxes fail, use Chrome's Headers and footers option as the fallback.
+- **Last updated:** 2026-11-15
+- **Currently working on:** Prepared the Render Docker deployment files and environment-first database configuration. Local credentials remain the XAMPP fallback; live database/data/schema were not touched.
+- **Next step:** Configure Render's DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASS, and DB_SSLMODE values, then build/deploy the Docker Web Service. Browser validation of the application workflows remains pending.
+- **Last verified row-count snapshot (2026-11-15 05:21, user screenshots):** farmer 18, farm 19, crop 10, crop_variety 10, planting 31, harvest 22. Farmers without farms: IDs 25 and 38 (decision pending).
 
 ## Progress Log
 
 Newest entry at the top. Format:
 `[Date Time] What was done | Files changed | What is next`
+
+### 2026-11-15 07:31
+- Updated database configuration to prefer environment variables and fall back to the private local credentials file, defaulting SSL mode to `require`. Added a minimal PHP 8.2 Apache Dockerfile with PostgreSQL extensions and Render port handling, plus a Docker build ignore list for credentials, Git metadata, submission files, and local notes. PHP lint passed. No SQL or Supabase changes were made.
+- Files changed: config/Database.php, Dockerfile, .dockerignore, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Set the Render environment variables and deploy/build the service.
+
+### 2026-11-15 07:05
+- Added prepared crop-variety duplicate lookup using normalized crop and variety names. Crop create/edit now block a matching variety with the shared View/Edit notice; edit excludes its current variety. SQLSTATE 23505 fallback remains friendly. PHP lint passed. No SQL or Supabase data/schema changes were made.
+- Files changed: includes/DuplicateChecker.php, includes/duplicate_notice.php, crops/create.php, crops/edit.php, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Run the browser checklist, including duplicate variety creation and edit self-exclusion.
+
+### 2026-11-15 06:52
+- Added narrow prepared duplicate checks to Planting and Harvest create/edit. The checks compare only farm/variety/date and planting/date, exclude the current row on edit, show the shared View/Edit notice, and retain SQLSTATE 23505 handling. Restored the non-blocking early-harvest warning alongside the grade/remark warning. Updated policy documentation and kept SQL 36 scoped to Farmer/Farm. PHP lint passed; browser tests remain pending. No SQL was run and no Supabase data/schema was changed.
+- Files changed: includes/DuplicateChecker.php, plantings/create.php, plantings/edit.php, harvests/create.php, harvests/edit.php, models/Harvest.php, FINAL_SYSTEM_DOCUMENTATION.md, PROJECT_DOCUMENTATION.md, PROJECT_REQUIREMENTS.md, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Run the browser checklist as Administrator and Staff.
+
+### 2026-11-15 06:20
+- Prefilled expected harvest dates from the selected variety, added server-side empty-date calculation and farm-area validation, and added non-blocking grade/remark warnings. Added SELECT-only consistency review SQL and updated validation documentation. PHP lint passed; browser tests remain for the user. No SQL was run and no live data/schema changed. The automatic status change added during this task was removed in the newer entry below per the user's manual-status decision.
+- Files changed: models/Planting.php, models/Harvest.php, includes/Validator.php, includes/header.php, plantings/create.php, plantings/edit.php, harvests/create.php, harvests/edit.php, harvests/delete.php, database/37_planting_harvest_consistency_review_read_only.sql, PROJECT_REQUIREMENTS.md, PROJECT_DOCUMENTATION.md, FINAL_SYSTEM_DOCUMENTATION.md, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Follow the browser checklist as Administrator and Staff; share any failures for correction.
+
+### 2026-11-15 06:36
+- Removed automatic planting status updates and their transaction-only code from harvest create/edit/delete, and removed the status-sync helpers from Planting. Status remains a manually selected lookup value. Updated SQL 37 comments and documentation; expected-date calculation, farm-area validation, and grade/remark warnings remain. PHP lint passed. No SQL or Supabase data/schema changes were made; browser tests remain pending.
+- Files changed: models/Planting.php, harvests/create.php, harvests/edit.php, harvests/delete.php, database/37_planting_harvest_consistency_review_read_only.sql, FINAL_SYSTEM_DOCUMENTATION.md, PROJECT_DOCUMENTATION.md, PROJECT_REQUIREMENTS.md, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Run the browser checklist as Administrator and Staff.
+
+### 2026-11-15 06:45
+- Removed the early-harvest warning after the user requested the previous behavior. Grade/remark warnings remain; early harvest dates are still accepted if they pass the existing date validation. Updated app guidance and the pending test checklist. PHP lint passed; no SQL or live data/schema changes were made.
+- Files changed: models/Harvest.php, harvests/create.php, harvests/edit.php, FINAL_SYSTEM_DOCUMENTATION.md, PROJECT_DOCUMENTATION.md, PROJECT_REQUIREMENTS.md, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: User can confirm the harvest screen no longer shows the early-timing note and run the remaining manual browser checklist.
+
+### 2026-11-15 05:57
+- Confirmed the 05:28 diagnostic baseline was zero duplicate groups; test rows planting 38/39 and harvest 26/27 were created later and remain for the user's decision. Removed composite checks from Planting/Harvest create/edit. Farmer matching now uses normalized first name, last name, and address only; Farm keeps farmer ID, normalized name/location, area, irrigation, and soil. Updated SQL 36 and marked the older four-index SQL superseded. PHP lint passed; no SQL or Supabase writes were run.
+- Files changed: includes/DuplicateChecker.php, farmers/create.php, farmers/edit.php, plantings/create.php, plantings/edit.php, harvests/create.php, harvests/edit.php, database/36_farmer_farm_duplicate_indexes.sql, database/composite_unique_rules.sql, PROJECT_REQUIREMENTS.md, PROJECT_DOCUMENTATION.md, FINAL_SYSTEM_DOCUMENTATION.md, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Review SQL 36 manually and decide whether to run it. No rows were deleted; do not stage/commit/push.
+
+### 2026-11-15 05:23
+- Updated current counts to the user's 05:21 screenshot (18 farmers, 19 farms, 10 crops, 10 varieties, 31 plantings, 22 harvests). Added a SELECT-only data-quality review SQL file and audited the four composite rules against the PHP helper. Current duplicate group results were not re-queried; leave record and duplicate-policy decisions open. No SQL or Supabase changes were made.
+- Files changed: PROJECT_REQUIREMENTS.md, PROJECT_TASKS.md, PROJECT_TRACKER.md, database/cleanup_test_data.sql, database/35_data_quality_review_read_only.sql
+- Next: Review and run only the SELECT queries manually; decide duplicate policy and pending rows 25, 38, 34, and 22.
+
+### 2026-11-15 05:28
+- User screenshot confirmed zero duplicate groups for farmer, farm, planting, and harvest. Recorded the selected target policy: composite rules for Farmer and Farm only; Planting and Harvest are repeated events identified by their primary keys. Added the two-index review SQL and marked the older four-index file as superseded. No SQL was run, and indexes remain unrun. At this point the Farmer contact field and PHP edit authorization were still pending; resolved in the newer entry above.
+- Files changed: database/36_farmer_farm_duplicate_indexes.sql, database/composite_unique_rules.sql, PROJECT_REQUIREMENTS.md, PROJECT_DOCUMENTATION.md, FINAL_SYSTEM_DOCUMENTATION.md, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Align app behavior and index file with the settled policy before review.
+- Git review: untracked files were inventoried and scanned. Credentials file remains ignored. No files were staged, committed, or pushed.
+
+### 2026-11-15 04:55
+- Updated the editable SVG ERD and Markdown data dictionaries to reflect the user-provided PK generation audit. Limited the ROLLBACK-by-default review migration to farmer, farm, crop, planting, and harvest, with each identity sequence restarted at MAX(id)+1. Updated the task checklist and tracker. No SQL was run in Supabase.
+- Files changed: submission_materials/ais_3nf_erd.svg, PROJECT_DOCUMENTATION.md, FINAL_SYSTEM_DOCUMENTATION.md, PROJECT_REQUIREMENTS.md, database/34_review_identity_pk_migration.sql, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Review the migration before deciding whether to run it manually; duplicate policy remains open.
+- Audit wording clarification: harvest_remarks is one of the seven lookup relations but uses DEFAULT nextval per the user's audit, so only the six other lookup IDs are described as manually assigned SMALLINTs.
+
+### 2026-11-15 05:14
+- Recorded the verified read-only counts from the user's screenshot: farmer 18, farm 19, crop 13, crop_variety 16, planting 31, harvest 22; farmers without farms are IDs 25 and 38. Updated the cleanup SQL's count notes to reflect this snapshot and clarified that cleanup was performed through the app, not by running the SQL file. No SQL was run and no Supabase data was changed.
+- Files changed: PROJECT_REQUIREMENTS.md, PROJECT_TASKS.md, PROJECT_TRACKER.md, database/cleanup_test_data.sql
+- Next: Review the cleanup SQL before any use; it remains rollback-by-default. Continue with the pending identity migration and duplicate-policy decisions.
+
+### 2026-11-15 04:33
+- Set Asia/Manila timezone before protected-page date defaults/validation and removed the status placeholder from Planting create/edit; Growing remains selected by default and the existing database lookup validation remains. Added read-only PK identity catalog audit SQL and a separate conditional, rollback-by-default migration. Updated cleanup candidates and requirements documentation. Counts in this earlier entry are superseded by the verified 2026-11-15 05:14 snapshot above. No Supabase SQL or data/schema writes were run.
+- Files changed: includes/auth_check.php, plantings/create.php, plantings/edit.php, database/33_audit_primary_key_defaults.sql, database/34_review_identity_pk_migration.sql, database/cleanup_test_data.sql, PROJECT_REQUIREMENTS.md, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Run the SELECT-only PK audit manually in Supabase; decide duplicate policy and review all SQL before running any migration/cleanup.
+- PK generation finding from local SQL history: `users`, `roles`, and `crop_variety` are explicitly declared IDENTITY; the seven lookup-table PKs are declared without IDENTITY in the original migration files; the original five core-table PK DDL is not present locally. The new catalog query must be run by the student to confirm live state before considering the conditional migration.
+- Duplicate policy remains an open decision: current PHP has composite pre-checks for Farmer/Farm/Planting/Harvest; latest live-schema notes show those composite indexes are not installed, while crop/variety and user/role/lookup unique rules are active.
+
+### 2026-11-15 01:40
+- Prepared a separate SQL script for the ten demo farmer IDs visible in the latest screenshot. The script checks for dependent farms, targets only explicit IDs, and includes a post-delete verification query. No Supabase SQL was run by Codex.
+- Files changed: database/delete_demo_farmers.sql, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Student reviews and runs the script in Supabase, then confirms the result.
+
+### 2026-11-15 01:55
+- Replaced the partial cleanup plan with one consolidated six-table plan. Read-only timestamp group queries confirmed the original seeded cohort and later scattered test rows. Added explicit child-first deletes for demo farmers/farms/crops/varieties/plantings/harvests, row counts, and NEEDS DECISION queries for original farmers with legacy contacts and plausible later records. Removed `database/delete_demo_farmers.sql`. The consolidated SQL ends with ROLLBACK; no live writes were run.
+- Files changed: database/cleanup_test_data.sql, database/delete_demo_farmers.sql (deleted), PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Review the complete ID list and expected counts; student runs only after approval.
+
+### 2026-11-15 01:25
+- Audited likely test/junk records and dependent counts across farmer, farm, crop, crop_variety, planting, and harvest using read-only queries. The four composite duplicate pre-checks returned no groups. Created a review-only explicit-ID cleanup script with child-first deletes, NEEDS DECISION queries, row-count checks, and ROLLBACK default. No live data was modified. Original sample farmer IDs are 8–22 in the current database (not 1–15), with legacy phone formats needing contact review.
+- Files changed: database/cleanup_test_data.sql, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Back up, review candidate IDs and decisions, manually run the cleanup only if approved, rerun pre-checks, then review/apply indexes and CHECK constraints.
+
+### 2026-11-15 01:06
+- Added `DuplicateChecker` prepared SELECT methods for the four composite identity rules and integrated pre-checks in all create/edit handlers, with edit self-exclusion, escaped View/Edit links, retained form values, and SQLSTATE 23505 fallback handling. Created `database/composite_unique_rules.sql` with four read-only pre-checks, four reviewed unique indexes, and trigger drops. Live SELECTs returned no existing duplicate groups; current live Farmer/Farm/Planting/Harvest triggers are timestamp-only. No writes or schema changes were issued. The prepared checker SELECTs matched an existing row in each table; PHP lint passed for all changed PHP files.
+- Files changed: includes/DuplicateChecker.php, includes/duplicate_notice.php, Farmer/Farm/Planting/Harvest create and edit pages, database/composite_unique_rules.sql, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Review and apply the SQL yourself, then run the requested form scenarios.
+
+### 2026-11-15 00:44
+- Ran read-only Supabase catalog queries for all 15 tables. PKs and UNIQUE constraints/indexes match the ERD: farmer, farm, planting, harvest have no non-PK uniqueness; crop has exact-name UNIQUE plus lower(btrim(crop_name)) index; crop_variety has (crop_id, lower(btrim(variety_name))); users/roles/lookup names are unique. Confirmed only duplicate trigger is enabled `crop_duplicate_guard`; remaining triggers update timestamps. Added a reusable read-only SQL audit file. Updated PHP to map custom crop trigger messages to field-specific friendly messages and removed SQL/path detail from stale-guard error text. No database writes were issued.
+- Files changed: database/32_audit_duplicate_constraints_read_only.sql, includes/validation_helpers.php, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- PHP lint passed for `includes/validation_helpers.php`; simulated SQLSTATE 23505 errors for crop name, crop variety, and username returned field-specific messages.
+- Next: Continue the requested CRUD checks in the application.
+
+### 2026-11-15 00:37
+- User screenshot confirms `database/31_remove_non_unique_duplicate_guards.sql` was applied and its verification returned false for farmer/farm/planting/harvest guards and legacy farm/crop constraints; crop_duplicate_guard and normalized crop/variety unique indexes returned true. Marked the migration task complete. No additional database changes were made.
+- Files changed: PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Refresh Farmer create and retry the duplicate-details save, then test the remaining unique-rule cases.
+
+### 2026-11-15 00:34
+- Improved the Farmer duplicate error message for legacy SQL triggers whose PDO error details omit the constraint name. It now identifies the old trigger's exact rule: matching contact plus address, or matching first name, last name, and address. It points to migration 31; the live database remains unchanged.
+- Files changed: includes/validation_helpers.php, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Review and run `database/31_remove_non_unique_duplicate_guards.sql` in Supabase to remove the old rule and allow duplicate farmer details.
+
+### 2026-11-15 00:30
+- Removed non-unique PHP duplicate checks for Farmer, Farm, Planting, and Harvest, plus the Crop/Variety pre-check so declared database uniqueness rules are the source of duplicate rejection. Removed the same-name/address Farmer message. Added SQLSTATE 23505 constraint-to-field messages for primary keys, username, role and lookup names, crop name, and variety-per-crop. Added a new review-only SQL script to remove four non-unique duplicate triggers/functions and the legacy Farm owner/name and Crop name/variety UNIQUE constraints. No Supabase SQL was run. IDs are omitted from app INSERTs and returned by database defaults; there is no MAX+1 PHP ID assignment.
+- Files changed: models/Farmer.php, models/Farm.php, models/Crop.php, models/Planting.php, models/Harvest.php, includes/Validator.php, includes/validation_helpers.php, Farmer/Farm/Crop/Planting/Harvest create and edit pages, database/31_remove_non_unique_duplicate_guards.sql, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Review and run the new SQL in Supabase if approved, then perform the requested CRUD checks. Until then, installed database triggers/constraints can still reject repeated details.
+
+### 2026-11-15 00:12
+- Removed the country flag/ISO marker from normalized contact-number display; calling code and formatted number remain, so supported values show forms like `+63 905 655 3933` and `+1 646 209 9461`. List, detail, and report output share this helper. PHP lint passed. Browser hover/display confirmation remains pending.
+- Files changed: includes/country_phone.php, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Refresh the Farmers list and detail page to confirm PH/US numbers show only their calling codes; then resume the report preview checks.
 
 ### 2026-11-14 18:59
 - Added shared A4 landscape print CSS and a shared report print partial used at each report's header and end. Print output includes Manila generated time, a running title, footer counters on unnamed and `report-wide` pages, filtered record totals, relevant aggregate totals, and a conditional no-records message. Added `config/Timezone.php` and set username in new login sessions. Existing report queries and filters were not changed. PHP lint passed; Chrome is installed at 157.0.8103.52 but preview has not been tested.

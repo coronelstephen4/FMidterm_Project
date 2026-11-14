@@ -255,20 +255,6 @@ class Validator {
         return $values;
     }
 
-    public function validateFarmerDuplicate(Farmer $farmerModel, array $values, ?int $excludeFarmerId = null): bool {
-        if (!$farmerModel->hasDuplicate(
-            $values['first_name'],
-            $values['last_name'],
-            $values['address'],
-            $excludeFarmerId
-        )) {
-            return true;
-        }
-
-        $this->errors[] = 'A farmer with the same name and address already exists. Review the existing record before adding another.';
-        return false;
-    }
-
     public function validateFarm(PDO $pdo, array $values): array {
         $values['farmer_id'] = $this->reference($pdo, $values['farmer_id'], 'Farmer', 'farmer');
         $values['soil_type_id'] = $this->reference($pdo, $values['soil_type_id'], 'Soil type', 'soil_type');
@@ -288,31 +274,41 @@ class Validator {
         return $values;
     }
 
-    public function validatePlanting(PDO $pdo, array $values, ?array $original = null): array {
+    public function validatePlanting(
+        PDO $pdo,
+        array $values,
+        ?array $original = null,
+        ?int $growingPeriodDays = null
+    ): array {
         $values['farm_id'] = $this->reference($pdo, $values['farm_id'], 'Farm', 'farm');
         $values['variety_id'] = $this->reference($pdo, $values['variety_id'], 'Crop variety', 'variety');
         $values['status_id'] = $this->reference($pdo, $values['status_id'], 'Planting status', 'planting_status');
         $plantingDateValid = $this->date($values['planting_date'], 'Planting date');
+        if ($values['expected_harvest_date'] === '' && $plantingDateValid && $growingPeriodDays !== null) {
+            $plantingDate = new DateTimeImmutable(
+                $values['planting_date'],
+                new DateTimeZone('Asia/Manila')
+            );
+            $values['expected_harvest_date'] = $plantingDate
+                ->modify('+' . $growingPeriodDays . ' days')
+                ->format('Y-m-d');
+        }
         $expectedDateValid = $this->date($values['expected_harvest_date'], 'Expected harvest date');
-        if ($plantingDateValid && $expectedDateValid && $values['expected_harvest_date'] < $values['planting_date']) {
-            $this->errors[] = 'Expected harvest date must be on or after planting date.';
+        if ($plantingDateValid && $expectedDateValid && $values['expected_harvest_date'] <= $values['planting_date']) {
+            $this->errors[] = 'Expected harvest date must be after planting date.';
         }
         $values['area_planted'] = $this->decimal($values['area_planted'], 'Area planted', 0.01, 999999.99);
         $values['seed_quantity'] = $this->decimal($values['seed_quantity'], 'Seed quantity', 0.01, 999999.99);
 
-        $unchangedExistingArea = $original !== null
-            && $values['farm_id'] !== null
-            && $values['area_planted'] !== null
-            && (int) $values['farm_id'] === (int) ($original['farm_id'] ?? 0)
-            && (float) $values['area_planted'] === (float) ($original['area_planted'] ?? -1);
-
-        if (!$unchangedExistingArea && $values['farm_id'] !== null && $values['area_planted'] !== null) {
+        if ($values['farm_id'] !== null && $values['area_planted'] !== null) {
             try {
-                $stmt = $pdo->prepare('SELECT area_hectares FROM farm WHERE farm_id = :farm_id');
+                $stmt = $pdo->prepare('SELECT farm_name, area_hectares FROM farm WHERE farm_id = :farm_id');
                 $stmt->execute(['farm_id' => $values['farm_id']]);
-                $farmArea = $stmt->fetchColumn();
-                if ($farmArea !== false && $values['area_planted'] > (float) $farmArea) {
-                    $this->errors[] = 'Area planted cannot exceed the selected farm area (' . $farmArea . ' hectares).';
+                $farm = $stmt->fetch();
+                if ($farm && $values['area_planted'] > (float) $farm['area_hectares']) {
+                    $farmName = (string) $farm['farm_name'];
+                    $this->errors[] = 'Area planted cannot exceed ' . $farmName . "'s area of "
+                        . $farm['area_hectares'] . ' hectares.';
                 }
             } catch (Throwable) {
                 $this->errors[] = 'Farm area could not be verified. Please try again.';

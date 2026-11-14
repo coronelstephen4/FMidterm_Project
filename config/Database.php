@@ -3,20 +3,46 @@ class Database {
     private array $credentials;
 
     public function __construct() {
+        $environmentKeys = [
+            'host' => 'DB_HOST',
+            'port' => 'DB_PORT',
+            'dbname' => 'DB_NAME',
+            'username' => 'DB_USER',
+            'password' => 'DB_PASS',
+            'sslmode' => 'DB_SSLMODE'
+        ];
+        $environment = [];
+
+        foreach ($environmentKeys as $key => $name) {
+            $value = getenv($name);
+            if (($value === false || $value === '') && isset($_ENV[$name])) {
+                $value = (string) $_ENV[$name];
+            }
+            $environment[$key] = is_string($value) && $value !== '' ? $value : null;
+        }
+
+        $credentials = [];
         $credentialsFile = __DIR__ . '/db_credentials.php';
+        $needsLocalCredentials = count(array_filter($environment, static fn($value) => $value === null)) > 0;
 
-        if (!is_file($credentialsFile)) {
-            throw new RuntimeException('Database configuration is missing.');
+        if ($needsLocalCredentials && is_file($credentialsFile)) {
+            $localCredentials = require $credentialsFile;
+            if (is_array($localCredentials)) {
+                $credentials = $localCredentials;
+            }
         }
 
-        $credentials = require $credentialsFile;
-        $requiredKeys = ['host', 'port', 'dbname', 'username', 'password'];
-
-        if (!is_array($credentials)) {
-            throw new RuntimeException('Database configuration is invalid.');
+        foreach ($environmentKeys as $key => $name) {
+            if ($environment[$key] !== null) {
+                $credentials[$key] = $environment[$key];
+            }
         }
 
-        foreach ($requiredKeys as $key) {
+        if (empty($credentials['sslmode'])) {
+            $credentials['sslmode'] = 'require';
+        }
+
+        foreach (['host', 'port', 'dbname', 'username', 'password'] as $key) {
             if (!isset($credentials[$key]) || $credentials[$key] === '') {
                 throw new RuntimeException('Database configuration is incomplete.');
             }
@@ -29,7 +55,7 @@ class Database {
         $dsn = "pgsql:host={$this->credentials['host']};"
             . "port={$this->credentials['port']};"
             . "dbname={$this->credentials['dbname']};"
-            . 'sslmode=require';
+            . "sslmode={$this->credentials['sslmode']}";
 
         try {
             $pdo = new PDO(

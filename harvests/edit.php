@@ -1,19 +1,12 @@
 <?php
 require_once __DIR__ . '/../includes/auth_check.php';
 require_once __DIR__ . '/../includes/validation_helpers.php';
+require_once __DIR__ . '/../includes/Validator.php';
 requireAdmin();
 require_once __DIR__ . '/../config/Database.php';
 require_once __DIR__ . '/../models/Harvest.php';
 require_once __DIR__ . '/../models/Lookup.php';
-
-function isValidHarvestDate(string $date): bool {
-    if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
-        return false;
-    }
-
-    $parts = explode('-', $date);
-    return checkdate((int) $parts[1], (int) $parts[2], (int) $parts[0]);
-}
+require_once __DIR__ . '/../includes/DuplicateChecker.php';
 
 $idValue = $_GET['id'] ?? '';
 $harvestId = is_string($idValue) ? (int) $idValue : 0;
@@ -24,6 +17,7 @@ if ($harvestId < 1) {
     exit;
 }
 
+$pdo = null;
 try {
     $database = new Database();
     $pdo = $database->connect();
@@ -54,44 +48,20 @@ $values = [
     'remark_id' => (string) $harvest['remark_id']
 ];
 $errors = [];
+$warningMessages = [];
+$duplicateNotice = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    foreach ($values as $field => $currentValue) {
-        if (isset($_POST[$field]) && is_string($_POST[$field])) {
-            $values[$field] = trim($_POST[$field]);
-        }
-    }
-
-    foreach ($values as $value) {
-        if ($value === '') {
-            $errors[] = 'All fields are required.';
-            break;
-        }
-    }
-
-    $plantingId = ctype_digit($values['planting_id']) ? (int) $values['planting_id'] : 0;
-    $qualityGradeId = ctype_digit($values['quality_grade_id']) ? (int) $values['quality_grade_id'] : 0;
-    $remarkId = ctype_digit($values['remark_id']) ? (int) $values['remark_id'] : 0;
-    $amountPattern = '/^\d{1,8}(\.\d{1,2})?$/';
-    $quantityValid = preg_match($amountPattern, $values['quantity_kg']) && (float) $values['quantity_kg'] > 0;
-    $priceValid = preg_match($amountPattern, $values['selling_price_per_kg']) && (float) $values['selling_price_per_kg'] >= 0;
-
-    if (!$quantityValid) {
-        $errors[] = 'Quantity must be positive with up to two decimal places.';
-    }
-    if (!$priceValid) {
-        $errors[] = 'Selling price must be zero or greater with up to two decimal places.';
-    }
-    if (!isValidHarvestDate($values['harvest_date'])) {
-        $errors[] = 'Enter a valid harvest date.';
-    } elseif ($values['harvest_date'] > date('Y-m-d')) {
-        $errors[] = 'Harvest date cannot be in the future.';
-    }
-    if ($plantingId < 1 || $qualityGradeId < 1 || $remarkId < 1) {
-        $errors[] = 'Select a valid planting, quality grade, and harvest remark.';
-    }
+    $values = Validator::readFields(array_keys($values), $_POST);
+    $validator = new Validator();
+    $validated = $validator->validateHarvest($pdo, $values);
+    $errors = $validator->errors();
+    $plantingId = $validated['planting_id'] ?? 0;
+    $qualityGradeId = $validated['quality_grade_id'] ?? 0;
+    $remarkId = $validated['remark_id'] ?? 0;
 
     if (!$errors) {
+        $duplicateChecker = null;
         try {
             if (!$harvestModel->hasValidReferences($plantingId, $qualityGradeId, $remarkId)) {
                 $errors[] = 'Select a valid planting, quality grade, and harvest remark.';
@@ -110,45 +80,67 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (!$errors) {
         try {
-            if ($harvestModel->hasDuplicate(
+            $warningMessages = $harvestModel->getWarnings(
                 $plantingId,
                 $values['harvest_date'],
-                (float) $values['quantity_kg'],
-                (float) $values['selling_price_per_kg'],
                 $qualityGradeId,
-                $remarkId,
-                $harvestId
-            )) {
-                $errors[] = 'A harvest with the same planting, date, quantity, price, grade, and remark already exists.';
-            }
+                $remarkId
+            );
         } catch (Throwable) {
-            $errors[] = 'Harvest records could not be checked right now. Please try again later.';
+            $warningMessages[] = 'Some harvest advisory checks could not be completed.';
         }
     }
 
     if (!$errors) {
         try {
-            $updated = $harvestModel->update(
-                $harvestId,
+            $duplicateChecker = new DuplicateChecker($pdo);
+            $match = $duplicateChecker->findHarvest(
                 $plantingId,
                 $values['harvest_date'],
-                (float) $values['quantity_kg'],
-                (float) $values['selling_price_per_kg'],
-                $qualityGradeId,
-                $remarkId
+                $harvestId
             );
 
-            if (!$updated) {
-                throw new RuntimeException('Harvest record was not updated.');
-            }
+            if ($match) {
+                $duplicateNotice = DuplicateChecker::notice('Harvest', $match);
+            } else {
+                $updated = $harvestModel->update(
+                    $harvestId,
+                    $plantingId,
+                    $values['harvest_date'],
+                    $validated['quantity_kg'],
+                    $validated['selling_price_per_kg'],
+                    $qualityGradeId,
+                    $remarkId
+                );
 
-            $_SESSION['success'] = 'Harvest record updated successfully.';
-            header('Location: /FMidterm_Project/harvests/view.php?id=' . $harvestId);
-            exit;
+                if (!$updated) {
+                    throw new RuntimeException('Harvest record was not updated.');
+                }
+
+                $_SESSION['success'] = 'Harvest record updated successfully.';
+                if ($warningMessages) {
+                    $_SESSION['warning'] = 'Saved. Note: ' . implode(' ', $warningMessages);
+                }
+                header('Location: /FMidterm_Project/harvests/view.php?id=' . $harvestId);
+                exit;
+            }
         } catch (Throwable $error) {
-            $errors[] = isDuplicateDatabaseError($error)
-                ? 'A harvest with the same planting, date, quantity, price, grade, and remark already exists.'
-                : 'Harvest record could not be updated. Please check the details and try again.';
+            if (DuplicateChecker::isUniqueViolation($error)) {
+                $match = null;
+                try {
+                    if ($duplicateChecker instanceof DuplicateChecker) {
+                        $match = $duplicateChecker->findHarvest(
+                            $plantingId,
+                            $values['harvest_date'],
+                            $harvestId
+                        );
+                    }
+                } catch (Throwable) {
+                }
+                $duplicateNotice = DuplicateChecker::notice('Harvest', $match);
+            } else {
+                $errors[] = 'Harvest record could not be updated. Please check the details and try again.';
+            }
         }
     }
 }
@@ -169,10 +161,11 @@ require __DIR__ . '/../includes/header.php';
             </ul>
         </div>
     <?php endif; ?>
+    <?php require __DIR__ . '/../includes/duplicate_notice.php'; ?>
 
     <form method="post" action="/FMidterm_Project/harvests/edit.php?id=<?= $harvestId ?>" class="mt-6 space-y-5 rounded-lg bg-white p-6 shadow-sm ring-1 ring-slate-200">
         <div>
-            <label for="planting_id" class="mb-1 block text-sm font-medium">Planting record</label>
+            <label for="planting_id" class="mb-1 block text-sm font-medium">Planting record <span class="text-rose-600" aria-hidden="true">*</span></label>
             <select id="planting_id" name="planting_id" required class="w-full rounded-md border border-slate-300 px-3 py-2">
                 <option value="">Select planting</option>
                 <?php foreach ($plantings as $planting): ?>
@@ -184,21 +177,21 @@ require __DIR__ . '/../includes/header.php';
         </div>
         <div class="grid gap-5 sm:grid-cols-2">
             <div>
-                <label for="harvest_date" class="mb-1 block text-sm font-medium">Harvest date</label>
+                <label for="harvest_date" class="mb-1 block text-sm font-medium">Harvest date <span class="text-rose-600" aria-hidden="true">*</span></label>
                 <input type="date" id="harvest_date" name="harvest_date" max="<?= date('Y-m-d') ?>" required value="<?= htmlspecialchars($values['harvest_date'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" class="w-full rounded-md border border-slate-300 px-3 py-2">
             </div>
             <div>
-                <label for="quantity_kg" class="mb-1 block text-sm font-medium">Quantity (kg)</label>
+                <label for="quantity_kg" class="mb-1 block text-sm font-medium">Quantity (kg) <span class="text-rose-600" aria-hidden="true">*</span></label>
                 <input type="number" id="quantity_kg" name="quantity_kg" min="0.01" max="99999999.99" step="0.01" required value="<?= htmlspecialchars($values['quantity_kg'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" class="w-full rounded-md border border-slate-300 px-3 py-2">
             </div>
         </div>
         <div class="grid gap-5 sm:grid-cols-2">
             <div>
-                <label for="selling_price_per_kg" class="mb-1 block text-sm font-medium">Selling price per kg</label>
+                <label for="selling_price_per_kg" class="mb-1 block text-sm font-medium">Selling price per kg <span class="text-rose-600" aria-hidden="true">*</span></label>
                 <input type="number" id="selling_price_per_kg" name="selling_price_per_kg" min="0" max="99999999.99" step="0.01" required value="<?= htmlspecialchars($values['selling_price_per_kg'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" class="w-full rounded-md border border-slate-300 px-3 py-2">
             </div>
             <div>
-                <label for="quality_grade_id" class="mb-1 block text-sm font-medium">Quality grade</label>
+                <label for="quality_grade_id" class="mb-1 block text-sm font-medium">Quality grade <span class="text-rose-600" aria-hidden="true">*</span></label>
                 <select id="quality_grade_id" name="quality_grade_id" required class="w-full rounded-md border border-slate-300 px-3 py-2">
                     <option value="">Select quality grade</option>
                     <?php foreach ($qualityGrades as $grade): ?>
@@ -210,7 +203,7 @@ require __DIR__ . '/../includes/header.php';
             </div>
         </div>
         <div>
-            <label for="remark_id" class="mb-1 block text-sm font-medium">Harvest remark</label>
+            <label for="remark_id" class="mb-1 block text-sm font-medium">Harvest remark <span class="text-rose-600" aria-hidden="true">*</span></label>
             <select id="remark_id" name="remark_id" required class="w-full rounded-md border border-slate-300 px-3 py-2 sm:max-w-xl">
                 <option value="">Select harvest remark</option>
                 <?php foreach ($remarks as $remark): ?>

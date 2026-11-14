@@ -15,7 +15,8 @@ if ($harvestId < 1) {
 
 try {
     $database = new Database();
-    $harvestModel = new Harvest($database->connect());
+    $pdo = $database->connect();
+    $harvestModel = new Harvest($pdo);
     $harvest = $harvestModel->getById($harvestId);
 } catch (Throwable) {
     $_SESSION['error'] = 'Harvest record could not be loaded right now. Please try again later.';
@@ -31,7 +32,9 @@ if (!$harvest) {
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
-        $harvestModel->delete($harvestId);
+        if (!$harvestModel->delete($harvestId)) {
+            throw new RuntimeException('Harvest record was not deleted.');
+        }
         $_SESSION['success'] = 'Harvest record deleted successfully.';
     } catch (Throwable) {
         $_SESSION['error'] = 'Harvest record could not be deleted. Please try again.';

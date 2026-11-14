@@ -46,8 +46,8 @@ require __DIR__ . '/../includes/header.php';
     <section class="mt-6 overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-slate-200">
         <dl class="divide-y divide-slate-100">
             <div class="grid gap-1 px-5 py-4 sm:grid-cols-3">
-                <dt class="font-medium text-slate-600">Crop ID</dt>
-                <dd class="sm:col-span-2"><?= (int) $crop['crop_id'] ?></dd>
+                <dt class="font-medium text-slate-600">Variety ID</dt>
+                <dd class="sm:col-span-2"><?= (int) $crop['variety_id'] ?></dd>
             </div>
             <div class="grid gap-1 px-5 py-4 sm:grid-cols-3">
                 <dt class="font-medium text-slate-600">Crop name</dt>
@@ -72,8 +72,8 @@ require __DIR__ . '/../includes/header.php';
         </dl>
         <div class="flex flex-wrap gap-3 border-t border-slate-100 px-5 py-4">
             <?php if (isAdmin()): ?>
-                <a href="/FMidterm_Project/crops/edit.php?id=<?= (int) $crop['crop_id'] ?>" class="rounded-md bg-blue-700 px-4 py-2 font-semibold text-white hover:bg-blue-800">Edit Crop</a>
-                <a href="/FMidterm_Project/crops/delete.php?id=<?= (int) $crop['crop_id'] ?>" class="rounded-md bg-red-700 px-4 py-2 font-semibold text-white hover:bg-red-800">Delete Crop</a>
+                <a href="/FMidterm_Project/crops/edit.php?id=<?= (int) $crop['variety_id'] ?>" class="rounded-md bg-blue-700 px-4 py-2 font-semibold text-white hover:bg-blue-800">Edit Variety</a>
+                <a href="/FMidterm_Project/crops/delete.php?id=<?= (int) $crop['variety_id'] ?>" class="rounded-md bg-red-700 px-4 py-2 font-semibold text-white hover:bg-red-800">Delete Variety</a>
             <?php endif; ?>
         </div>
     </section>

@@ -46,23 +46,25 @@ The six report topics are: farmers and their farms; crops planted per farm; plan
 
 ## 5. Entity relationship diagram
 
+![AIS entity relationship diagram](submission_materials/ais_3nf_erd.svg)
+
 ```mermaid
 erDiagram
     FARMER ||--o{ FARM : owns
     FARM ||--o{ PLANTING : has
-    CROP ||--o{ PLANTING : planted_as
+    CROP ||--o{ CROP_VARIETY : has
+    CROP_VARIETY ||--o{ PLANTING : planted_as
     PLANTING ||--o{ HARVEST : produces
     SOIL_TYPES ||--o{ FARM : classifies
     IRRIGATION_TYPES ||--o{ FARM : classifies
     CROP_CATEGORIES ||--o{ CROP : classifies
-    RECOMMENDED_SEASONS ||--o{ CROP : recommends
+    RECOMMENDED_SEASONS ||--o{ CROP_VARIETY : recommends
     PLANTING_STATUSES ||--o{ PLANTING : classifies
     HARVEST_QUALITY_GRADES ||--o{ HARVEST : grades
     HARVEST_REMARKS ||--o{ HARVEST : describes
     ROLES ||--o{ USERS : assigns
-
     FARMER {
-        integer farmer_id PK
+        integer farmer_id PK "DEFAULT nextval"
         varchar first_name
         varchar last_name
         varchar contact_number
@@ -72,7 +74,7 @@ erDiagram
         timestamptz updated_at
     }
     FARM {
-        integer farm_id PK
+        integer farm_id PK "DEFAULT nextval"
         integer farmer_id FK
         varchar farm_name
         varchar location
@@ -83,19 +85,25 @@ erDiagram
         timestamptz updated_at
     }
     CROP {
-        integer crop_id PK
+        integer crop_id PK "DEFAULT nextval"
         varchar crop_name
-        varchar variety
         smallint crop_category_id FK
+        timestamptz created_at
+        timestamptz updated_at
+    }
+    CROP_VARIETY {
+        integer variety_id PK "IDENTITY"
+        integer crop_id FK
+        varchar variety_name
         integer growing_period_days
         smallint recommended_season_id FK
         timestamptz created_at
         timestamptz updated_at
     }
     PLANTING {
-        integer planting_id PK
+        integer planting_id PK "DEFAULT nextval"
         integer farm_id FK
-        integer crop_id FK
+        integer variety_id FK
         date planting_date
         numeric area_planted
         numeric seed_quantity
@@ -105,7 +113,7 @@ erDiagram
         timestamptz updated_at
     }
     HARVEST {
-        integer harvest_id PK
+        integer harvest_id PK "DEFAULT nextval"
         integer planting_id FK
         date harvest_date
         numeric quantity_kg
@@ -156,7 +164,7 @@ erDiagram
     }
 ```
 
-`USERS` authenticates application users and references `ROLES` for authorization. `created_at` and `updated_at` are maintained for the five business tables. The current application does not record the user responsible for each edit.
+`USERS` authenticates application users and references `ROLES` for authorization. The agriculture tables keep the `created_at` and `updated_at` timestamps required by the project guidelines; they do not store creator or editor user IDs.
 
 ## 6. Normalization (UNF to 3NF)
 
@@ -169,18 +177,19 @@ This comparison follows the five starting relations explicitly listed in `ap3 pr
 | UNF (assignment starting structures) | farmer_id (PK), first_name, last_name, contact_number, address, date_registered | farm_id (PK), farmer_id (FK), farm_name, location, area_hectares, soil_type, irrigation_type | crop_id (PK), crop_name, variety, crop_category, growing_period_days, recommended_season | planting_id (PK), farm_id (FK), crop_id (FK), planting_date, area_planted, seed_quantity, expected_harvest_date, status | harvest_id (PK), planting_id (FK), harvest_date, quantity_kg, selling_price_per_kg, quality_grade, remarks | These are the five separate source tables as supplied. Their listed fields are scalar; the guideline does not show a repeating group. |
 | 1NF | Same attributes; one value per field | Same attributes; one value per field | Same attributes; one value per field | Same attributes; one value per field | Same attributes; one value per field | The supplied structures already show atomic fields. No flattening into a fabricated wide table is necessary. |
 | 2NF | Same relation; single-column farmer_id PK | Same relation; single-column farm_id PK | Same relation; single-column crop_id PK | Same relation; single-column planting_id PK | Same relation; single-column harvest_id PK | Each relation has a single-column key, so there can be no partial dependency on part of a composite key. Keep the five entities separate. |
-| 3NF (implemented design) | farmer_id PK, first_name, last_name, contact_number, address, date_registered, created_at, updated_at | farm_id PK, farmer_id FK, farm_name, location, area_hectares, soil_type_id FK, irrigation_type_id FK, created_at, updated_at | crop_id PK, crop_name, variety, crop_category_id FK, growing_period_days, recommended_season_id FK, created_at, updated_at | planting_id PK, farm_id FK, crop_id FK, planting_date, area_planted, seed_quantity, expected_harvest_date, status_id FK, created_at, updated_at | harvest_id PK, planting_id FK, harvest_date, quantity_kg, selling_price_per_kg, quality_grade_id FK, remark_id FK, created_at, updated_at | The five core relations remain separate. Fixed-choice labels use lookup IDs per the assignment's controlled-dropdown rule. |
+| 3NF (implemented design) | farmer_id PK, first_name, last_name, contact_number, address, date_registered, created_at, updated_at | farm_id PK, farmer_id FK, farm_name, location, area_hectares, soil_type_id FK, irrigation_type_id FK, created_at, updated_at | crop(crop_id PK, crop_name, crop_category_id FK, timestamps); crop_variety(variety_id PK, crop_id FK, variety_name, growing_period_days, recommended_season_id FK, timestamps) | planting_id PK, farm_id FK, variety_id FK, planting_date, area_planted, seed_quantity, expected_harvest_date, status_id FK, created_at, updated_at | harvest_id PK, planting_id FK, harvest_date, quantity_kg, selling_price_per_kg, quality_grade_id FK, remark_id FK, created_at, updated_at | Crop-level category data is stored once in CROP; variety-specific growing and season data is stored in CROP_VARIETY. Fixed-choice labels use lookup IDs. |
 
 ### 3NF relation inventory
 
-The implemented application has 12 agriculture relations: five core relations plus seven controlled-value lookup relations. `users` and `roles` support authentication and authorization and are separate from the five-table agriculture normalization exercise. The database therefore has 14 application relations in total.
+The implemented application has 13 agriculture relations: six operational relations (the five assignment entities plus `crop_variety`) and seven controlled-value lookup relations. `users` and `roles` support authentication and authorization separately, for 15 application relations total.
 
 | Relation | Attributes (PK/FK marked) |
 |---|---|
 | farmer | farmer_id (PK), first_name, last_name, contact_number, address, date_registered, created_at, updated_at |
 | farm | farm_id (PK), farmer_id (FK), farm_name, location, area_hectares, soil_type_id (FK), irrigation_type_id (FK), created_at, updated_at |
-| crop | crop_id (PK), crop_name, variety, crop_category_id (FK), growing_period_days, recommended_season_id (FK), created_at, updated_at |
-| planting | planting_id (PK), farm_id (FK), crop_id (FK), planting_date, area_planted, seed_quantity, expected_harvest_date, status_id (FK), created_at, updated_at |
+| crop | crop_id (PK), crop_name (UK), crop_category_id (FK), created_at, updated_at |
+| crop_variety | variety_id (PK), crop_id (FK), variety_name, growing_period_days, recommended_season_id (FK), created_at, updated_at; unique by crop_id and normalized variety_name |
+| planting | planting_id (PK), farm_id (FK), variety_id (FK), planting_date, area_planted, seed_quantity, expected_harvest_date, status_id (FK), created_at, updated_at |
 | harvest | harvest_id (PK), planting_id (FK), harvest_date, quantity_kg, selling_price_per_kg, quality_grade_id (FK), remark_id (FK), created_at, updated_at |
 | soil_types | soil_type_id (PK), soil_type_name (UK) |
 | irrigation_types | irrigation_type_id (PK), irrigation_type_name (UK) |
@@ -196,7 +205,9 @@ The assignment's original fixed-choice text attributes (`soil_type`, `irrigation
 
 ### 3NF dependency and contact-number check
 
-In each core relation, the single-column primary key identifies that row's remaining attributes (for example, `farmer_id` determines a farmer's name, contact number, address, and registration date). The related lookup labels depend on their lookup IDs and are reached through foreign keys. This avoids storing the same soil, irrigation, crop category, season, planting status, grade, or harvest remark text redundantly in every business row. The documented design therefore satisfies the assignment's 3NF goal for the listed attributes.
+In each relation, the primary key identifies that row's remaining attributes. In particular, `crop_id` determines the crop name and category in `crop`; `variety_id` determines its parent crop, variety name, growing period, and recommended season in `crop_variety`. Planting stores `variety_id`, so it identifies the exact variety planted. Lookup labels depend on their lookup IDs and are reached through foreign keys. This removes the crop-name-to-category transitive dependency from variety records and keeps each fact with its determinant.
+
+The agriculture records retain their own identifiers and business foreign keys. Authentication remains separate: `users.role_id` references `roles.role_id`, and no business table stores a user ID.
 
 `farmer.contact_number` is an ordinary farmer attribute, not a declared candidate key in `ap3 project.docx`. The guideline does not say that every farmer must have a globally unique phone number. Repeated phone values do not by themselves violate 3NF; they are a data-quality issue to review under the project's duplicate-entry rule. Do not add `UNIQUE(contact_number)` or merge farmers solely to force phone uniqueness. If the project owner later adopts a rule that one phone can belong to only one farmer, that is a separate business constraint and needs review of existing records before enforcement.
 
@@ -204,7 +215,7 @@ In each core relation, the single-column primary key identifies that row's remai
 
 | Table | Column | Type | Meaning / rule |
 |---|---|---|---|
-| farmer | farmer_id | integer PK | Identity for a farmer |
+| farmer | farmer_id | integer PK | DEFAULT nextval sequence for a farmer ID |
 | farmer | first_name | varchar(50) | Required given name |
 | farmer | last_name | varchar(50) | Required family name |
 | farmer | contact_number | varchar(20) | Required contact detail |
@@ -212,7 +223,7 @@ In each core relation, the single-column primary key identifies that row's remai
 | farmer | date_registered | date | Required registration date |
 | farmer | created_at | timestamptz | Creation time |
 | farmer | updated_at | timestamptz | Automatically refreshed update time |
-| farm | farm_id | integer PK | Identity for a farm |
+| farm | farm_id | integer PK | DEFAULT nextval sequence for a farm ID |
 | farm | farmer_id | integer FK | Owner in `farmer` |
 | farm | farm_name | varchar(100) | Required farm name; unique per farmer |
 | farm | location | varchar(150) | Required farm location |
@@ -221,53 +232,57 @@ In each core relation, the single-column primary key identifies that row's remai
 | farm | irrigation_type_id | smallint FK | `irrigation_types` lookup |
 | farm | created_at | timestamptz | Creation time |
 | farm | updated_at | timestamptz | Automatically refreshed update time |
-| crop | crop_id | integer PK | Identity for a crop/variety |
-| crop | crop_name | varchar(80) | Required crop name |
-| crop | variety | varchar(80) | Required variety; crop and variety are unique together |
+| crop | crop_id | integer PK | DEFAULT nextval sequence for a crop master ID |
+| crop | crop_name | varchar(80) | Required crop name; unique after trimming and case normalization |
 | crop | crop_category_id | smallint FK | `crop_categories` lookup |
-| crop | growing_period_days | integer | Positive number of days |
-| crop | recommended_season_id | smallint FK | `recommended_seasons` lookup |
 | crop | created_at | timestamptz | Creation time |
 | crop | updated_at | timestamptz | Automatically refreshed update time |
-| planting | planting_id | integer PK | Identity for a planting operation |
+| crop_variety | variety_id | integer PK | IDENTITY-generated crop variety ID |
+| crop_variety | crop_id | integer FK | Parent crop in `crop` |
+| crop_variety | variety_name | varchar(80) | Required variety name; unique per crop after trimming and case normalization |
+| crop_variety | growing_period_days | integer | Positive growing duration in days |
+| crop_variety | recommended_season_id | smallint FK | `recommended_seasons` lookup |
+| crop_variety | created_at | timestamptz | Creation time |
+| crop_variety | updated_at | timestamptz | Automatically refreshed update time |
+| planting | planting_id | integer PK | DEFAULT nextval sequence for a planting ID |
 | planting | farm_id | integer FK | Selected farm |
-| planting | crop_id | integer FK | Selected crop and variety |
+| planting | variety_id | integer FK | Selected variety in `crop_variety` |
 | planting | planting_date | date | Date planted |
 | planting | area_planted | numeric(8,2) | Positive planted area |
 | planting | seed_quantity | numeric(8,2) | Positive quantity of seed used |
-| planting | expected_harvest_date | date | Must be after planting date |
+| planting | expected_harvest_date | date | Stored field listed in the DOCX; prefilled from planting date plus selected variety growing period; must be after planting date |
 | planting | status_id | smallint FK | `planting_statuses` lookup |
 | planting | created_at | timestamptz | Creation time |
 | planting | updated_at | timestamptz | Automatically refreshed update time |
-| harvest | harvest_id | integer PK | Identity for a harvest record |
+| harvest | harvest_id | integer PK | DEFAULT nextval sequence for a harvest ID |
 | harvest | planting_id | integer FK | Planting that produced the harvest |
-| harvest | harvest_date | date | Must not precede planting date in application validation |
+| harvest | harvest_date | date | Must not precede planting date or be in the future in application validation |
 | harvest | quantity_kg | numeric(10,2) | Positive harvested quantity |
 | harvest | selling_price_per_kg | numeric(10,2) | Nonnegative unit price |
 | harvest | quality_grade_id | smallint FK | `harvest_quality_grades` lookup |
 | harvest | remark_id | integer FK | `harvest_remarks` lookup |
 | harvest | created_at | timestamptz | Creation time |
 | harvest | updated_at | timestamptz | Automatically refreshed update time |
-| soil_types | soil_type_id | smallint PK | Soil lookup key |
+| soil_types | soil_type_id | smallint PK | Manually assigned SMALLINT soil lookup key |
 | soil_types | soil_type_name | varchar(50) UNIQUE | Controlled soil label |
-| irrigation_types | irrigation_type_id | smallint PK | Irrigation lookup key |
+| irrigation_types | irrigation_type_id | smallint PK | Manually assigned SMALLINT irrigation lookup key |
 | irrigation_types | irrigation_type_name | varchar(50) UNIQUE | Controlled irrigation label |
-| crop_categories | crop_category_id | smallint PK | Crop category lookup key |
+| crop_categories | crop_category_id | smallint PK | Manually assigned SMALLINT category lookup key |
 | crop_categories | crop_category_name | varchar(50) UNIQUE | Controlled crop category label |
-| recommended_seasons | recommended_season_id | smallint PK | Season lookup key |
+| recommended_seasons | recommended_season_id | smallint PK | Manually assigned SMALLINT season lookup key |
 | recommended_seasons | recommended_season_name | varchar(30) UNIQUE | Controlled growing-season label |
-| planting_statuses | status_id | smallint PK | Planting status lookup key |
+| planting_statuses | status_id | smallint PK | Manually assigned SMALLINT status lookup key |
 | planting_statuses | status_name | varchar(30) UNIQUE | Controlled planting status |
-| harvest_quality_grades | quality_grade_id | smallint PK | Quality lookup key |
+| harvest_quality_grades | quality_grade_id | smallint PK | Manually assigned SMALLINT quality lookup key |
 | harvest_quality_grades | quality_grade_name | varchar(30) UNIQUE | Controlled quality grade |
-| harvest_remarks | remark_id | integer PK | Harvest remark lookup key |
+| harvest_remarks | remark_id | integer PK | DEFAULT nextval sequence for a harvest remark lookup ID |
 | harvest_remarks | remark_description | varchar(50) UNIQUE | Controlled harvest remark |
-| users | user_id | integer PK | Identity for an application account |
+| users | user_id | integer PK | IDENTITY-generated application account ID |
 | users | username | varchar(50) UNIQUE | Login name |
 | users | password_hash | varchar(255) | Password hash, never plaintext |
 | users | role_id | integer FK | References `roles.role_id` for the account's authorization role |
 | users | created_at | timestamptz | Account creation time |
-| roles | role_id | integer PK | Identity for an authorization role |
+| roles | role_id | integer PK | IDENTITY-generated authorization role ID |
 | roles | role_name | varchar(30) UNIQUE | `admin` or `staff`; referenced by user accounts |
 
 ### Lookup values
@@ -291,7 +306,8 @@ In each core relation, the single-column primary key identifies that row's remai
 |---|---|---|---|
 | FARMER | 1:M | FARM | A farmer may own multiple farms; each farm has one farmer. |
 | FARM | 1:M | PLANTING | A farm may have multiple planting records. |
-| CROP | 1:M | PLANTING | A crop/variety may be used in multiple plantings. |
+| CROP | 1:M | CROP_VARIETY | A crop can have multiple varieties. |
+| CROP_VARIETY | 1:M | PLANTING | A variety can be selected by multiple plantings. |
 | PLANTING | 1:M | HARVEST | A planting may have multiple harvest records. |
 | Each lookup table | 1:M | Related core table | A lookup label may be referenced by multiple business records. |
 | ROLES | 1:M | USERS | Each account has one role; a role may be assigned to multiple accounts. |
@@ -300,18 +316,19 @@ In each core relation, the single-column primary key identifies that row's remai
 
 - Primary keys identify all records. Foreign keys connect business and lookup records and protect referential integrity.
 - Required fields use `NOT NULL`; required text fields also reject blank values.
-- Farm area, crop growing period, planting area, seed quantity, and harvest quantity must be positive. Harvest price must be zero or positive.
-- A planting's expected harvest date must be later than its planting date. The application also rejects a harvest date earlier than the planting date.
-- Farm name is unique per farmer. Crop name and variety are unique together. Lookup labels and usernames are unique.
+- Farm area, crop growing period, planting area, seed quantity, and harvest quantity must be positive. Planted area cannot exceed its selected farm's area. Harvest price must be zero or positive.
+- A planting's expected harvest date is stored because the DOCX lists the column, and is prefilled from planting date plus the selected variety's database growing period; it must be later than planting date. Harvest dates cannot precede planting or be in the future. Earlier-than-usual harvest dates and the specified grade/remark mismatches show non-blocking warnings.
+- Planting status is selected manually from the `planting_statuses` lookup table and is not changed automatically by harvest records. The status/harvest combinations in the read-only review query are informational data-quality hints, not errors.
+- Farm name is unique per farmer. Crop names are unique after trimming/case normalization; variety names are unique within a crop using the same normalization. Lookup labels and usernames are unique.
 - `users.role_id` references `roles.role_id`; role labels are restricted to `admin` or `staff`. User passwords are stored as hashes.
-- `created_at` and `updated_at` are present on the five core business tables. A database trigger refreshes `updated_at` when a row changes. User-change attribution is not currently recorded.
+- `created_at` and `updated_at` are present on the agriculture business tables. Database triggers refresh `updated_at` when a row changes. Migration 25 removes optional creator/editor fields because they are not part of the selected 3NF schema. The crop 3NF migration was confirmed by live read-only checks: 12 crop rows, 14 varieties, 32 plantings, and no orphan links.
 - Deletes that would leave dependent records are rejected and shown with a friendly message; the system does not silently cascade-delete related data.
 
 ### Duplicate review and normalization
 
 Normalization addresses dependencies between columns; it does not automatically merge duplicate people or events. A prior Supabase audit found exact farmer pairs at IDs 23/24 and 25/26. A later screenshot shows other possible farmer matches sharing contact and address. These records remain pending identity and relationship review.
 
-The Farmer create/edit form blocks likely repeats when normalized contact plus address match, or when full name plus address match. That application check is a review guard, not a database uniqueness constraint, because shared household contact information can be legitimate. Other module forms check their selected natural keys or exact record details. Run `database/17_audit_possible_duplicates.sql` to list review candidates in all five core tables; the script is read-only.
+The selected policy uses application-level composite checks for all four records. Farmer matching uses normalized first name, last name, and address; `contact_number` is excluded so shared contact details do not block saves. Farm matching uses farmer ID, normalized farm name and location, area, irrigation type, and soil type. Planting matching uses farm ID, variety ID, and planting date. Harvest matching uses planting ID and harvest date. Edit checks exclude the current row. SQL 36 covers Farmer and Farm only and remains for review; it has not been run. No database index is requested for Planting or Harvest.
 
 ## 9. Application guide
 
@@ -357,7 +374,7 @@ The results below distinguish earlier checks from evidence that still needs to b
 | Search, filter, sort, pagination, and joins | Covered by earlier module checks; report queries were also executed through Apache when the business tables were empty. | Recheck with current records and report totals |
 | Lookup normalization | Migration 08 was confirmed by the user. Earlier read-only mapping checks returned zero label/ID mismatches for farm, crop, planting, and harvest. | Migration confirmed; final schema/data recheck pending |
 | Invalid input | Crop growing-period boundary check rejected 2147483648 and accepted 2147483647. Previous validation and error-output checks found no raw SQLSTATE, exception, or credential output. | Earlier pass; repeat representative form cases if the schema/data changes |
-| Duplicate prevention | The website and Supabase now check duplicate candidates across Farmer, Farm, Crop, Planting, and Harvest. The user confirmed migration 18 installed all five triggers. Existing rows are retained. | Run the read-only candidate audit; review candidates before any data cleanup |
+| Duplicate prevention | Application checks use Farmer name/address, Farm composite details, Planting farm/variety/date, and Harvest planting/date. SQL 36 includes Farmer and Farm indexes only and awaits review. | Review and run SQL 36 manually if approved |
 | Reports and dashboard | Dashboard behavior and report query paths were checked earlier, but report queries then returned zero business rows. | Recheck totals and report rows against the final data |
 | Responsive rendering | Source markup was reviewed. No final rendered phone/tablet/desktop evidence is recorded here. | Student to capture on available iOS and Android phones; simulate tablet size in browser and label it; capture desktop |
 
@@ -372,7 +389,7 @@ Use `submission_materials/test-results/README.md` as the final test report templ
 ## 12. Data quality and final readiness
 
 - The 3NF design separates five core business entities and seven fixed-value lookup relations. `users` and `roles` support authentication and authorization, for 14 application relations total. The DOCX does not require a particular total such as 15.
-- Duplicate rows are a data-quality problem, not proof by themselves that a schema is outside 3NF. The website and Supabase reject new duplicates. A merge script is prepared for exact farmer duplicates only: identical normalized name, contact number, and address. It keeps the lowest ID, reassigns linked farms first, and aborts if farm names collide. Differently named farmers who share a contact/address are not merged automatically. Run `database/19_merge_exact_duplicate_farmers.sql` in Supabase and review its mapping and remaining-candidate results.
+- Duplicate rows are a data-quality concern, not proof by themselves that a schema is outside 3NF. App checks use composite identity rules for Farmer, Farm, Planting, and Harvest. The Farmer fields are normalized first name, last name, and address; contact number is excluded. Planting checks farm/variety/date, and Harvest checks planting/date. `database/36_farmer_farm_duplicate_indexes.sql` is review-only, covers Farmer and Farm only, and ends in ROLLBACK.
 - No records were removed by the duplicate audit work. The prepared placeholder cleanup script `database/11_delete_placeholder_farmer_records.sql` is on hold until the intended records and their dependent rows are confirmed.
 - The user requires all business records to be real. Current seeded/test data must not be described as real until each record is verified or replaced with user-approved information.
 - Remaining hand-in steps: verify current Supabase workflows and report results, complete final data review, add approved screenshots and responsive evidence, rehearse the demonstration, and perform final cleanup.

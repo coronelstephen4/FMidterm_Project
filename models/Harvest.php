@@ -30,13 +30,14 @@ class Harvest {
         $sql = "SELECT h.harvest_id, h.planting_id, h.harvest_date, h.quantity_kg,
                        h.selling_price_per_kg, h.quality_grade_id, h.remark_id,
                        fm.first_name || ' ' || fm.last_name AS farmer_name,
-                       f.farm_name, c.crop_name, c.variety,
+                       f.farm_name, c.crop_name, cv.variety_name AS variety,
                        q.quality_grade_name, r.remark_description
                 FROM harvest h
                 INNER JOIN planting p ON h.planting_id = p.planting_id
                 INNER JOIN farm f ON p.farm_id = f.farm_id
                 INNER JOIN farmer fm ON f.farmer_id = fm.farmer_id
-                INNER JOIN crop c ON p.crop_id = c.crop_id
+                INNER JOIN crop_variety cv ON p.variety_id = cv.variety_id
+                INNER JOIN crop c ON cv.crop_id = c.crop_id
                 INNER JOIN harvest_quality_grades q ON h.quality_grade_id = q.quality_grade_id
                 INNER JOIN harvest_remarks r ON h.remark_id = r.remark_id
                 WHERE 1 = 1";
@@ -48,7 +49,7 @@ class Harvest {
                 OR fm.last_name ILIKE :search_last_name
                 OR f.farm_name ILIKE :search_farm
                 OR c.crop_name ILIKE :search_crop
-                OR c.variety ILIKE :search_variety
+                OR cv.variety_name ILIKE :search_variety
                 OR r.remark_description ILIKE :search_remark
             )";
             $searchValue = '%' . $search . '%';
@@ -85,7 +86,8 @@ class Harvest {
                 INNER JOIN planting p ON h.planting_id = p.planting_id
                 INNER JOIN farm f ON p.farm_id = f.farm_id
                 INNER JOIN farmer fm ON f.farmer_id = fm.farmer_id
-                INNER JOIN crop c ON p.crop_id = c.crop_id
+                INNER JOIN crop_variety cv ON p.variety_id = cv.variety_id
+                INNER JOIN crop c ON cv.crop_id = c.crop_id
                 INNER JOIN harvest_remarks r ON h.remark_id = r.remark_id
                 WHERE 1 = 1";
         $params = [];
@@ -96,7 +98,7 @@ class Harvest {
                 OR fm.last_name ILIKE :search_last_name
                 OR f.farm_name ILIKE :search_farm
                 OR c.crop_name ILIKE :search_crop
-                OR c.variety ILIKE :search_variety
+                OR cv.variety_name ILIKE :search_variety
                 OR r.remark_description ILIKE :search_remark
             )";
             $searchValue = '%' . $search . '%';
@@ -124,14 +126,15 @@ class Harvest {
                        h.selling_price_per_kg, h.quality_grade_id, h.remark_id,
                        p.planting_date, p.expected_harvest_date,
                        fm.first_name || ' ' || fm.last_name AS farmer_name,
-                       f.farm_name, c.crop_name, c.variety,
+                       f.farm_name, c.crop_name, cv.variety_name AS variety,
                        q.quality_grade_name, r.remark_description,
                        h.created_at, h.updated_at
                 FROM harvest h
                 INNER JOIN planting p ON h.planting_id = p.planting_id
                 INNER JOIN farm f ON p.farm_id = f.farm_id
                 INNER JOIN farmer fm ON f.farmer_id = fm.farmer_id
-                INNER JOIN crop c ON p.crop_id = c.crop_id
+                INNER JOIN crop_variety cv ON p.variety_id = cv.variety_id
+                INNER JOIN crop c ON cv.crop_id = c.crop_id
                 INNER JOIN harvest_quality_grades q ON h.quality_grade_id = q.quality_grade_id
                 INNER JOIN harvest_remarks r ON h.remark_id = r.remark_id
                 WHERE h.harvest_id = :harvest_id";
@@ -144,12 +147,14 @@ class Harvest {
 
     public function getPlantingById(int $plantingId): ?array {
         $sql = "SELECT p.planting_id, p.planting_date, p.expected_harvest_date,
-                       f.farm_name, c.crop_name, c.variety,
+                       cv.growing_period_days,
+                       f.farm_name, c.crop_name, cv.variety_name AS variety,
                        fm.first_name || ' ' || fm.last_name AS farmer_name
                 FROM planting p
                 INNER JOIN farm f ON p.farm_id = f.farm_id
                 INNER JOIN farmer fm ON f.farmer_id = fm.farmer_id
-                INNER JOIN crop c ON p.crop_id = c.crop_id
+                INNER JOIN crop_variety cv ON p.variety_id = cv.variety_id
+                INNER JOIN crop c ON cv.crop_id = c.crop_id
                 WHERE p.planting_id = :planting_id";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute(["planting_id" => $plantingId]);
@@ -158,14 +163,60 @@ class Harvest {
         return $planting ?: null;
     }
 
+    public function getWarnings(
+        int $plantingId,
+        string $harvestDate,
+        int $qualityGradeId,
+        int $remarkId
+    ): array {
+        $sql = "SELECT q.quality_grade_name, r.remark_description,
+                       cv.growing_period_days, p.planting_date
+                FROM harvest_quality_grades q
+                INNER JOIN harvest_remarks r ON r.remark_id = :remark_id
+                INNER JOIN planting p ON p.planting_id = :planting_id
+                INNER JOIN crop_variety cv ON cv.variety_id = p.variety_id
+                WHERE q.quality_grade_id = :quality_grade_id";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            'quality_grade_id' => $qualityGradeId,
+            'remark_id' => $remarkId,
+            'planting_id' => $plantingId
+        ]);
+
+        $context = $stmt->fetch();
+        if (!$context) {
+            throw new RuntimeException('Harvest details could not be checked.');
+        }
+
+        $warnings = [];
+        $grade = (string) $context['quality_grade_name'];
+        $remark = (string) $context['remark_description'];
+        if (($grade === 'Grade A' && in_array($remark, ['Poor Quality', 'Damaged Harvest'], true))
+            || ($grade === 'Grade C' && $remark === 'Good Harvest')) {
+            $warnings[] = $grade . ' may not match the remark “' . $remark . '”.';
+        }
+
+        $growingPeriodDays = (int) $context['growing_period_days'];
+        $usualHarvestDate = (new DateTimeImmutable($context['planting_date']))
+            ->modify('+' . $growingPeriodDays . ' days')
+            ->format('Y-m-d');
+        if ($harvestDate < $usualHarvestDate) {
+            $warnings[] = 'this harvest is earlier than the variety’s usual growing period of '
+                . $growingPeriodDays . ' days.';
+        }
+
+        return $warnings;
+    }
+
     public function getPlantings(): array {
         $sql = "SELECT p.planting_id, p.planting_date,
-                       f.farm_name, c.crop_name, c.variety,
+                       f.farm_name, c.crop_name, cv.variety_name AS variety,
                        fm.first_name || ' ' || fm.last_name AS farmer_name
                 FROM planting p
                 INNER JOIN farm f ON p.farm_id = f.farm_id
                 INNER JOIN farmer fm ON f.farmer_id = fm.farmer_id
-                INNER JOIN crop c ON p.crop_id = c.crop_id
+                INNER JOIN crop_variety cv ON p.variety_id = cv.variety_id
+                INNER JOIN crop c ON cv.crop_id = c.crop_id
                 ORDER BY p.planting_date DESC, p.planting_id DESC";
         return $this->pdo->query($sql)->fetchAll();
     }
@@ -184,46 +235,6 @@ class Harvest {
 
         $isValid = $stmt->fetchColumn();
         return $isValid === true || $isValid === 't' || $isValid === '1';
-    }
-
-    public function hasDuplicate(
-        int $plantingId,
-        string $harvestDate,
-        float $quantityKg,
-        float $sellingPricePerKg,
-        int $qualityGradeId,
-        int $remarkId,
-        ?int $excludeHarvestId = null
-    ): bool {
-        $sql = "SELECT EXISTS (
-                    SELECT 1 FROM harvest
-                    WHERE planting_id = :planting_id
-                      AND harvest_date = :harvest_date
-                      AND quantity_kg = :quantity_kg
-                      AND selling_price_per_kg = :selling_price_per_kg
-                      AND quality_grade_id = :quality_grade_id
-                      AND remark_id = :remark_id";
-        if ($excludeHarvestId !== null) {
-            $sql .= ' AND harvest_id <> :exclude_harvest_id';
-        }
-        $sql .= ')';
-
-        $stmt = $this->pdo->prepare($sql);
-        $params = [
-            'planting_id' => $plantingId,
-            'harvest_date' => $harvestDate,
-            'quantity_kg' => $quantityKg,
-            'selling_price_per_kg' => $sellingPricePerKg,
-            'quality_grade_id' => $qualityGradeId,
-            'remark_id' => $remarkId
-        ];
-        if ($excludeHarvestId !== null) {
-            $params['exclude_harvest_id'] = $excludeHarvestId;
-        }
-        $stmt->execute($params);
-
-        $exists = $stmt->fetchColumn();
-        return $exists === true || $exists === 't' || $exists === '1';
     }
 
     public function create(

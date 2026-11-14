@@ -63,11 +63,11 @@ Each module has `index.php`, `create.php`, `edit.php`, `view.php`, and `delete.p
 
 | Module | Model methods | Implementing pages and related data |
 |---|---|---|
-| Farmers | `Farmer::getAll()`, `countAll()`, `getById()`, `hasDuplicate()`, `create()`, `update()`, `delete()` | `farmers/index.php`, `create.php`, `edit.php`, `view.php`, `delete.php`; list supports search/address filter, sort, pagination. |
-| Farms | `Farm::getAll()`, `countAll()`, `getById()`, `getFarmers()`, `getIrrigationTypes()`, `getSoilTypes()`, `hasValidReferences()`, `hasDuplicateName()`, `create()`, `update()`, `delete()` | `farms/` pages; farmer and lookup labels are joined for display; owner, irrigation, and soil selections use database-fed options. |
+| Farmers | `Farmer::getAll()`, `countAll()`, `getById()`, `create()`, `update()`, `delete()`; `DuplicateChecker::findFarmer()` checks normalized name/address on create/edit | `farmers/index.php`, `create.php`, `edit.php`, `view.php`, `delete.php`; list supports search/address filter, sort, pagination. |
+| Farms | `Farm::getAll()`, `countAll()`, `getById()`, `getFarmers()`, `getIrrigationTypes()`, `getSoilTypes()`, `hasValidReferences()`, `create()`, `update()`, `delete()`; `DuplicateChecker::findFarm()` is used by create/edit | `farms/` pages; farmer and lookup labels are joined for display; owner, irrigation, and soil selections use database-fed options. |
 | Crops | `Crop::getAll()`, `countAll()`, `getById()`, `getCategories()`, `getRecommendedSeasons()`, `hasValidReferences()`, `hasDuplicate()`, `create()`, `update()`, `delete()` | `crops/` pages; category and season are lookup-backed. Search/category filter, sorting and pagination are supported. |
-| Plantings | `Planting::getAll()`, `countAll()`, `getById()`, `getFarms()`, `getCrops()`, `getStatuses()`, `hasValidReferences()`, `hasDuplicate()`, `create()`, `update()`, `delete()` | `plantings/` pages; joined farm, farmer, crop, and status details; status filter, search, sorting and pagination. |
-| Harvests | `Harvest::getAll()`, `countAll()`, `getById()`, `getPlantingById()`, `getPlantings()`, `hasValidReferences()`, `hasDuplicate()`, `create()`, `update()`, `delete()` | `harvests/` pages; related planting/farm/crop/farmer and lookup labels are joined; grade filter, search, sorting and pagination. |
+| Plantings | `Planting::getAll()`, `countAll()`, `getById()`, `getFarms()`, `getCrops()`, `getStatuses()`, `hasValidReferences()`, `create()`, `update()`, `delete()` | `plantings/` pages; joined farm, farmer, crop, and status details; status filter, search, sorting and pagination. Primary key identifies each planting; repeated events are allowed. |
+| Harvests | `Harvest::getAll()`, `countAll()`, `getById()`, `getPlantingById()`, `getPlantings()`, `hasValidReferences()`, `create()`, `update()`, `delete()` | `harvests/` pages; related planting/farm/crop/farmer and lookup labels are joined; grade filter, search, sorting and pagination. Primary key identifies each harvest; repeated events are allowed. |
 
 The page scripts validate inputs on the server, restrict write methods to Administrator, and show success/error feedback. Delete operations are attempted against the database; restrictive foreign keys prevent removing parent rows still referenced by children, and the page presents a friendly failure message.
 
@@ -79,17 +79,19 @@ The page scripts validate inputs on the server, restrict write methods to Admini
 
 List-page model methods accept filters/search and paging/sort parameters. Farmers filter by address; farms by irrigation type; crops by category; plantings by status; harvests by quality grade. Each primary list has free-text search, sortable headings, and 10 rows per page. Sort keys are selected from page/model allowlists, sort direction is normalized, and page/offset values are passed to the model. The report filters are described above and the exact report implementation is in `models/Report.php` and `reports/*.php`.
 
-### Input validation and audit timestamps
+### Input validation and timestamps
 
 Form handlers validate server-side before persistence. Exact implemented rules include:
 
-- **Farmers** (`farmers/create.php`, `farmers/edit.php`): all five fields are required; first/last name max 50 characters, contact max 20, address max 150; registration date must match `YYYY-MM-DD` and pass `checkdate()`. `capitalizeInput()` is applied to names and address. `Farmer::hasDuplicate()` checks normalized contact plus address OR same name plus address.
-- **Farms** (`farms/create.php`, `farms/edit.php`): all six values required; farm name max 100, location max 150; area must match up to six integer digits and two decimals and be greater than zero. Farmer, soil, and irrigation IDs must be positive digit strings and exist (`Farm::hasValidReferences()`). Same-owner farm name duplicates are checked.
+- **Farmers** (`farmers/create.php`, `farmers/edit.php`): all five fields are required; first/last name max 50 characters, contact max 20, address max 150; registration date must match `YYYY-MM-DD` and pass `checkdate()`. `capitalizeInput()` is applied to names and address. `DuplicateChecker::findFarmer()` checks normalized first/last name and address; contact number is excluded from duplicate identity.
+- **Farms** (`farms/create.php`, `farms/edit.php`): all six values required; farm name max 100, location max 150; area must match up to six integer digits and two decimals and be greater than zero. Farmer, soil, and irrigation IDs must be positive digit strings and exist (`Farm::hasValidReferences()`). `DuplicateChecker::findFarm()` checks farmer, normalized name/location, area, irrigation, and soil.
 - **Crops** (`crops/create.php`, `crops/edit.php`): required crop name and variety max 80 characters; growing period must be a positive whole number within the signed integer range; category and season IDs must be positive and exist (`Crop::hasValidReferences()`). Duplicate crop-name/variety pairs are checked.
-- **Plantings** (`plantings/create.php`, `plantings/edit.php`): required fields; area and seed quantity must be positive values with up to six integer digits and two decimal places; dates must be real `YYYY-MM-DD` dates, and expected harvest must be after planting. Farm, crop, and status IDs must exist. Exact duplicate planting details are checked.
-- **Harvests** (`harvests/create.php`, `harvests/edit.php`): quantity must be positive and unit selling price nonnegative; each permits up to eight integer digits and two decimal places. Harvest date must be a real `YYYY-MM-DD` date and cannot be before its selected planting date. Planting, grade, and remark IDs must exist. Exact duplicate harvest details are checked.
+- **Plantings** (`plantings/create.php`, `plantings/edit.php`): required fields; area and seed quantity must be positive values with up to six integer digits and two decimal places; planted area cannot exceed the selected farm's area. Dates must be real `YYYY-MM-DD` dates, and expected harvest must be after planting. Expected harvest date remains stored because the DOCX lists it, and is prefilled from planting date plus the selected variety's database `growing_period_days`; users can edit it. Farm, variety, and status IDs must exist. A planting with the same farm, variety, and planting date is blocked by an application-level check; edit excludes its own row.
+- **Harvests** (`harvests/create.php`, `harvests/edit.php`): quantity must be positive and unit selling price nonnegative; each permits up to eight integer digits and two decimal places. Harvest date must be a real `YYYY-MM-DD` date, cannot be before planting, and cannot be in the future. Earlier-than-usual harvests and Grade A with Poor Quality or Damaged Harvest, and Grade C with Good Harvest, produce non-blocking warnings after saving. Planting, grade, and remark IDs must exist. A harvest with the same planting and harvest date is blocked by an application-level check; edit excludes its own row.
 
-The forms also set HTML `required`, `min`, `max`, and `step` attributes where appropriate; server checks remain authoritative. Database constraints provide a second integrity layer (Section 7). The five core tables have `created_at` and `updated_at`; migration `database/06_add_audit_timestamps.sql` installs a trigger to refresh `updated_at` on updates. The application does not store the responsible user's ID on business changes.
+Expected harvest date is derived from the selected variety but remains a stored column because the DOCX lists it. Planting status is a manually selected value from the `planting_statuses` lookup table and is not changed automatically by harvest records.
+
+The forms also set HTML `required`, `min`, `max`, and `step` attributes where appropriate; server checks remain authoritative. Database constraints provide a second integrity layer (Section 7). The five core tables have `created_at` and `updated_at`; migration `database/06_add_audit_timestamps.sql` installs a trigger to refresh `updated_at` on updates. The source guideline encourages recording the responsible user, but this implementation follows the requested ERD fields and omits creator/editor IDs. Migration `database/25_remove_user_audit_links.sql` was confirmed successful in Supabase: the creator/editor columns are gone, timestamps remain, and the users-to-roles foreign key is intact.
 
 ### Six reports
 
@@ -106,6 +108,8 @@ The forms also set HTML `required`, `min`, `max`, and `step` attributes where ap
 
 ## 4. Entity-Relationship Diagram (ERD)
 
+![AIS entity relationship diagram](submission_materials/ais_3nf_erd.svg)
+
 ```mermaid
 erDiagram
     FARMER ||--o{ FARM : owns
@@ -121,27 +125,27 @@ erDiagram
     HARVEST_REMARKS ||--o{ HARVEST : describes
     ROLES ||--o{ USERS : assigns
     FARMER {
-        int farmer_id PK
+        int farmer_id PK "DEFAULT nextval"
     }
     FARM {
-        int farm_id PK
+        int farm_id PK "DEFAULT nextval"
         int farmer_id FK
         smallint soil_type_id FK
         smallint irrigation_type_id FK
     }
     CROP {
-        int crop_id PK
+        int crop_id PK "DEFAULT nextval"
         smallint crop_category_id FK
         smallint recommended_season_id FK
     }
     PLANTING {
-        int planting_id PK
+        int planting_id PK "DEFAULT nextval"
         int farm_id FK
         int crop_id FK
         smallint status_id FK
     }
     HARVEST {
-        int harvest_id PK
+        int harvest_id PK "DEFAULT nextval"
         int planting_id FK
         smallint quality_grade_id FK
         int remark_id FK
@@ -176,7 +180,7 @@ erDiagram
     }
 ```
 
-Text cardinalities: one farmer can own zero or many farms; each farm references one farmer. One farm can have zero or many plantings; each planting references one farm. One crop can appear in zero or many plantings; each planting references one crop. One planting can have zero or many harvest rows; each harvest references one planting. Each lookup row can be used by zero or many rows of its associated core table; each associated core row references one lookup row. One role can be assigned to zero or many user accounts; each account references one role.
+Text cardinalities: one farmer can own zero or many farms; each farm references one farmer. One farm can have zero or many plantings; each planting references one farm. One crop can appear in zero or many plantings; each planting references one crop. One planting can have zero or many harvest rows; each harvest references one planting. Each lookup row can be used by zero or many rows of its associated core table; each associated core row references one lookup row. One role can be assigned to zero or many user accounts; each account references one role. User accounts support authentication and access control separately from the five agriculture tables.
 
 The 14 relations are five core (`farmer`, `farm`, `crop`, `planting`, `harvest`), seven agriculture lookups, and two authentication relations (`users`, `roles`).
 
@@ -193,17 +197,35 @@ The source guideline supplies five separate core table structures, not one combi
 
 The changes from assignment labels to IDs are: `farm.soil_type` → `soil_type_id`; `farm.irrigation_type` → `irrigation_type_id`; `crop.crop_category` → `crop_category_id`; `crop.recommended_season` → `recommended_season_id`; `planting.status` → `status_id`; `harvest.quality_grade` → `quality_grade_id`; and `harvest.remarks` → `remark_id`. Migration `database/08_normalize_lookup_columns.sql` removes legacy label columns only after checking the label-to-ID mappings; migration 01 creates the harvest remarks lookup and relationship, and migration 02 creates the other fixed-value lookups and relationships.
 
-For each core relation, the row key determines its non-key attributes. For example, `farmer_id` identifies the farmer's name, contact, address, and registration date. Lookup names are determined by lookup IDs. This avoids transitive storage of fixed-value labels in the business row. The separate `users` and `roles` relations do not alter the agriculture dependencies. Repeated contact numbers are not themselves a 3NF violation because the assignment does not define contact number as a candidate key.
+For each core relation, the row key determines its non-key attributes. For example, `farmer_id` identifies the farmer's name, contact, address, and registration date. Lookup names are determined by lookup IDs. This avoids transitive storage of fixed-value labels in the business row. Usernames and role names remain in `users` and `roles`, outside the five agriculture relations. Repeated contact numbers are not themselves a 3NF violation because the assignment does not define contact number as a candidate key.
 
 ## 6. Complete Data Dictionary
 
-**DDL coverage note:** the repository has no initial `CREATE TABLE` migration for the five core tables. Their original column types and integer identity primary keys below are taken from the assignment schema reproduced in `PROJECT_REQUIREMENTS.md`; migrations 01–08 show the later lookup, constraint, and audit changes. The nullable/NOT NULL state of core fields is based on migration 07. Migration 01/02 lookup definitions are explicit. `users` is initially created in migration 05; migration 23 adds the `roles` lookup and replaces the text role field with `users.role_id`. This role migration is prepared but remains pending user execution in Supabase. `CURRENT_TIMESTAMP` applies to timestamp defaults where shown. `—` means no explicit default is declared in the included DDL. Lookup IDs have primary keys but no identity/default declaration in migrations 01/02.
+**Primary-key generation audit (user-provided, 2026-11-15):** `farmer.farmer_id`, `farm.farm_id`, `crop.crop_id`, `planting.planting_id`, `harvest.harvest_id`, and `harvest_remarks.remark_id` use `DEFAULT nextval`. `crop_variety.variety_id`, `roles.role_id`, and `users.user_id` are IDENTITY. The six remaining lookup IDs are manually assigned SMALLINT values. The original core-table DDL is not in the repository; the live audit result takes precedence over earlier assumptions based on the assignment schema. `database/34_review_identity_pk_migration.sql` is a review-only plan for the five sequence-backed core IDs; it excludes lookup tables and remains unapplied.
+
+| Table | Primary key | Data type | Live generation per audit |
+|---|---|---|---|
+| farmer | farmer_id | integer | DEFAULT nextval |
+| farm | farm_id | integer | DEFAULT nextval |
+| crop | crop_id | integer | DEFAULT nextval |
+| crop_variety | variety_id | integer | IDENTITY |
+| planting | planting_id | integer | DEFAULT nextval |
+| harvest | harvest_id | integer | DEFAULT nextval |
+| users | user_id | integer | IDENTITY |
+| roles | role_id | integer | IDENTITY |
+| irrigation_types | irrigation_type_id | smallint | Manually assigned |
+| soil_types | soil_type_id | smallint | Manually assigned |
+| crop_categories | crop_category_id | smallint | Manually assigned |
+| recommended_seasons | recommended_season_id | smallint | Manually assigned |
+| planting_statuses | status_id | smallint | Manually assigned |
+| harvest_quality_grades | quality_grade_id | smallint | Manually assigned |
+| harvest_remarks | remark_id | integer | DEFAULT nextval |
 
 ### `farmer`
 
 | Column | Data type & length | Key | Nullable | Default | Description |
 |---|---|---|---|---|---|
-| farmer_id | integer | PK | NOT NULL | identity-generated | Farmer identifier |
+| farmer_id | integer | PK | NOT NULL | DEFAULT nextval | Farmer identifier |
 | first_name | varchar(50) | — | NOT NULL | — | Given name; nonblank check |
 | last_name | varchar(50) | — | NOT NULL | — | Family name; nonblank check |
 | contact_number | varchar(20) | — | NOT NULL | — | Contact number; nonblank check |
@@ -216,7 +238,7 @@ For each core relation, the row key determines its non-key attributes. For examp
 
 | Column | Data type & length | Key | Nullable | Default | Description |
 |---|---|---|---|---|---|
-| farm_id | integer | PK | NOT NULL | identity-generated | Farm identifier |
+| farm_id | integer | PK | NOT NULL | DEFAULT nextval | Farm identifier |
 | farmer_id | integer | FK → farmer.farmer_id | NOT NULL | — | Owning farmer |
 | farm_name | varchar(100) | UNIQUE with farmer_id | NOT NULL | — | Name, unique for that farmer |
 | location | varchar(150) | — | NOT NULL | — | Farm location |
@@ -230,7 +252,7 @@ For each core relation, the row key determines its non-key attributes. For examp
 
 | Column | Data type & length | Key | Nullable | Default | Description |
 |---|---|---|---|---|---|
-| crop_id | integer | PK | NOT NULL | identity-generated | Crop/variety record identifier |
+| crop_id | integer | PK | NOT NULL | DEFAULT nextval | Crop master identifier |
 | crop_name | varchar(80) | UNIQUE with variety | NOT NULL | — | Crop name; nonblank check |
 | variety | varchar(80) | UNIQUE with crop_name | NOT NULL | — | Variety; nonblank check |
 | crop_category_id | smallint | FK → crop_categories.crop_category_id | NOT NULL | — | Category lookup |
@@ -243,7 +265,7 @@ For each core relation, the row key determines its non-key attributes. For examp
 
 | Column | Data type & length | Key | Nullable | Default | Description |
 |---|---|---|---|---|---|
-| planting_id | integer | PK | NOT NULL | identity-generated | Planting identifier |
+| planting_id | integer | PK | NOT NULL | DEFAULT nextval | Planting identifier |
 | farm_id | integer | FK → farm.farm_id | NOT NULL | — | Farm used |
 | crop_id | integer | FK → crop.crop_id | NOT NULL | — | Crop/variety planted |
 | planting_date | date | — | NOT NULL | — | Date planted |
@@ -258,7 +280,7 @@ For each core relation, the row key determines its non-key attributes. For examp
 
 | Column | Data type & length | Key | Nullable | Default | Description |
 |---|---|---|---|---|---|
-| harvest_id | integer | PK | NOT NULL | identity-generated | Harvest identifier |
+| harvest_id | integer | PK | NOT NULL | DEFAULT nextval | Harvest identifier |
 | planting_id | integer | FK → planting.planting_id | NOT NULL | — | Source planting |
 | harvest_date | date | — | NOT NULL | — | Harvest date; app rejects before planting date |
 | quantity_kg | numeric(10,2) | — | NOT NULL | — | Positive harvested weight |
@@ -284,19 +306,19 @@ For each core relation, the row key determines its non-key attributes. For examp
 | planting_statuses.status_name | varchar(30) | UNIQUE | NOT NULL | — | Status label |
 | harvest_quality_grades.quality_grade_id | smallint | PK | NOT NULL | — (migration does not declare identity/default) | Grade option ID |
 | harvest_quality_grades.quality_grade_name | varchar(30) | UNIQUE | NOT NULL | — | Grade label |
-| harvest_remarks.remark_id | integer | PK | NOT NULL | — (migration does not declare identity/default) | Remark option ID |
+| harvest_remarks.remark_id | integer | PK | NOT NULL | DEFAULT nextval | Remark option ID |
 | harvest_remarks.remark_description | varchar(50) | UNIQUE | NOT NULL | — | Remark label |
 | users.user_id | integer | PK | NOT NULL | GENERATED BY DEFAULT AS IDENTITY | Account identifier |
 | users.username | varchar(50) | UNIQUE | NOT NULL | — | Login name |
 | users.password_hash | varchar(255) | — | NOT NULL | — | PHP password hash |
 | users.role_id | integer | FK → roles.role_id | NOT NULL | — | Authorization role lookup |
 | users.created_at | timestamptz | — | NOT NULL | CURRENT_TIMESTAMP | Account creation time |
-| roles.role_id | integer | PK | NOT NULL | identity-generated | Role identifier |
+| roles.role_id | integer | PK | NOT NULL | GENERATED BY DEFAULT AS IDENTITY | Role identifier |
 | roles.role_name | varchar(30) | UNIQUE, CHECK: admin/staff | NOT NULL | — | Authorization role name |
 
 Migration 02 seeds lookup labels as follows: soil `Loam`, `Clay Loam`, `Sandy Loam`, `Clay`; irrigation `Rainfed`, `Irrigated`, `Drip Irrigation`; categories `Cereal`, `Vegetable`, `Fruit`, `Legume`, `Root Crop`; seasons `Wet Season`, `Dry Season`, `Year Round`; statuses `Harvested`, `Growing`; grades `Grade A`, `Grade B`, `Grade C`. Migration 01's remarks are `Good Harvest`, `Acceptable Quality`, `Low Yield`, `Poor Quality`, `Damaged Harvest`.
 
-Migration 23 adds `roles` with `admin` and `staff`, backfills `users.role_id` from the previous `users.role` values, validates the mapping, and then drops the old text column. The user confirmed the migration in Supabase; the screenshot shows the foreign-key, old-column removal, and user-role validation checks all true.
+Migration 23 adds `roles` with `admin` and `staff`, backfills `users.role_id` from the previous `users.role` values, validates the mapping, and then drops the old text column. The user confirmed the migration in Supabase; the screenshot shows the foreign-key, old-column removal, and user-role validation checks all true. Migration 24 temporarily added optional creator/editor references. Migration 25 removes those fields and their user foreign keys to match the selected ERD; the latest Supabase screenshot confirms its audit-column, timestamp, and role-link checks all return true.
 
 ## 7. Table Relationships and Constraints
 
@@ -321,16 +343,16 @@ The included migrations declare foreign keys without `ON DELETE` clauses, so Pos
 
 ### Declared primary, unique, not-null, and check constraints
 
-- **Primary keys:** the five core IDs, seven lookup IDs, `roles.role_id`, and `users.user_id`. Core and account identifiers use integer identity columns; lookup key types are shown in Section 6.
-- **Unique:** `users.username`, `roles.role_name`, each agriculture lookup label, `(farm.farmer_id, farm.farm_name)`, and `(crop.crop_name, crop.variety)`.
+- **Primary keys:** the five core IDs, seven lookup IDs, `roles.role_id`, and `users.user_id`. The five core sequence-backed IDs and `harvest_remarks.remark_id` use `DEFAULT nextval`; `crop_variety`, `roles`, and `users` IDs are IDENTITY; the other seven lookup IDs are manually assigned SMALLINTs.
+- **Unique:** `users.username`, `roles.role_name`, each agriculture lookup label, and the crop/variety rules. The selected Farmer and Farm composite indexes are prepared in review-only `database/36_farmer_farm_duplicate_indexes.sql` and are not yet applied. Planting and Harvest use application-level duplicate checks on their selected fields; no database indexes are requested for them.
 - **Not null:** required business fields, lookup labels/IDs, `roles.role_name`, and all account fields including `users.role_id`.
 - **Checks:** required farmer names/contact/address and farm/crop strings must not be blank; farm area > 0; crop growing period > 0; planting area and seed quantity > 0; expected harvest date > planting date; harvest quantity > 0; selling price ≥ 0; `roles.role_name IN ('admin','staff')`.
-- **Audit:** migration 06 supplies `created_at` and `updated_at` defaults and installs `set_updated_at()` before-update triggers on the five core tables.
-- **Duplicate triggers:** migration 18 installs trigger guards for five core relations. Farmer matching is normalized contact plus address OR normalized full name plus address; farm uses owner/name; crop uses name/variety; planting and harvest compare all business fields in their respective records. These triggers raise unique-violation errors; they are not declared UNIQUE constraints.
+- **Audit:** migration 06 supplies `created_at` and `updated_at` defaults and installs `set_updated_at()` before-update triggers. Migration 25 removes the optional creator/editor fields and foreign keys; the user confirmed it ran successfully in Supabase.
+- **Duplicate enforcement:** application checks use composite rules for Farmer, Farm, Planting, and Harvest. Farmer matching uses normalized first name, last name, and address; contact number is excluded. Farm matching uses farmer ID, normalized farm name/location, area, irrigation type, and soil type. Planting matching uses farm, variety, and planting date; Harvest matching uses planting and harvest date. SQL 36 covers Farmer and Farm only and remains pending review; the earlier four-index script is superseded and remains unrun.
 
 ### Application-level validation
 
-The form handlers require the expected values, cast IDs/numeric fields, validate date syntax and logical date ordering, check selected parent/lookup IDs through model reference-check methods, and call module duplicate checks. Farmer duplicate checking is a likely-duplicate warning rule (contact plus address, or full name plus address), not a unique-phone database rule. Farm name and crop/variety checks correspond to their database unique keys. Planting and harvest exact duplicates are also guarded by model methods and migration 18 triggers. All SQL statements use prepared parameters where user-supplied values are used.
+The form handlers require expected values, cast IDs/numeric fields, validate date syntax and logical date ordering, and check selected parent/lookup IDs through model reference-check methods. All four composite checks show friendly messages with View/Edit links and catch SQLSTATE 23505; Planting and Harvest compare only their selected key fields. SQL 36 covers Farmer and Farm only and remains pending review. Crop/variety checks remain separate and unchanged. All SQL statements use prepared parameters where user-supplied values are used.
 
 ## 8. Screenshots of the Working System
 
@@ -390,7 +412,7 @@ The matrix is a truthful execution record, not a claim that every live workflow 
 | T14 | Validation | Expected harvest date on/before planting date | Save rejected | Database check exists; current form test not run for this submission | Pending |
 | T15 | Validation | Enter zero/negative farm area, growing days, planted area, seed, or harvest quantity | Save rejected | Database checks exist; current form test not run for this submission | Pending |
 | T16 | Validation | Enter negative selling price | Save rejected | Database check exists; current form test not run for this submission | Pending |
-| T17 | Duplicate prevention | Submit duplicate farmer candidate, duplicate farm owner/name, duplicate crop/variety, exact planting or harvest | Duplicate blocked with understandable message | Migration 18 was confirmed installed; current live attempts not run for this submission | Pending live verification |
+| T17 | Duplicate prevention | Submit matching Farmer/Farm composite records, duplicate crop/variety, and same-key Planting/Harvest records | Farmer/Farm composite rules; Planting farm/variety/date; Harvest planting/date; crop/variety rules remain | Browser verification pending; SQL 36 covers Farmer/Farm only and remains unrun | Pending browser checklist and manual SQL review |
 | T18 | Lists | Search and apply each module's documented filter | Matching rows only; counts/pagination remain consistent | Earlier module checks recorded; current populated-data rerun pending | Earlier check; rerun |
 | T19 | Lists | Sort useful columns ascending/descending; move page | Correct order/page; no broken links | Earlier module checks recorded; current populated-data rerun pending | Earlier check; rerun |
 | T20 | Lookups/joins | Inspect create dropdowns and joined list/detail values for all fixed fields | Options from lookup rows; labels match stored IDs | Migration mapping checks previously returned zero mismatches; final UI check pending | Earlier database check; rerun UI |

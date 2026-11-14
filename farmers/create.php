@@ -6,6 +6,7 @@ require_once __DIR__ . '/../includes/Validator.php';
 requireAdmin();
 require_once __DIR__ . '/../config/Database.php';
 require_once __DIR__ . '/../models/Farmer.php';
+require_once __DIR__ . '/../includes/DuplicateChecker.php';
 
 $values = [
     'first_name' => '',
@@ -16,6 +17,7 @@ $values = [
     'date_registered' => date('Y-m-d')
 ];
 $errors = [];
+$duplicateNotice = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $values = Validator::readFields(array_keys($values), $_POST);
@@ -25,17 +27,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $errors = $validator->errors();
 
     if (!$errors) {
+        $firstName = capitalizeInput($values['first_name']);
+        $lastName = capitalizeInput($values['last_name']);
+        $address = capitalizeInput($values['address']);
+        $duplicateChecker = null;
         try {
             $database = new Database();
-            $farmerModel = new Farmer($database->connect());
-            if (!$validator->validateFarmerDuplicate($farmerModel, $values)) {
-                $errors = $validator->errors();
+            $pdo = $database->connect();
+            $farmerModel = new Farmer($pdo);
+            $duplicateChecker = new DuplicateChecker($pdo);
+            $match = $duplicateChecker->findFarmer(
+                $firstName,
+                $lastName,
+                $address
+            );
+
+            if ($match) {
+                $duplicateNotice = DuplicateChecker::notice('Farmer', $match);
             } else {
                 $farmerModel->create(
-                    capitalizeInput($values['first_name']),
-                    capitalizeInput($values['last_name']),
+                    $firstName,
+                    $lastName,
                     $normalizedContact,
-                    capitalizeInput($values['address']),
+                    $address,
                     $values['date_registered']
                 );
 
@@ -44,9 +58,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 exit;
             }
         } catch (Throwable $error) {
-            $errors[] = isDuplicateDatabaseError($error)
-                ? 'A farmer with the same name and address already exists. Review the existing record before adding another.'
-                : 'Farmer could not be saved. Please check the details and try again.';
+            if (DuplicateChecker::isUniqueViolation($error)) {
+                $match = null;
+                if ($duplicateChecker) {
+                    try {
+                        $match = $duplicateChecker->findFarmer($firstName, $lastName, $address);
+                    } catch (Throwable) {
+                    }
+                }
+                $duplicateNotice = DuplicateChecker::notice('Farmer', $match);
+            } else {
+                $errors[] = 'Farmer could not be saved. Please check the details and try again.';
+            }
         }
     }
 }
@@ -67,6 +90,7 @@ require __DIR__ . '/../includes/header.php';
             </ul>
         </div>
     <?php endif; ?>
+    <?php require __DIR__ . '/../includes/duplicate_notice.php'; ?>
 
     <form method="post" class="mt-6 space-y-5 rounded-lg bg-white p-6 shadow-sm ring-1 ring-slate-200">
         <div class="grid gap-5 sm:grid-cols-2">

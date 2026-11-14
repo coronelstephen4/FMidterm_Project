@@ -3,6 +3,9 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+require_once __DIR__ . '/../includes/csrf.php';
+require_once __DIR__ . '/../includes/Validator.php';
+
 if (isset($_SESSION['user_id'], $_SESSION['role'])) {
     header('Location: /FMidterm_Project/');
     exit;
@@ -12,6 +15,11 @@ require_once __DIR__ . '/../config/Database.php';
 require_once __DIR__ . '/../models/User.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!isValidCsrfToken($_POST['csrf_token'] ?? null)) {
+        http_response_code(403);
+        exit('Invalid request. Refresh the page and try again.');
+    }
+
     $username = isset($_POST['username']) && is_string($_POST['username'])
         ? trim($_POST['username'])
         : '';
@@ -19,8 +27,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ? $_POST['password']
         : '';
 
-    if ($username === '' || $password === '') {
-        $_SESSION['error'] = 'Enter your username and password.';
+    $validator = new Validator();
+    if (!$validator->validateLogin($username, $password)) {
+        $_SESSION['error'] = 'Invalid username or password';
+        $_SESSION['old_username'] = $username;
         header('Location: /FMidterm_Project/auth/login.php');
         exit;
     }
@@ -41,16 +51,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
 
-        $_SESSION['error'] = 'Invalid username or password.';
+        $_SESSION['error'] = 'Invalid username or password';
     } catch (Throwable) {
-        $_SESSION['error'] = 'Login is temporarily unavailable. Please try again later.';
+        $_SESSION['error'] = 'Invalid username or password';
     }
+    $_SESSION['old_username'] = $username;
 
     header('Location: /FMidterm_Project/auth/login.php');
     exit;
 }
 
 $pageTitle = 'Sign in';
+$oldUsername = isset($_SESSION['old_username']) && is_string($_SESSION['old_username'])
+    ? $_SESSION['old_username']
+    : '';
+unset($_SESSION['old_username']);
 require __DIR__ . '/../includes/header.php';
 ?>
 <section class="mx-auto max-w-md rounded-lg bg-white p-6 shadow-sm ring-1 ring-slate-200">
@@ -58,14 +73,16 @@ require __DIR__ . '/../includes/header.php';
     <p class="mt-2 text-sm text-slate-600">Use your AIS account to continue.</p>
 
     <form method="post" action="/FMidterm_Project/auth/login.php" class="mt-6 space-y-5">
+        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrfToken(), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>">
         <div>
-            <label for="username" class="mb-1 block text-sm font-medium text-slate-700">Username</label>
+            <label for="username" class="mb-1 block text-sm font-medium text-slate-700">Username <span class="text-rose-600" aria-hidden="true">*</span></label>
             <input type="text" id="username" name="username" required autocomplete="username"
+                   value="<?= htmlspecialchars($oldUsername, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>"
                    class="w-full rounded-md border border-slate-300 px-3 py-2 shadow-sm focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600">
         </div>
 
         <div>
-            <label for="password" class="mb-1 block text-sm font-medium text-slate-700">Password</label>
+            <label for="password" class="mb-1 block text-sm font-medium text-slate-700">Password <span class="text-rose-600" aria-hidden="true">*</span></label>
             <input type="password" id="password" name="password" required autocomplete="current-password"
                    class="w-full rounded-md border border-slate-300 px-3 py-2 shadow-sm focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600">
         </div>

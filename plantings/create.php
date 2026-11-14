@@ -1,85 +1,73 @@
 <?php
 require_once __DIR__ . '/../includes/auth_check.php';
 require_once __DIR__ . '/../includes/validation_helpers.php';
+require_once __DIR__ . '/../includes/Validator.php';
 requireAdmin();
 require_once __DIR__ . '/../config/Database.php';
 require_once __DIR__ . '/../models/Planting.php';
-
-function isValidPlantingDate(string $date): bool {
-    if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
-        return false;
-    }
-
-    $parts = explode('-', $date);
-    return checkdate((int) $parts[1], (int) $parts[2], (int) $parts[0]);
-}
+require_once __DIR__ . '/../includes/DuplicateChecker.php';
 
 $today = date('Y-m-d');
-$futureDate = date('Y-m-d', strtotime('+30 days'));
 $values = [
     'farm_id' => '',
-    'crop_id' => '',
+    'variety_id' => '',
     'planting_date' => $today,
     'area_planted' => '',
     'seed_quantity' => '',
-    'expected_harvest_date' => $futureDate,
+    'expected_harvest_date' => '',
     'status_id' => '2'
 ];
 $farms = [];
 $crops = [];
 $statuses = [];
 $errors = [];
+$duplicateNotice = null;
 $pageError = null;
 
+$pdo = null;
 try {
     $database = new Database();
-    $plantingModel = new Planting($database->connect());
+    $pdo = $database->connect();
+    $plantingModel = new Planting($pdo);
     $farms = $plantingModel->getFarms();
     $crops = $plantingModel->getCrops();
     $statuses = $plantingModel->getStatuses();
+    foreach ($statuses as $status) {
+        if ($status['status_name'] === 'Growing') {
+            $values['status_id'] = (string) $status['status_id'];
+            break;
+        }
+    }
 } catch (Throwable) {
     $pageError = 'Planting form data could not be loaded right now. Please try again later.';
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    foreach ($values as $field => $currentValue) {
-        if (isset($_POST[$field]) && is_string($_POST[$field])) {
-            $values[$field] = trim($_POST[$field]);
+    $values = Validator::readFields(array_keys($values), $_POST);
+    $validator = new Validator();
+    $validated = $values;
+    if ($pdo instanceof PDO) {
+        try {
+            $growingPeriodDays = null;
+            if ($values['expected_harvest_date'] === '' && ctype_digit($values['variety_id'])) {
+                $growingPeriodDays = $plantingModel->getGrowingPeriodDays((int) $values['variety_id']);
+            }
+            $validated = $validator->validatePlanting($pdo, $values, null, $growingPeriodDays);
+        } catch (Throwable) {
+            $errors[] = 'Planting options could not be checked right now. Please try again later.';
         }
+    } else {
+        $errors[] = $pageError ?? "Planting options could not be checked right now. Please try again later.";
     }
-
-    foreach ($values as $value) {
-        if ($value === '') {
-            $errors[] = 'All fields are required.';
-            break;
-        }
-    }
-
-    $farmId = ctype_digit($values['farm_id']) ? (int) $values['farm_id'] : 0;
-    $cropId = ctype_digit($values['crop_id']) ? (int) $values['crop_id'] : 0;
-    $statusId = ctype_digit($values['status_id']) ? (int) $values['status_id'] : 0;
-    $areaPattern = '/^\d{1,6}(\.\d{1,2})?$/';
-    $areaValid = preg_match($areaPattern, $values['area_planted']) && (float) $values['area_planted'] > 0;
-    $seedValid = preg_match($areaPattern, $values['seed_quantity']) && (float) $values['seed_quantity'] > 0;
-
-    if (!$areaValid) {
-        $errors[] = 'Area planted must be positive with up to two decimal places.';
-    }
-    if (!$seedValid) {
-        $errors[] = 'Seed quantity must be positive with up to two decimal places.';
-    }
-    if (!isValidPlantingDate($values['planting_date']) || !isValidPlantingDate($values['expected_harvest_date'])) {
-        $errors[] = 'Enter valid planting and expected harvest dates.';
-    } elseif ($values['expected_harvest_date'] <= $values['planting_date']) {
-        $errors[] = 'Expected harvest date must be after the planting date.';
-    }
-    if ($farmId < 1 || $cropId < 1 || $statusId < 1) {
-        $errors[] = 'Select a valid farm, crop, and planting status.';
-    }
+    $errors = array_merge($errors, $validator->errors());
+    $values['expected_harvest_date'] = $validated['expected_harvest_date'] ?? $values['expected_harvest_date'];
+    $farmId = $validated['farm_id'] ?? 0;
+    $varietyId = $validated['variety_id'] ?? 0;
+    $statusId = $validated['status_id'] ?? 0;
 
     if (!$errors && !$pageError) {
         try {
-            if (!$plantingModel->hasValidReferences($farmId, $cropId, $statusId)) {
+            if (!$plantingModel->hasValidReferences($farmId, $varietyId, $statusId)) {
                 $errors[] = 'Select a valid farm, crop, and planting status.';
             }
         } catch (Throwable) {
@@ -88,46 +76,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (!$errors && !$pageError) {
+        $duplicateChecker = null;
         try {
-            if ($plantingModel->hasDuplicate(
+            $duplicateChecker = new DuplicateChecker($pdo);
+            $match = $duplicateChecker->findPlanting(
                 $farmId,
-                $cropId,
-                $values['planting_date'],
-                (float) $values['area_planted'],
-                (float) $values['seed_quantity'],
-                $values['expected_harvest_date'],
-                $statusId
-            )) {
-                $errors[] = 'A planting with the same farm, crop, dates, quantities, and status already exists.';
-            }
-        } catch (Throwable) {
-            $errors[] = 'Planting records could not be checked right now. Please try again later.';
-        }
-    }
-
-    if (!$errors && !$pageError) {
-        try {
-            $plantingId = $plantingModel->create(
-                $farmId,
-                $cropId,
-                $values['planting_date'],
-                (float) $values['area_planted'],
-                (float) $values['seed_quantity'],
-                $values['expected_harvest_date'],
-                $statusId
+                $varietyId,
+                $values['planting_date']
             );
 
-            if ($plantingId < 1) {
-                throw new RuntimeException('Planting was not created.');
-            }
+            if ($match) {
+                $duplicateNotice = DuplicateChecker::notice('Planting', $match);
+            } else {
+                $plantingId = $plantingModel->create(
+                    $farmId,
+                    $varietyId,
+                    $values['planting_date'],
+                    $validated['area_planted'],
+                    $validated['seed_quantity'],
+                    $values['expected_harvest_date'],
+                    $statusId
+                );
 
-            $_SESSION['success'] = 'Planting record created successfully.';
-            header('Location: /FMidterm_Project/plantings/view.php?id=' . $plantingId);
-            exit;
+                if ($plantingId < 1) {
+                    throw new RuntimeException('Planting was not created.');
+                }
+
+                $_SESSION['success'] = 'Planting record created successfully.';
+                header('Location: /FMidterm_Project/plantings/view.php?id=' . $plantingId);
+                exit;
+            }
         } catch (Throwable $error) {
-            $errors[] = isDuplicateDatabaseError($error)
-                ? 'A planting with the same farm, crop, dates, quantities, and status already exists.'
-                : 'Planting could not be saved. Please check the details and try again.';
+            if (DuplicateChecker::isUniqueViolation($error)) {
+                $match = null;
+                try {
+                    if ($duplicateChecker instanceof DuplicateChecker) {
+                        $match = $duplicateChecker->findPlanting($farmId, $varietyId, $values['planting_date']);
+                    }
+                } catch (Throwable) {
+                }
+                $duplicateNotice = DuplicateChecker::notice('Planting', $match);
+            } else {
+                $errors[] = 'Planting could not be saved. Please check the details and try again.';
+            }
         }
     }
 }
@@ -153,11 +144,12 @@ require __DIR__ . '/../includes/header.php';
             </ul>
         </div>
     <?php endif; ?>
+    <?php require __DIR__ . '/../includes/duplicate_notice.php'; ?>
 
     <form method="post" class="mt-6 space-y-5 rounded-lg bg-white p-6 shadow-sm ring-1 ring-slate-200">
         <div class="grid gap-5 sm:grid-cols-2">
             <div>
-                <label for="farm_id" class="mb-1 block text-sm font-medium">Farm</label>
+                <label for="farm_id" class="mb-1 block text-sm font-medium">Farm <span class="text-rose-600" aria-hidden="true">*</span></label>
                 <select id="farm_id" name="farm_id" required class="w-full rounded-md border border-slate-300 px-3 py-2">
                     <option value="">Select farm</option>
                     <?php foreach ($farms as $farm): ?>
@@ -168,11 +160,11 @@ require __DIR__ . '/../includes/header.php';
                 </select>
             </div>
             <div>
-                <label for="crop_id" class="mb-1 block text-sm font-medium">Crop</label>
-                <select id="crop_id" name="crop_id" required class="w-full rounded-md border border-slate-300 px-3 py-2">
-                    <option value="">Select crop</option>
+                <label for="variety_id" class="mb-1 block text-sm font-medium">Crop variety <span class="text-rose-600" aria-hidden="true">*</span></label>
+                <select id="variety_id" name="variety_id" required class="w-full rounded-md border border-slate-300 px-3 py-2">
+                    <option value="">Select crop variety</option>
                     <?php foreach ($crops as $crop): ?>
-                        <option value="<?= (int) $crop['crop_id'] ?>" <?= $values['crop_id'] === (string) $crop['crop_id'] ? 'selected' : '' ?>>
+                        <option value="<?= (int) $crop['variety_id'] ?>" data-growing-period="<?= (int) $crop['growing_period_days'] ?>" <?= $values['variety_id'] === (string) $crop['variety_id'] ? 'selected' : '' ?>>
                             <?= htmlspecialchars($crop['crop_name'] . ' — ' . $crop['variety'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
                         </option>
                     <?php endforeach; ?>
@@ -181,28 +173,27 @@ require __DIR__ . '/../includes/header.php';
         </div>
         <div class="grid gap-5 sm:grid-cols-2">
             <div>
-                <label for="planting_date" class="mb-1 block text-sm font-medium">Planting date</label>
+                <label for="planting_date" class="mb-1 block text-sm font-medium">Planting date <span class="text-rose-600" aria-hidden="true">*</span></label>
                 <input type="date" id="planting_date" name="planting_date" required value="<?= htmlspecialchars($values['planting_date'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" class="w-full rounded-md border border-slate-300 px-3 py-2">
             </div>
             <div>
-                <label for="expected_harvest_date" class="mb-1 block text-sm font-medium">Expected harvest date</label>
-                <input type="date" id="expected_harvest_date" name="expected_harvest_date" required value="<?= htmlspecialchars($values['expected_harvest_date'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" class="w-full rounded-md border border-slate-300 px-3 py-2">
+                <label for="expected_harvest_date" class="mb-1 block text-sm font-medium">Expected harvest date <span class="text-rose-600" aria-hidden="true">*</span></label>
+                <input type="date" id="expected_harvest_date" name="expected_harvest_date" min="<?= htmlspecialchars($values['planting_date'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" required value="<?= htmlspecialchars($values['expected_harvest_date'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" class="w-full rounded-md border border-slate-300 px-3 py-2">
             </div>
         </div>
         <div class="grid gap-5 sm:grid-cols-2">
             <div>
-                <label for="area_planted" class="mb-1 block text-sm font-medium">Area planted (hectares)</label>
-                <input type="number" id="area_planted" name="area_planted" min="0.01" max="999999.99" step="0.01" required value="<?= htmlspecialchars($values['area_planted'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" class="w-full rounded-md border border-slate-300 px-3 py-2">
+                <label for="area_planted" class="mb-1 block text-sm font-medium">Area planted (hectares) <span class="text-rose-600" aria-hidden="true">*</span></label>
+                <input type="number" id="area_planted" name="area_planted" min="0.01" max="10000" step="0.01" required value="<?= htmlspecialchars($values['area_planted'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" class="w-full rounded-md border border-slate-300 px-3 py-2">
             </div>
             <div>
-                <label for="seed_quantity" class="mb-1 block text-sm font-medium">Seed quantity</label>
+                <label for="seed_quantity" class="mb-1 block text-sm font-medium">Seed quantity <span class="text-rose-600" aria-hidden="true">*</span></label>
                 <input type="number" id="seed_quantity" name="seed_quantity" min="0.01" max="999999.99" step="0.01" required value="<?= htmlspecialchars($values['seed_quantity'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" class="w-full rounded-md border border-slate-300 px-3 py-2">
             </div>
         </div>
         <div>
-            <label for="status_id" class="mb-1 block text-sm font-medium">Status</label>
+            <label for="status_id" class="mb-1 block text-sm font-medium">Status <span class="text-rose-600" aria-hidden="true">*</span></label>
             <select id="status_id" name="status_id" required class="w-full rounded-md border border-slate-300 px-3 py-2 sm:max-w-sm">
-                <option value="">Select status</option>
                 <?php foreach ($statuses as $status): ?>
                     <option value="<?= (int) $status['status_id'] ?>" <?= $values['status_id'] === (string) $status['status_id'] ? 'selected' : '' ?>>
                         <?= htmlspecialchars($status['status_name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
@@ -216,4 +207,21 @@ require __DIR__ . '/../includes/header.php';
         </div>
     </form>
 </div>
+<script>
+    (() => {
+        const variety = document.getElementById('variety_id');
+        const plantingDate = document.getElementById('planting_date');
+        const expectedDate = document.getElementById('expected_harvest_date');
+        const updateExpectedDate = () => {
+            const days = Number(variety.selectedOptions[0]?.dataset.growingPeriod || 0);
+            if (!plantingDate.value || !days) return;
+            const date = new Date(`${plantingDate.value}T00:00:00Z`);
+            date.setUTCDate(date.getUTCDate() + days);
+            expectedDate.value = date.toISOString().slice(0, 10);
+        };
+        variety.addEventListener('change', updateExpectedDate);
+        plantingDate.addEventListener('change', updateExpectedDate);
+        if (!expectedDate.value) updateExpectedDate();
+    })();
+</script>
 <?php require __DIR__ . '/../includes/footer.php'; ?>

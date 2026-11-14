@@ -2,9 +2,11 @@
 require_once __DIR__ . '/../includes/auth_check.php';
 require_once __DIR__ . '/../includes/text_helpers.php';
 require_once __DIR__ . '/../includes/validation_helpers.php';
+require_once __DIR__ . '/../includes/Validator.php';
 requireAdmin();
 require_once __DIR__ . '/../config/Database.php';
 require_once __DIR__ . '/../models/Farm.php';
+require_once __DIR__ . '/../includes/DuplicateChecker.php';
 
 $values = [
     'farmer_id' => '',
@@ -18,11 +20,14 @@ $farmers = [];
 $soilTypes = [];
 $irrigationTypes = [];
 $errors = [];
+$duplicateNotice = null;
 $pageError = null;
 
+$pdo = null;
 try {
     $database = new Database();
-    $farmModel = new Farm($database->connect());
+    $pdo = $database->connect();
+    $farmModel = new Farm($pdo);
     $farmers = $farmModel->getFarmers();
     $soilTypes = $farmModel->getSoilTypes();
     $irrigationTypes = $farmModel->getIrrigationTypes();
@@ -31,37 +36,18 @@ try {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    foreach ($values as $field => $currentValue) {
-        if (isset($_POST[$field]) && is_string($_POST[$field])) {
-            $values[$field] = in_array($field, ['farm_name', 'location'], true)
-                ? capitalizeInput($_POST[$field])
-                : trim($_POST[$field]);
-        }
+    $values = Validator::readFields(array_keys($values), $_POST);
+    $validator = new Validator();
+    if ($pdo instanceof PDO) {
+        $validated = $validator->validateFarm($pdo, $values);
+    } else {
+        $validated = $values;
+        $errors[] = $pageError ?? "Farm options could not be checked right now. Please try again later.";
     }
-
-    if ($values['farmer_id'] === '' || $values['farm_name'] === '' || $values['location'] === ''
-        || $values['area_hectares'] === '' || $values['soil_type_id'] === '' || $values['irrigation_type_id'] === '') {
-        $errors[] = 'All fields are required.';
-    }
-    if (mb_strlen($values['farm_name']) > 100) {
-        $errors[] = 'Farm name must be 100 characters or fewer.';
-    }
-    if (mb_strlen($values['location']) > 150) {
-        $errors[] = 'Location must be 150 characters or fewer.';
-    }
-
-    $areaPattern = '/^\d{1,6}(\.\d{1,2})?$/';
-    if (!preg_match($areaPattern, $values['area_hectares']) || (float) $values['area_hectares'] <= 0) {
-        $errors[] = 'Area must be a positive number with up to two decimal places.';
-    }
-
-    $farmerId = ctype_digit($values['farmer_id']) ? (int) $values['farmer_id'] : 0;
-    $soilTypeId = ctype_digit($values['soil_type_id']) ? (int) $values['soil_type_id'] : 0;
-    $irrigationTypeId = ctype_digit($values['irrigation_type_id']) ? (int) $values['irrigation_type_id'] : 0;
-
-    if ($farmerId < 1 || $soilTypeId < 1 || $irrigationTypeId < 1) {
-        $errors[] = 'Choose a valid farmer, soil type, and irrigation type.';
-    }
+    $errors = $validator->errors();
+    $farmerId = $validated['farmer_id'] ?? 0;
+    $soilTypeId = $validated['soil_type_id'] ?? 0;
+    $irrigationTypeId = $validated['irrigation_type_id'] ?? 0;
 
     if (!$errors && !$pageError) {
         try {
@@ -73,23 +59,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    $duplicateChecker = null;
     if (!$errors && !$pageError) {
         try {
-            if ($farmModel->hasDuplicateName($farmerId, $values['farm_name'])) {
-                $errors[] = 'This farmer already has a farm with that name.';
+            $duplicateChecker = new DuplicateChecker($pdo);
+            $match = $duplicateChecker->findFarm(
+                $farmerId,
+                $values['farm_name'],
+                $values['location'],
+                $validated['area_hectares'],
+                $irrigationTypeId,
+                $soilTypeId
+            );
+            if ($match) {
+                $duplicateNotice = DuplicateChecker::notice('Farm', $match);
             }
         } catch (Throwable) {
-            $errors[] = 'Farm details could not be checked right now. Please try again later.';
+            $errors[] = 'Farm details could not be checked for duplicates. Please try again.';
         }
     }
 
-    if (!$errors && !$pageError) {
+    if (!$errors && !$pageError && !$duplicateNotice) {
         try {
             $farmId = $farmModel->create(
                 $farmerId,
                 $values['farm_name'],
                 $values['location'],
-                (float) $values['area_hectares'],
+                $validated['area_hectares'],
                 $soilTypeId,
                 $irrigationTypeId
             );
@@ -102,9 +98,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header('Location: /FMidterm_Project/farms/view.php?id=' . $farmId);
             exit;
         } catch (Throwable $error) {
-            $errors[] = isDuplicateDatabaseError($error)
-                ? 'This farmer already has a farm with that name. Check the farm list before trying again.'
-                : 'Farm could not be saved. Please check the details and try again.';
+            if (DuplicateChecker::isUniqueViolation($error)) {
+                $match = null;
+                if ($duplicateChecker) {
+                    try {
+                        $match = $duplicateChecker->findFarm(
+                            $farmerId,
+                            $values['farm_name'],
+                            $values['location'],
+                            $validated['area_hectares'],
+                            $irrigationTypeId,
+                            $soilTypeId
+                        );
+                    } catch (Throwable) {
+                    }
+                }
+                $duplicateNotice = DuplicateChecker::notice('Farm', $match);
+            } else {
+                $errors[] = 'Farm could not be saved. Please check the details and try again.';
+            }
         }
     }
 }
@@ -130,10 +142,11 @@ require __DIR__ . '/../includes/header.php';
             </ul>
         </div>
     <?php endif; ?>
+    <?php require __DIR__ . '/../includes/duplicate_notice.php'; ?>
 
     <form method="post" class="mt-6 space-y-5 rounded-lg bg-white p-6 shadow-sm ring-1 ring-slate-200">
         <div>
-            <label for="farmer_id" class="mb-1 block text-sm font-medium">Farmer</label>
+            <label for="farmer_id" class="mb-1 block text-sm font-medium">Farmer <span class="text-rose-600" aria-hidden="true">*</span></label>
             <select id="farmer_id" name="farmer_id" required class="w-full rounded-md border border-slate-300 px-3 py-2">
                 <option value="">Select a farmer</option>
                 <?php foreach ($farmers as $farmer): ?>
@@ -144,20 +157,20 @@ require __DIR__ . '/../includes/header.php';
             </select>
         </div>
         <div>
-            <label for="farm_name" class="mb-1 block text-sm font-medium">Farm name</label>
-            <input type="text" id="farm_name" name="farm_name" maxlength="100" required value="<?= htmlspecialchars($values['farm_name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" class="w-full capitalize rounded-md border border-slate-300 px-3 py-2">
+            <label for="farm_name" class="mb-1 block text-sm font-medium">Farm name <span class="text-rose-600" aria-hidden="true">*</span></label>
+            <input type="text" id="farm_name" name="farm_name" minlength="2" maxlength="100" required value="<?= htmlspecialchars($values['farm_name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" class="w-full capitalize rounded-md border border-slate-300 px-3 py-2">
         </div>
         <div>
-            <label for="location" class="mb-1 block text-sm font-medium">Location</label>
-            <input type="text" id="location" name="location" maxlength="150" required value="<?= htmlspecialchars($values['location'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" class="w-full capitalize rounded-md border border-slate-300 px-3 py-2">
+            <label for="location" class="mb-1 block text-sm font-medium">Location <span class="text-rose-600" aria-hidden="true">*</span></label>
+            <input type="text" id="location" name="location" minlength="2" maxlength="150" required value="<?= htmlspecialchars($values['location'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" class="w-full capitalize rounded-md border border-slate-300 px-3 py-2">
         </div>
         <div>
-            <label for="area_hectares" class="mb-1 block text-sm font-medium">Area (hectares)</label>
-            <input type="number" id="area_hectares" name="area_hectares" min="0.01" max="999999.99" step="0.01" required value="<?= htmlspecialchars($values['area_hectares'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" class="w-full rounded-md border border-slate-300 px-3 py-2 sm:max-w-xs">
+            <label for="area_hectares" class="mb-1 block text-sm font-medium">Area (hectares) <span class="text-rose-600" aria-hidden="true">*</span></label>
+            <input type="number" id="area_hectares" name="area_hectares" min="0.01" max="10000" step="0.01" required value="<?= htmlspecialchars($values['area_hectares'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" class="w-full rounded-md border border-slate-300 px-3 py-2 sm:max-w-xs">
         </div>
         <div class="grid gap-5 sm:grid-cols-2">
             <div>
-                <label for="soil_type_id" class="mb-1 block text-sm font-medium">Soil type</label>
+                <label for="soil_type_id" class="mb-1 block text-sm font-medium">Soil type <span class="text-rose-600" aria-hidden="true">*</span></label>
                 <select id="soil_type_id" name="soil_type_id" required class="w-full rounded-md border border-slate-300 px-3 py-2">
                     <option value="">Select soil type</option>
                     <?php foreach ($soilTypes as $soilType): ?>
@@ -168,7 +181,7 @@ require __DIR__ . '/../includes/header.php';
                 </select>
             </div>
             <div>
-                <label for="irrigation_type_id" class="mb-1 block text-sm font-medium">Irrigation type</label>
+                <label for="irrigation_type_id" class="mb-1 block text-sm font-medium">Irrigation type <span class="text-rose-600" aria-hidden="true">*</span></label>
                 <select id="irrigation_type_id" name="irrigation_type_id" required class="w-full rounded-md border border-slate-300 px-3 py-2">
                     <option value="">Select irrigation type</option>
                     <?php foreach ($irrigationTypes as $type): ?>

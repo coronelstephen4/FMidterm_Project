@@ -8,7 +8,7 @@ $search = isset($_GET['search']) && is_string($_GET['search']) ? trim($_GET['sea
 $categoryId = isset($_GET['category_id']) && is_string($_GET['category_id'])
     ? max(0, (int) $_GET['category_id'])
     : 0;
-$sort = isset($_GET['sort']) && is_string($_GET['sort']) ? $_GET['sort'] : 'crop_id';
+$sort = isset($_GET['sort']) && is_string($_GET['sort']) ? $_GET['sort'] : 'variety_id';
 $direction = isset($_GET['direction']) && is_string($_GET['direction']) ? $_GET['direction'] : 'DESC';
 $page = isset($_GET['page']) && is_string($_GET['page']) ? max(1, (int) $_GET['page']) : 1;
 $perPage = 10;
@@ -36,7 +36,7 @@ require __DIR__ . '/../includes/header.php';
 <div class="flex flex-wrap items-center justify-between gap-4">
     <div>
         <h1 class="text-2xl font-bold text-slate-900">Crops</h1>
-        <p class="mt-1 text-sm text-slate-600">Manage crop names, varieties, and growing information.</p>
+        <p class="mt-1 text-sm text-slate-600">Manage crop varieties and their growing information.</p>
     </div>
     <?php if (isAdmin()): ?>
         <a href="/FMidterm_Project/crops/create.php" class="rounded-md bg-emerald-700 px-4 py-2 font-semibold text-white hover:bg-emerald-800">Add Crop</a>
@@ -77,7 +77,7 @@ require __DIR__ . '/../includes/header.php';
             <tr>
                 <?php
                 $sortableColumns = [
-                    'crop_id' => 'ID',
+                    'variety_id' => 'Variety ID',
                     'crop_name' => 'Crop',
                     'variety' => 'Variety',
                     'crop_category' => 'Category',
@@ -108,17 +108,17 @@ require __DIR__ . '/../includes/header.php';
             <?php else: ?>
                 <?php foreach ($crops as $crop): ?>
                     <tr class="hover:bg-slate-50">
-                        <td class="whitespace-nowrap px-4 py-3"><?= (int) $crop['crop_id'] ?></td>
+                        <td class="whitespace-nowrap px-4 py-3"><?= (int) $crop['variety_id'] ?></td>
                         <td class="whitespace-nowrap px-4 py-3"><?= htmlspecialchars($crop['crop_name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
                         <td class="whitespace-nowrap px-4 py-3"><?= htmlspecialchars($crop['variety'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
                         <td class="whitespace-nowrap px-4 py-3"><?= htmlspecialchars($crop['crop_category_name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
                         <td class="whitespace-nowrap px-4 py-3"><?= (int) $crop['growing_period_days'] ?></td>
                         <td class="whitespace-nowrap px-4 py-3"><?= htmlspecialchars($crop['recommended_season_name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
                         <td class="whitespace-nowrap px-4 py-3">
-                            <a class="font-medium text-emerald-800 hover:underline" href="/FMidterm_Project/crops/view.php?id=<?= (int) $crop['crop_id'] ?>">View</a>
+                            <a class="font-medium text-emerald-800 hover:underline" href="/FMidterm_Project/crops/view.php?id=<?= (int) $crop['variety_id'] ?>">View</a>
                             <?php if (isAdmin()): ?>
-                                <a class="ml-3 font-medium text-blue-800 hover:underline" href="/FMidterm_Project/crops/edit.php?id=<?= (int) $crop['crop_id'] ?>">Edit</a>
-                                <a class="ml-3 font-medium text-red-700 hover:underline" href="/FMidterm_Project/crops/delete.php?id=<?= (int) $crop['crop_id'] ?>">Delete</a>
+                                <a class="ml-3 font-medium text-blue-800 hover:underline" href="/FMidterm_Project/crops/edit.php?id=<?= (int) $crop['variety_id'] ?>">Edit</a>
+                                <a class="ml-3 font-medium text-red-700 hover:underline" href="/FMidterm_Project/crops/delete.php?id=<?= (int) $crop['variety_id'] ?>">Delete</a>
                             <?php endif; ?>
                         </td>
                     </tr>

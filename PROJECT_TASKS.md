@@ -44,11 +44,13 @@ Work top to bottom. Do one task or one module at a time.
 
 - [x] Apply the crop-to-crop_variety 3NF migration. Live read-only checks confirm 12 crop rows, 14 variety rows, 32 plantings, and zero orphan links; updated PHP reads work against Supabase.
 - [x] Compare the AP3 DOCX requirements with the crop 3NF design and local schema migration; the decomposition preserves crop-to-planting meaning through crop_variety, but stale ERD/report files still need updating.
-- [~] Check the constraints ERD against database migrations: relationships/3NF match, but the farm composite UNIQUE and roles allowed-names CHECK are not shown; identity/default labels need catalog confirmation.
+- [x] Check the constraints ERD against database migrations; update the editable ERD and documentation with the user-provided PK generation audit (farmer/farm/crop/planting/harvest and harvest_remarks use DEFAULT nextval; crop_variety/roles/users are IDENTITY; six other lookups are manual SMALLINT).
 - [x] Run `database/27_verify_and_enforce_erd_constraints.sql` in Supabase; screenshot confirms the farm UNIQUE, role CHECK, normalized crop-name and per-crop variety indexes all verify true.
 
 ## Phase 2: Config and layout
 - [x] config/Database.php (PDO pgsql, credentials read from a private file, not hard-coded)
+- [x] Add Render environment-variable database settings, with private local XAMPP credentials as fallback
+- [x] Add a PHP 8.2 Apache Dockerfile and Docker build exclusions for secrets and local documents
 - [x] config/db_credentials.example.php and .gitignore entry for the real credentials file
 - [x] includes/header.php (Tailwind CDN, navbar with links to all modules, success/error message area)
 - [x] includes/footer.php
@@ -110,10 +112,10 @@ Each module needs: model, list page with search, filter, sorting and pagination,
 - [x] Keep Apply buttons clearly visible in night mode
 - [x] Keep Clear button text visible on hover in night mode
 - [x] Capitalize farmer, farm, and crop text inputs on create/edit forms at display and save time; keep numeric/date fields and controlled dropdowns unchanged
-- [x] Align Farmer identity validation with the ERD: `farmer_id` is the PK and contact/name/address are not UNIQUE; retain duplicate validation for the other business modules
-- [x] Review duplicate validation across all five business modules after the crop/variety split; create/edit checks remain aligned with the Supabase guards, and PHP lint passed for all five models and ten create/edit pages
-- [x] Review duplicate validation logic for create/edit exclusions, normalized comparisons, database error messages, and 3NF crop-variety links; no implementation gap found
-- [x] Revise Farmer duplicate detection to normalized first_name + last_name + address, excluding its own ID on edit and allowing unchanged edits; student screenshot confirms the matching trigger SQL ran successfully
+- [x] Set final duplicate policy: Farmer/Farm use composite rules; Planting matches farm/variety/date; Harvest matches planting/date
+- [x] Explain the legacy Farmer trigger's matching fields when its custom SQLSTATE 23505 error lacks a constraint name
+- [x] Remove non-ERD database duplicate guards and legacy farm/crop composite UNIQUE constraints using `database/31_remove_non_unique_duplicate_guards.sql`; Supabase verification shows all four guards and both legacy constraints absent, with the crop guard and normalized crop/variety indexes retained
+- [x] Display normalized farmer contact numbers with the country calling prefix only (for example, +63 or +1), without a country flag/code marker
 - [x] Audit possible duplicate business records across the five core tables without changing existing rows
 - [x] Add a shared three-line Settings menu with appearance control and Log out
 - [x] Expand the shared desktop layout to match the user's marked content width while retaining responsive padding
@@ -162,6 +164,41 @@ Each module needs: model, list page with search, filter, sorting and pagination,
 - [x] User guide
 
 ## Phase 9: Final testing and submission
+- [~] Review `database/cleanup_test_data.sql`; repeated Stephen/Stephens farmer rows and uncertain extra harvests are candidates for the user's decision, not auto-deleted; script ends in ROLLBACK
+- [x] Audit live test/junk candidates and composite duplicate groups using read-only Supabase queries; prepare `database/cleanup_test_data.sql` with explicit IDs, dependency review, and ROLLBACK default
+- [~] Review cleanup candidates and NEEDS DECISION rows; no live rows have been changed. After manual cleanup, rerun duplicate pre-checks before creating composite indexes and CHECK constraints
+- [x] Add shared prepared duplicate checks with self-exclusion and friendly links for all four business tables using the selected fields
+- [x] Run read-only duplicate pre-checks for the four composite rules; no matching duplicate groups were found in Supabase
+- [~] Review/apply `database/36_farmer_farm_duplicate_indexes.sql` manually; Farmer/Farm only, and not run. The four-rule `database/composite_unique_rules.sql` is superseded; do not run it
+- [~] Verify the Farmer/Farm database indexes after the user applies SQL 36; no live database change is made here
+- [x] Set the shared Manila timezone before page-level date defaults and future-date validation
+- [x] Remove the status placeholder from Planting create/edit while retaining Growing as create default and server-side status lookup validation
+- [x] Add a SELECT-only 15-table primary-key identity audit; record the user's read-only audit result and update ERD/data dictionary labels
+- [x] Narrow `database/34_review_identity_pk_migration.sql` to farmer, farm, crop, planting, and harvest; sequence restart is MAX(id)+1 and ROLLBACK remains the default
+- [~] Review the five-table identity migration; it has not been run in Supabase
+- [x] Record the verified live row counts from the 2026-11-15 05:21 user screenshots: 18 farmers, 19 farms, 10 crops, 10 crop varieties, 31 plantings, 22 harvests; farmers without farms are IDs 25 and 38 and remain pending the user's decision
+- [x] Prepare `database/35_data_quality_review_read_only.sql` with commented SELECT-only checks; execution and review of results remain pending
+- [x] Decide composite duplicate policy: Farmer/Farm full selected rules; narrow app-level key fields for Planting and Harvest
+- [~] Keep farmer IDs 25 and 38, planting 34, and harvest 22 pending the user's decisions
+- [x] Record the user's 2026-11-15 05:28 read-only result of zero duplicate groups across farmer, farm, planting, and harvest
+- [x] Record the selected target duplicate policy: Farmer/Farm composites; Planting farm/variety/date; Harvest planting/date
+- [x] Set Farmer composite rule to normalized first name, last name, and address; contact_number does not block a save
+- [x] Add app-level narrow duplicate checks for Planting (farm, variety, planting date) and Harvest (planting, harvest date), with edit self-exclusion, friendly links, and SQLSTATE 23505 handling
+- [x] Add shared View/Edit duplicate notices for crop varieties on create/edit while retaining SQLSTATE 23505 fallback handling
+- [~] Review `database/36_farmer_farm_duplicate_indexes.sql`; it is unrun and pending user review
+- [x] Keep Planting/Harvest duplicate checks narrow; do not compare quantities, areas, prices, grades, remarks, expected dates, or status
+- [~] Keep user-created test rows planting IDs 38/39 and harvest IDs 26/27 for the user's decision; do not delete them
+- [x] Prefill expected harvest date from selected variety growing period; calculate server-side from the database when submitted empty and keep the field editable
+- [x] Reject planting area above the selected farm area while retaining existing numeric bounds
+- [x] Keep harvest date before-planting/future/date validation; show non-blocking early-harvest and grade/remark warnings after save
+- [x] Keep planting status manually selected from `planting_statuses`; harvest create, edit, and delete do not change it
+- [x] Prepare SELECT-only `database/37_planting_harvest_consistency_review_read_only.sql`; do not execute it here
+- [~] Browser test expected-date calculation, area validation, narrow duplicate checks and self-exclusion, harvest date blocks and warnings, unchanged manual planting status, and Staff write restrictions; user to run
+- [x] Audit the working-tree untracked files for secrets and personal data without staging, committing, or pushing
+- [x] Refresh requirements status counts with dated verified snapshots and document the crop-variety 3NF relationship refinement
+- [~] Choose the active duplicate policy after comparing PHP checks, live-schema notes, and the unrun composite index SQL
+- [x] Audit live PK/UNIQUE constraints and triggers across all 15 ERD tables with read-only Supabase SELECTs; preserve the catalog query in `database/32_audit_duplicate_constraints_read_only.sql`
+- [x] Map the live crop duplicate trigger's custom SQLSTATE 23505 messages to friendly crop-name and variety-name messages without exposing SQL details
 - [x] Publish the pending AIS report updates, final documentation, and SQL audit/update scripts to GitHub in commit `1bda119`; keep private credentials and the classmate reference PDF excluded
 - [x] Keep local project guidance, documentation, and the source DOCX discoverable to workspace file mentions
 - [~] Verify all six Print report previews in Chrome 157.0.8103.52, including no-filter, filter, no-result and multi-page cases, Manila time, page counters, screen-only visibility, and end summary; preview not yet tested

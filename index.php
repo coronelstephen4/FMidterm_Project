@@ -30,25 +30,27 @@ try {
 
     $recentPlantingsSql = "SELECT p.planting_id, p.planting_date, p.expected_harvest_date,
                                   f.farm_name, fm.first_name || ' ' || fm.last_name AS farmer_name,
-                                  c.crop_name, c.variety, ps.status_name
+                                  c.crop_name, cv.variety_name AS variety, ps.status_name
                            FROM planting p
                            INNER JOIN farm f ON p.farm_id = f.farm_id
                            INNER JOIN farmer fm ON f.farmer_id = fm.farmer_id
-                           INNER JOIN crop c ON p.crop_id = c.crop_id
+                           INNER JOIN crop_variety cv ON p.variety_id = cv.variety_id
+                           INNER JOIN crop c ON cv.crop_id = c.crop_id
                            INNER JOIN planting_statuses ps ON p.status_id = ps.status_id
                            ORDER BY p.planting_date DESC, p.planting_id DESC
                            LIMIT 5";
     $recentPlantings = $pdo->query($recentPlantingsSql)->fetchAll();
 
     $recentHarvestsSql = "SELECT h.harvest_id, h.harvest_date, h.quantity_kg,
-                                 f.farm_name, c.crop_name, c.variety,
+                                 f.farm_name, c.crop_name, cv.variety_name AS variety,
                                  fm.first_name || ' ' || fm.last_name AS farmer_name,
                                  q.quality_grade_name, r.remark_description
                           FROM harvest h
                           INNER JOIN planting p ON h.planting_id = p.planting_id
                           INNER JOIN farm f ON p.farm_id = f.farm_id
                           INNER JOIN farmer fm ON f.farmer_id = fm.farmer_id
-                          INNER JOIN crop c ON p.crop_id = c.crop_id
+                          INNER JOIN crop_variety cv ON p.variety_id = cv.variety_id
+                          INNER JOIN crop c ON cv.crop_id = c.crop_id
                           INNER JOIN harvest_quality_grades q ON h.quality_grade_id = q.quality_grade_id
                           INNER JOIN harvest_remarks r ON h.remark_id = r.remark_id
                           ORDER BY h.harvest_date DESC, h.harvest_id DESC

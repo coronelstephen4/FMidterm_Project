@@ -27,13 +27,14 @@ class Planting {
         $sortColumn = $sortColumns[$sort] ?? 'p.planting_id';
         $sortDirection = strtoupper($direction) === 'DESC' ? 'DESC' : 'ASC';
         $sql = "SELECT p.planting_id, p.planting_date, p.area_planted, p.seed_quantity,
-                       p.expected_harvest_date, p.farm_id, p.crop_id, p.status_id,
+                       p.expected_harvest_date, p.farm_id, p.variety_id, p.status_id,
                        f.farm_name, fm.first_name || ' ' || fm.last_name AS farmer_name,
-                       c.crop_name, c.variety, ps.status_name
+                       c.crop_name, cv.variety_name AS variety, ps.status_name
                 FROM planting p
                 INNER JOIN farm f ON p.farm_id = f.farm_id
                 INNER JOIN farmer fm ON f.farmer_id = fm.farmer_id
-                INNER JOIN crop c ON p.crop_id = c.crop_id
+                INNER JOIN crop_variety cv ON p.variety_id = cv.variety_id
+                INNER JOIN crop c ON cv.crop_id = c.crop_id
                 INNER JOIN planting_statuses ps ON p.status_id = ps.status_id
                 WHERE 1 = 1";
         $params = [];
@@ -42,7 +43,7 @@ class Planting {
             $sql .= " AND (
                 f.farm_name ILIKE :search_farm
                 OR c.crop_name ILIKE :search_crop
-                OR c.variety ILIKE :search_variety
+                OR cv.variety_name ILIKE :search_variety
                 OR fm.first_name ILIKE :search_first_name
                 OR fm.last_name ILIKE :search_last_name
             )";
@@ -78,7 +79,8 @@ class Planting {
                 FROM planting p
                 INNER JOIN farm f ON p.farm_id = f.farm_id
                 INNER JOIN farmer fm ON f.farmer_id = fm.farmer_id
-                INNER JOIN crop c ON p.crop_id = c.crop_id
+                INNER JOIN crop_variety cv ON p.variety_id = cv.variety_id
+                INNER JOIN crop c ON cv.crop_id = c.crop_id
                 WHERE 1 = 1";
         $params = [];
 
@@ -86,7 +88,7 @@ class Planting {
             $sql .= " AND (
                 f.farm_name ILIKE :search_farm
                 OR c.crop_name ILIKE :search_crop
-                OR c.variety ILIKE :search_variety
+                OR cv.variety_name ILIKE :search_variety
                 OR fm.first_name ILIKE :search_first_name
                 OR fm.last_name ILIKE :search_last_name
             )";
@@ -110,15 +112,16 @@ class Planting {
     }
 
     public function getById(int $planting_id): ?array {
-        $sql = "SELECT p.planting_id, p.farm_id, p.crop_id, p.planting_date,
+        $sql = "SELECT p.planting_id, p.farm_id, p.variety_id, p.planting_date,
                        p.area_planted, p.seed_quantity, p.expected_harvest_date, p.status_id,
                        f.farm_name, fm.first_name || ' ' || fm.last_name AS farmer_name,
-                       c.crop_name, c.variety, ps.status_name,
+                       c.crop_name, cv.variety_name AS variety, ps.status_name,
                        p.created_at, p.updated_at
                 FROM planting p
                 INNER JOIN farm f ON p.farm_id = f.farm_id
                 INNER JOIN farmer fm ON f.farmer_id = fm.farmer_id
-                INNER JOIN crop c ON p.crop_id = c.crop_id
+                INNER JOIN crop_variety cv ON p.variety_id = cv.variety_id
+                INNER JOIN crop c ON cv.crop_id = c.crop_id
                 INNER JOIN planting_statuses ps ON p.status_id = ps.status_id
                 WHERE p.planting_id = :planting_id";
         $stmt = $this->pdo->prepare($sql);
@@ -138,9 +141,11 @@ class Planting {
     }
 
     public function getCrops(): array {
-        $sql = "SELECT crop_id, crop_name, variety
-                FROM crop
-                ORDER BY crop_name, variety, crop_id";
+        $sql = "SELECT cv.variety_id, c.crop_name, cv.variety_name AS variety,
+                       cv.growing_period_days
+                FROM crop_variety cv
+                INNER JOIN crop c ON c.crop_id = cv.crop_id
+                ORDER BY c.crop_name, cv.variety_name, cv.variety_id";
         return $this->pdo->query($sql)->fetchAll();
     }
 
@@ -151,15 +156,25 @@ class Planting {
         return $this->pdo->query($sql)->fetchAll();
     }
 
-    public function hasValidReferences(int $farmId, int $cropId, int $statusId): bool {
+    public function getGrowingPeriodDays(int $varietyId): ?int {
+        $stmt = $this->pdo->prepare(
+            'SELECT growing_period_days FROM crop_variety WHERE variety_id = :variety_id'
+        );
+        $stmt->execute(['variety_id' => $varietyId]);
+        $days = $stmt->fetchColumn();
+
+        return $days === false ? null : (int) $days;
+    }
+
+    public function hasValidReferences(int $farmId, int $varietyId, int $statusId): bool {
         $sql = "SELECT
                     EXISTS (SELECT 1 FROM farm WHERE farm_id = :farm_id)
-                    AND EXISTS (SELECT 1 FROM crop WHERE crop_id = :crop_id)
+                    AND EXISTS (SELECT 1 FROM crop_variety WHERE variety_id = :variety_id)
                     AND EXISTS (SELECT 1 FROM planting_statuses WHERE status_id = :status_id)";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
             "farm_id" => $farmId,
-            "crop_id" => $cropId,
+            "variety_id" => $varietyId,
             "status_id" => $statusId
         ]);
 
@@ -167,52 +182,9 @@ class Planting {
         return $isValid === true || $isValid === 't' || $isValid === '1';
     }
 
-    public function hasDuplicate(
-        int $farmId,
-        int $cropId,
-        string $plantingDate,
-        float $areaPlanted,
-        float $seedQuantity,
-        string $expectedHarvestDate,
-        int $statusId,
-        ?int $excludePlantingId = null
-    ): bool {
-        $sql = "SELECT EXISTS (
-                    SELECT 1 FROM planting
-                    WHERE farm_id = :farm_id
-                      AND crop_id = :crop_id
-                      AND planting_date = :planting_date
-                      AND area_planted = :area_planted
-                      AND seed_quantity = :seed_quantity
-                      AND expected_harvest_date = :expected_harvest_date
-                      AND status_id = :status_id";
-        if ($excludePlantingId !== null) {
-            $sql .= ' AND planting_id <> :exclude_planting_id';
-        }
-        $sql .= ')';
-
-        $stmt = $this->pdo->prepare($sql);
-        $params = [
-            'farm_id' => $farmId,
-            'crop_id' => $cropId,
-            'planting_date' => $plantingDate,
-            'area_planted' => $areaPlanted,
-            'seed_quantity' => $seedQuantity,
-            'expected_harvest_date' => $expectedHarvestDate,
-            'status_id' => $statusId
-        ];
-        if ($excludePlantingId !== null) {
-            $params['exclude_planting_id'] = $excludePlantingId;
-        }
-        $stmt->execute($params);
-
-        $exists = $stmt->fetchColumn();
-        return $exists === true || $exists === 't' || $exists === '1';
-    }
-
     public function create(
         int $farmId,
-        int $cropId,
+        int $varietyId,
         string $plantingDate,
         float $areaPlanted,
         float $seedQuantity,
@@ -220,10 +192,10 @@ class Planting {
         int $statusId
     ): int {
         $sql = "INSERT INTO planting (
-                    farm_id, crop_id, planting_date, area_planted, seed_quantity,
+                    farm_id, variety_id, planting_date, area_planted, seed_quantity,
                     expected_harvest_date, status_id
                 )
-                SELECT :farm_id, :crop_id, :planting_date, :area_planted, :seed_quantity,
+                SELECT :farm_id, :variety_id, :planting_date, :area_planted, :seed_quantity,
                        :expected_harvest_date, s.status_id
                 FROM planting_statuses s
                 WHERE s.status_id = :status_id
@@ -231,7 +203,7 @@ class Planting {
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
             "farm_id" => $farmId,
-            "crop_id" => $cropId,
+            "variety_id" => $varietyId,
             "planting_date" => $plantingDate,
             "area_planted" => $areaPlanted,
             "seed_quantity" => $seedQuantity,
@@ -245,7 +217,7 @@ class Planting {
     public function update(
         int $plantingId,
         int $farmId,
-        int $cropId,
+        int $varietyId,
         string $plantingDate,
         float $areaPlanted,
         float $seedQuantity,
@@ -254,7 +226,7 @@ class Planting {
     ): bool {
         $sql = "UPDATE planting AS p
                 SET farm_id = :farm_id,
-                    crop_id = :crop_id,
+                    variety_id = :variety_id,
                     planting_date = :planting_date,
                     area_planted = :area_planted,
                     seed_quantity = :seed_quantity,
@@ -268,7 +240,7 @@ class Planting {
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
             "farm_id" => $farmId,
-            "crop_id" => $cropId,
+            "variety_id" => $varietyId,
             "planting_date" => $plantingDate,
             "area_planted" => $areaPlanted,
             "seed_quantity" => $seedQuantity,

@@ -76,12 +76,13 @@ class Report {
                 FROM planting p
                 INNER JOIN farm f ON f.farm_id = p.farm_id
                 INNER JOIN farmer fm ON fm.farmer_id = f.farmer_id
-                INNER JOIN crop c ON c.crop_id = p.crop_id
+                INNER JOIN crop_variety cv ON cv.variety_id = p.variety_id
+                INNER JOIN crop c ON c.crop_id = cv.crop_id
                 WHERE (:farm_id = 0 OR f.farm_id = :selected_farm_id)
                   AND (:has_date_from = FALSE OR p.planting_date >= :date_from)
                   AND (:has_date_to = FALSE OR p.planting_date <= :date_to)
                   AND (:has_search = FALSE OR CONCAT_WS(' ', f.farm_name, f.location, fm.first_name,
-                       fm.last_name, c.crop_name, c.variety) ILIKE :search_filter)";
+                       fm.last_name, c.crop_name, cv.variety_name) ILIKE :search_filter)";
         $stmt = $this->pdo->prepare($sql);
         $this->bindCropReportFilters($stmt, $farmId, $dateFrom, $dateTo, $search);
         $stmt->execute();
@@ -103,7 +104,7 @@ class Report {
             'farm_name' => 'f.farm_name',
             'farmer_name' => 'fm.last_name',
             'crop_name' => 'c.crop_name',
-            'variety' => 'c.variety',
+            'variety' => 'cv.variety_name',
             'planting_date' => 'p.planting_date',
             'area_planted' => 'p.area_planted',
             'status' => 'ps.status_name'
@@ -111,18 +112,19 @@ class Report {
         $orderBy = $columns[$sort] ?? $columns['farm_name'];
         $orderDirection = strtoupper($direction) === 'DESC' ? 'DESC' : 'ASC';
         $sql = "SELECT f.farm_id, f.farm_name, f.location, fm.first_name || ' ' || fm.last_name AS farmer_name,
-                       c.crop_name, c.variety, p.planting_date, p.area_planted, p.expected_harvest_date,
+                       c.crop_name, cv.variety_name AS variety, p.planting_date, p.area_planted, p.expected_harvest_date,
                        ps.status_name
                 FROM planting p
                 INNER JOIN farm f ON f.farm_id = p.farm_id
                 INNER JOIN farmer fm ON fm.farmer_id = f.farmer_id
-                INNER JOIN crop c ON c.crop_id = p.crop_id
+                INNER JOIN crop_variety cv ON cv.variety_id = p.variety_id
+                INNER JOIN crop c ON c.crop_id = cv.crop_id
                 INNER JOIN planting_statuses ps ON ps.status_id = p.status_id
                 WHERE (:farm_id = 0 OR f.farm_id = :selected_farm_id)
                   AND (:has_date_from = FALSE OR p.planting_date >= :date_from)
                   AND (:has_date_to = FALSE OR p.planting_date <= :date_to)
                   AND (:has_search = FALSE OR CONCAT_WS(' ', f.farm_name, f.location, fm.first_name,
-                       fm.last_name, c.crop_name, c.variety) ILIKE :search_filter)
+                       fm.last_name, c.crop_name, cv.variety_name) ILIKE :search_filter)
                 ORDER BY {$orderBy} {$orderDirection} NULLS LAST, f.farm_id ASC, p.planting_date DESC
                 LIMIT :limit OFFSET :offset";
         $stmt = $this->pdo->prepare($sql);
@@ -171,12 +173,13 @@ class Report {
                 INNER JOIN planting_statuses ps ON ps.status_id = p.status_id
                 INNER JOIN farm f ON f.farm_id = p.farm_id
                 INNER JOIN farmer fm ON fm.farmer_id = f.farmer_id
-                INNER JOIN crop c ON c.crop_id = p.crop_id
+                INNER JOIN crop_variety cv ON cv.variety_id = p.variety_id
+                INNER JOIN crop c ON c.crop_id = cv.crop_id
                 WHERE (:has_status = FALSE OR ps.status_id = :selected_status_id)
                   AND (:has_date_from = FALSE OR p.planting_date >= :date_from)
                   AND (:has_date_to = FALSE OR p.planting_date <= :date_to)
                   AND (:has_search = FALSE OR CONCAT_WS(' ', f.farm_name, fm.first_name,
-                       fm.last_name, c.crop_name, c.variety, ps.status_name) ILIKE :search_filter)";
+                       fm.last_name, c.crop_name, cv.variety_name, ps.status_name) ILIKE :search_filter)";
         $stmt = $this->pdo->prepare($sql);
         $this->bindPlantingsByStatusFilters($stmt, $statusId, $dateFrom, $dateTo, $search);
         $stmt->execute();
@@ -203,17 +206,18 @@ class Report {
         $orderDirection = strtoupper($direction) === 'ASC' ? 'ASC' : 'DESC';
         $sql = "SELECT p.planting_id, p.planting_date, p.area_planted, p.expected_harvest_date,
                        ps.status_name, f.farm_name, fm.first_name || ' ' || fm.last_name AS farmer_name,
-                       c.crop_name, c.variety
+                       c.crop_name, cv.variety_name AS variety
                 FROM planting p
                 INNER JOIN planting_statuses ps ON ps.status_id = p.status_id
                 INNER JOIN farm f ON f.farm_id = p.farm_id
                 INNER JOIN farmer fm ON fm.farmer_id = f.farmer_id
-                INNER JOIN crop c ON c.crop_id = p.crop_id
+                INNER JOIN crop_variety cv ON cv.variety_id = p.variety_id
+                INNER JOIN crop c ON c.crop_id = cv.crop_id
                 WHERE (:has_status = FALSE OR ps.status_id = :selected_status_id)
                   AND (:has_date_from = FALSE OR p.planting_date >= :date_from)
                   AND (:has_date_to = FALSE OR p.planting_date <= :date_to)
                   AND (:has_search = FALSE OR CONCAT_WS(' ', f.farm_name, fm.first_name,
-                       fm.last_name, c.crop_name, c.variety, ps.status_name) ILIKE :search_filter)
+                       fm.last_name, c.crop_name, cv.variety_name, ps.status_name) ILIKE :search_filter)
                 ORDER BY {$orderBy} {$orderDirection} NULLS LAST, p.planting_id DESC
                 LIMIT :limit OFFSET :offset";
         $stmt = $this->pdo->prepare($sql);
@@ -251,14 +255,15 @@ class Report {
                 INNER JOIN planting p ON p.planting_id = h.planting_id
                 INNER JOIN farm f ON f.farm_id = p.farm_id
                 INNER JOIN farmer fm ON fm.farmer_id = f.farmer_id
-                INNER JOIN crop c ON c.crop_id = p.crop_id
+                INNER JOIN crop_variety cv ON cv.variety_id = p.variety_id
+                INNER JOIN crop c ON c.crop_id = cv.crop_id
                 INNER JOIN harvest_quality_grades q ON q.quality_grade_id = h.quality_grade_id
                 INNER JOIN harvest_remarks r ON r.remark_id = h.remark_id
                 WHERE (:has_quality = FALSE OR q.quality_grade_id = :selected_quality_id)
                   AND (:has_date_from = FALSE OR h.harvest_date >= :date_from)
                   AND (:has_date_to = FALSE OR h.harvest_date <= :date_to)
                   AND (:has_search = FALSE OR CONCAT_WS(' ', fm.first_name, fm.last_name,
-                       f.farm_name, c.crop_name, c.variety, q.quality_grade_name,
+                       f.farm_name, c.crop_name, cv.variety_name, q.quality_grade_name,
                        r.remark_description) ILIKE :search_filter)";
         $stmt = $this->pdo->prepare($sql);
         $this->bindHarvestReportFilters($stmt, $qualityGradeId, $dateFrom, $dateTo, $search);
@@ -286,19 +291,20 @@ class Report {
         $orderDirection = strtoupper($direction) === 'ASC' ? 'ASC' : 'DESC';
         $sql = "SELECT h.harvest_id, h.harvest_date, h.quantity_kg, h.selling_price_per_kg,
                        fm.first_name || ' ' || fm.last_name AS farmer_name, f.farm_name,
-                       c.crop_name, c.variety, q.quality_grade_name, r.remark_description
+                       c.crop_name, cv.variety_name AS variety, q.quality_grade_name, r.remark_description
                 FROM harvest h
                 INNER JOIN planting p ON p.planting_id = h.planting_id
                 INNER JOIN farm f ON f.farm_id = p.farm_id
                 INNER JOIN farmer fm ON fm.farmer_id = f.farmer_id
-                INNER JOIN crop c ON c.crop_id = p.crop_id
+                INNER JOIN crop_variety cv ON cv.variety_id = p.variety_id
+                INNER JOIN crop c ON c.crop_id = cv.crop_id
                 INNER JOIN harvest_quality_grades q ON q.quality_grade_id = h.quality_grade_id
                 INNER JOIN harvest_remarks r ON r.remark_id = h.remark_id
                 WHERE (:has_quality = FALSE OR q.quality_grade_id = :selected_quality_id)
                   AND (:has_date_from = FALSE OR h.harvest_date >= :date_from)
                   AND (:has_date_to = FALSE OR h.harvest_date <= :date_to)
                   AND (:has_search = FALSE OR CONCAT_WS(' ', fm.first_name, fm.last_name,
-                       f.farm_name, c.crop_name, c.variety, q.quality_grade_name,
+                       f.farm_name, c.crop_name, cv.variety_name, q.quality_grade_name,
                        r.remark_description) ILIKE :search_filter)
                 ORDER BY {$orderBy} {$orderDirection} NULLS LAST, h.harvest_id DESC
                 LIMIT :limit OFFSET :offset";
@@ -362,16 +368,17 @@ class Report {
     }
 
     public function getEstimatedHarvestValueByCrop(string $dateFrom, string $dateTo): array {
-        $sql = "SELECT c.crop_name, c.variety, COUNT(h.harvest_id) AS harvest_count,
+        $sql = "SELECT c.crop_name, cv.variety_name AS variety, COUNT(h.harvest_id) AS harvest_count,
                        COALESCE(SUM(h.quantity_kg), 0) AS total_quantity_kg,
                        COALESCE(SUM(h.quantity_kg * h.selling_price_per_kg), 0) AS estimated_value
-                FROM crop c
-                INNER JOIN planting p ON p.crop_id = c.crop_id
+                FROM planting p
+                INNER JOIN crop_variety cv ON cv.variety_id = p.variety_id
+                INNER JOIN crop c ON c.crop_id = cv.crop_id
                 INNER JOIN harvest h ON h.planting_id = p.planting_id
                 WHERE (:has_date_from = FALSE OR h.harvest_date >= :date_from)
                   AND (:has_date_to = FALSE OR h.harvest_date <= :date_to)
-                GROUP BY c.crop_id, c.crop_name, c.variety
-                ORDER BY estimated_value DESC, c.crop_name, c.variety";
+                GROUP BY c.crop_id, c.crop_name, cv.variety_id, cv.variety_name
+                ORDER BY estimated_value DESC, c.crop_name, cv.variety_name";
         $stmt = $this->pdo->prepare($sql);
         $this->bindPlantingDates($stmt, $dateFrom, $dateTo);
         $stmt->execute();
