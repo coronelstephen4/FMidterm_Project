@@ -17,12 +17,22 @@
 - **Phase:** 9 Final testing and submission
 - **Last updated:** 2026-11-14
 - **Currently working on:** Farmer contact form country flags and calling-code selection; duplicate checks use normalized first name + last name + address.
-- **Next step:** Visually check the flag selector in the browser. Separately, review the duplicate-pair SELECT in `database/30_farmer_name_address_duplicate_rule.sql` before running its SQL in Supabase.
+- **Next step:** Test Farmer create/edit with same-name/address, shared-contact household members, same name/different address, and unchanged edits. Check the flag selector in the browser; the duplicate-pair pre-check output remains unconfirmed.
 
 ## Progress Log
 
 Newest entry at the top. Format:
 `[Date Time] What was done | Files changed | What is next`
+
+### 2026-11-14 16:31
+- User's read-only catalog query returned one `farmer_duplicate_guard` row attached to `public.reject_duplicate_farmer()`, confirming the trigger is installed. The screenshot truncates the function text in the result cell; the installed trigger/function names are confirmed. Pre-check SELECT results are still not visible.
+- Files changed: PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Test Farmer create/edit behavior for the four cases in the checklist and visually verify the country flag selector.
+
+### 2026-11-14 16:30
+- User screenshot shows Supabase SQL Editor returned “Success. No rows returned” after executing the Farmer duplicate-trigger replacement. Recorded migration 30 as user-run; no database access or query was performed by Codex. The screenshot does not show the pre-check SELECT output or catalog verification.
+- Files changed: PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Run a read-only catalog SELECT to verify the trigger definition; separately inspect the duplicate-pair pre-check output if it has not yet been run.
 
 ### 2026-11-14 16:18
 - Replaced the country-code abbreviation in the Farmer create/edit selector with a flag image that updates from the selected country ISO code. Kept the existing country calling-code options and E.164 input behavior. PHP lint passed for both changed pages.

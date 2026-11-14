@@ -98,7 +98,7 @@ Each module needs: model, list page with search, filter, sorting and pagination,
 - [x] Validation on every form (required, numeric ranges, valid dates, foreign keys exist)
 - [x] Show the friendly Farmer duplicate message only when normalized first name, last name, and address all match; contact/address matches alone are allowed
 - [x] Prevent farmer registration dates from being set in the future
-- [~] Add country/flag and calling-code selection to Farmer create/edit, showing a graphical flag for every available country option and normalizing new or changed contacts to E.164; use the revised name+address duplicate rule in PHP and have the student review/run `database/30_farmer_name_address_duplicate_rule.sql` (Supabase not changed by Codex)
+- [~] Add country/flag and calling-code selection to Farmer create/edit, showing a graphical flag for every available country option and normalizing new or changed contacts to E.164; revised name+address trigger was run and its catalog entry verified by the student
 - [~] Add one shared required/format Validator to every Farmer, Farm, Crop/Variety, Planting, Harvest create/edit handler and login; field validation and safe messages are implemented, but the current combined Crop/Variety form still needs a separate existing-crop-ID selector to fully match the requested Crop Variety form rules
 - [~] Review and run `database/28_form_validation_constraints.sql` only after reviewing pre-check rows; contact-format CHECK is intentionally deferred until six legacy values are confirmed, and no SQL was run by Codex
 - [x] Prevent harvest records from being dated in the future
@@ -113,7 +113,7 @@ Each module needs: model, list page with search, filter, sorting and pagination,
 - [x] Align Farmer identity validation with the ERD: `farmer_id` is the PK and contact/name/address are not UNIQUE; retain duplicate validation for the other business modules
 - [x] Review duplicate validation across all five business modules after the crop/variety split; create/edit checks remain aligned with the Supabase guards, and PHP lint passed for all five models and ten create/edit pages
 - [x] Review duplicate validation logic for create/edit exclusions, normalized comparisons, database error messages, and 3NF crop-variety links; no implementation gap found
-- [x] Revise Farmer duplicate detection to normalized first_name + last_name + address, excluding its own ID on edit and allowing unchanged edits; matching trigger SQL with a pre-check is prepared for student review
+- [x] Revise Farmer duplicate detection to normalized first_name + last_name + address, excluding its own ID on edit and allowing unchanged edits; student screenshot confirms the matching trigger SQL ran successfully
 - [x] Audit possible duplicate business records across the five core tables without changing existing rows
 - [x] Add a shared three-line Settings menu with appearance control and Log out
 - [x] Expand the shared desktop layout to match the user's marked content width while retaining responsive padding
