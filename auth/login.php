@@ -34,6 +34,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             session_regenerate_id(true);
             $_SESSION['user_id'] = (int) $user['user_id'];
             $_SESSION['role'] = $user['role'];
+            $_SESSION['username'] = $user['username'];
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 
             header('Location: /FMidterm_Project/');
             exit;

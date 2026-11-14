@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../includes/auth_check.php';
+require_once __DIR__ . '/../config/Timezone.php';
 requireLogin();
 require_once __DIR__ . '/../config/Database.php';
 require_once __DIR__ . '/../models/Report.php';
@@ -61,7 +62,17 @@ $printAllUrl = $pageError === null && $dateError === null ? '?' . http_build_que
 ]) : '';
 $pageTitle = 'Plantings by status';
 $printOrientation = 'landscape';
+$reportPrint = true;
+$reportPrintGenerated = date('Y-m-d H:i');
+$reportPrintRecordCount = $totalRows;
+$reportPrintNoRecords = $totalRows === 0 && $pageError === null && $dateError === null;
+$selectedStatusName = 'All statuses';
+foreach ($statuses as $statusOption) { if ((int) $statusOption['status_id'] === $statusId) { $selectedStatusName = $statusOption['status_name']; break; } }
+$reportPrintFilters = ['Status' => $selectedStatusName, 'Date from' => $dateFrom, 'Date to' => $dateTo, 'Search' => $search, 'Sort' => $sort . ' ' . $direction];
+$reportPrintTotals = ['Total area planted (ha)' => number_format(array_sum(array_map(static fn ($row): float => (float) ($row['area_planted'] ?? 0), $rows)), 2)];
 require __DIR__ . '/../includes/header.php';
+$reportPrintSection = 'header';
+require __DIR__ . '/../includes/report_print.php';
 $sortLabels = [
     'planting_date' => 'Planting date', 'status' => 'Status', 'farm_name' => 'Farm',
     'farmer_name' => 'Farmer', 'crop_name' => 'Crop', 'area_planted' => 'Area planted'
@@ -131,7 +142,7 @@ $sortLabels = [
 </form>
 
 <div class="mt-6 overflow-x-auto rounded-lg bg-white shadow-sm ring-1 ring-slate-200">
-    <table class="min-w-full divide-y divide-slate-200 text-sm">
+    <table class="print-plantings-status min-w-full divide-y divide-slate-200 text-sm">
         <thead class="bg-slate-100 text-left text-slate-700">
             <tr>
                 <?php foreach ($sortLabels as $column => $label):
@@ -172,4 +183,5 @@ $sortLabels = [
         <?php if ($page < $totalPages): ?><a class="rounded-md border border-slate-300 px-3 py-2 hover:bg-white" href="?<?= htmlspecialchars(http_build_query(['status_id' => $statusId, 'date_from' => $dateFrom, 'date_to' => $dateTo, 'search' => $search, 'sort' => $sort, 'direction' => $direction, 'page' => $page + 1]), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>">Next</a><?php endif; ?>
     </div>
 </div>
+<?php $reportPrintSection = 'summary'; require __DIR__ . '/../includes/report_print.php'; ?>
 <?php require __DIR__ . '/../includes/footer.php'; ?>

@@ -135,6 +135,19 @@ $navigation = [
             main a { color: #111827 !important; text-decoration: none !important; }
         }
     </style>
+    <?php if (!empty($reportPrint)): ?>
+        <link rel="stylesheet" href="<?= $appBaseUrl ?>/assets/css/print.css">
+        <?php
+        $pageBoxTitle = json_encode((string) $pageTitle, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
+        $pageBoxFooter = json_encode('Agriculture Information System | Generated: ' . ($reportPrintGenerated ?? date('Y-m-d H:i')), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
+        ?>
+        <style>
+            @media print {
+                @page { @top-left { content: <?= $pageBoxTitle ?>; } @bottom-left { content: <?= $pageBoxFooter ?>; } }
+                @page report-wide { @top-left { content: <?= $pageBoxTitle ?>; } @bottom-left { content: <?= $pageBoxFooter ?>; } }
+            }
+        </style>
+    <?php endif; ?>
 </head>
 <body data-auto-print="<?= !empty($autoPrint) ? 'true' : 'false' ?>" data-print-orientation="<?= htmlspecialchars($printOrientation ?? 'portrait', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" class="min-h-screen bg-slate-50 text-slate-800">
     <header class="bg-emerald-800 text-white shadow">

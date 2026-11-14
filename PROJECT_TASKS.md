@@ -129,6 +129,7 @@ Each module needs: model, list page with search, filter, sorting and pagination,
 - [x] Put Print report beside All reports in each of the six report toolbars
 - [x] Make Print report include all rows matching current filters and sorting; keep screen pagination at 10 rows per page
 - [x] Apply the all-matching-rows Print report flow to all six reports, preserving date filters on summary reports
+- [x] Apply shared A4 landscape print styling and header/summary partials to all six reports, including Manila timezone, running page title, every-page footer counters, filtered totals, and empty-result handling
 - [x] Remove redundant “Report” suffixes from all six report document titles used in print headers and browser tabs
 - [x] Suppress the repeated browser-generated report title in print headers for all six reports
 - [x] Remove browser header/footer URL area from report print pages using zero-margin page boxes and explicit content padding
@@ -163,7 +164,7 @@ Each module needs: model, list page with search, filter, sorting and pagination,
 ## Phase 9: Final testing and submission
 - [x] Publish the pending AIS report updates, final documentation, and SQL audit/update scripts to GitHub in commit `1bda119`; keep private credentials and the classmate reference PDF excluded
 - [x] Keep local project guidance, documentation, and the source DOCX discoverable to workspace file mentions
-- [~] Verify all six Print report previews in an authenticated browser, including full filtered rows and page layout
+- [~] Verify all six Print report previews in Chrome 157.0.8103.52, including no-filter, filter, no-result and multi-page cases, Manila time, page counters, screen-only visibility, and end summary; preview not yet tested
 - [~] Test CRUD, search, filter, sort, dropdowns, joins, login, dashboard and reports after migration 08
 - [x] Test invalid input and error cases (module checks and integer overflow boundary check completed)
 - [x] Verify local XAMPP PDO connection to Supabase with a read-only SELECT

@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../includes/auth_check.php';
+require_once __DIR__ . '/../config/Timezone.php';
 requireLogin();
 require_once __DIR__ . '/../config/Database.php';
 require_once __DIR__ . '/../models/Report.php';
@@ -37,7 +38,16 @@ $printAllUrl = $pageError === null && $dateError === null ? '?' . http_build_que
     'print_all' => '1', 'auto_print' => '1'
 ]) : '';
 $pageTitle = 'Estimated harvest value';
+$printOrientation = 'landscape';
+$reportPrint = true;
+$reportPrintGenerated = date('Y-m-d H:i');
+$reportPrintRecordCount = (int) $summary['harvest_count'];
+$reportPrintNoRecords = $reportPrintRecordCount === 0 && $pageError === null && $dateError === null;
+$reportPrintFilters = ['Date from' => $dateFrom, 'Date to' => $dateTo];
+$reportPrintTotals = ['Total quantity (kg)' => number_format((float) $summary['total_quantity_kg'], 2), 'Estimated value' => number_format((float) $summary['estimated_value'], 2)];
 require __DIR__ . '/../includes/header.php';
+$reportPrintSection = 'header';
+require __DIR__ . '/../includes/report_print.php';
 ?>
 <div class="flex flex-wrap items-center justify-between gap-3">
     <div>
@@ -91,7 +101,7 @@ require __DIR__ . '/../includes/header.php';
 
 <section class="mt-6 overflow-x-auto rounded-lg bg-white shadow-sm ring-1 ring-slate-200" aria-labelledby="crop-value-heading">
     <h2 id="crop-value-heading" class="px-4 pt-4 text-lg font-semibold text-slate-900">Estimated value by crop</h2>
-    <table class="mt-3 min-w-full divide-y divide-slate-200 text-sm">
+    <table class="print-estimated-value mt-3 min-w-full divide-y divide-slate-200 text-sm">
         <thead class="bg-slate-100 text-left text-slate-700">
             <tr>
                 <th scope="col" class="px-4 py-3 font-semibold">Crop</th>
@@ -114,4 +124,5 @@ require __DIR__ . '/../includes/header.php';
         </tbody>
     </table>
 </section>
+<?php $reportPrintSection = 'summary'; require __DIR__ . '/../includes/report_print.php'; ?>
 <?php require __DIR__ . '/../includes/footer.php'; ?>

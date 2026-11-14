@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../includes/auth_check.php';
 require_once __DIR__ . '/../includes/country_phone.php';
+require_once __DIR__ . '/../config/Timezone.php';
 requireLogin();
 require_once __DIR__ . '/../config/Database.php';
 require_once __DIR__ . '/../models/Report.php';
@@ -40,7 +41,15 @@ $printAllUrl = $pageError === null ? '?' . http_build_query([
 ]) : '';
 $pageTitle = 'Farmers and their farms';
 $printOrientation = 'landscape';
+$reportPrint = true;
+$reportPrintGenerated = date('Y-m-d H:i');
+$reportPrintRecordCount = $totalRows;
+$reportPrintNoRecords = $totalRows === 0 && $pageError === null;
+$reportPrintFilters = ['Search' => $search, 'Address' => $address, 'Sort' => $sort . ' ' . $direction];
+$reportPrintTotals = ['Total area (ha)' => number_format(array_sum(array_map(static fn ($row): float => (float) ($row['area_hectares'] ?? 0), $rows)), 2)];
 require __DIR__ . '/../includes/header.php';
+$reportPrintSection = 'header';
+require __DIR__ . '/../includes/report_print.php';
 $sortLabels = [
     'farmer_id' => 'Farmer ID', 'farmer_name' => 'Farmer', 'address' => 'Address',
     'farm_name' => 'Farm', 'location' => 'Farm location', 'area_hectares' => 'Area (ha)'
@@ -76,7 +85,7 @@ $sortLabels = [
 </form>
 
 <div class="mt-6 overflow-x-auto rounded-lg bg-white shadow-sm ring-1 ring-slate-200">
-    <table class="min-w-full divide-y divide-slate-200 text-sm">
+    <table class="print-farmers-farms min-w-full divide-y divide-slate-200 text-sm">
         <thead class="bg-slate-100 text-left text-slate-700">
             <tr>
                 <?php foreach ($sortLabels as $column => $label):
@@ -118,4 +127,5 @@ $sortLabels = [
         <?php if ($page < $totalPages): ?><a class="rounded-md border border-slate-300 px-3 py-2 hover:bg-white" href="?<?= htmlspecialchars(http_build_query(['search' => $search, 'address' => $address, 'sort' => $sort, 'direction' => $direction, 'page' => $page + 1]), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>">Next</a><?php endif; ?>
     </div>
 </div>
+<?php $reportPrintSection = 'summary'; require __DIR__ . '/../includes/report_print.php'; ?>
 <?php require __DIR__ . '/../includes/footer.php'; ?>

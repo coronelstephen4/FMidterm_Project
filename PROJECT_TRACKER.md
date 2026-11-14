@@ -16,13 +16,18 @@
 
 - **Phase:** 9 Final testing and submission
 - **Last updated:** 2026-11-14
-- **Currently working on:** Farmer contact form country flags and calling-code selection; duplicate checks use normalized first name + last name + address.
-- **Next step:** Test Farmer create/edit with same-name/address, shared-contact household members, same name/different address, and unchanged edits. Check the flag selector in the browser; the duplicate-pair pre-check output remains unconfirmed.
+- **Currently working on:** Shared print layout and summaries for all six reports. Implementation is complete; authenticated Chrome print-preview verification remains pending.
+- **Next step:** In Chrome 157.0.8103.52, preview each report with no filters, a filter, and no results; preview one report over two pages. Confirm every-page counters, running title, Manila generated time, hidden screen-only content, repeated table headings, and end summary. If margin boxes fail, use Chrome's Headers and footers option as the fallback.
 
 ## Progress Log
 
 Newest entry at the top. Format:
 `[Date Time] What was done | Files changed | What is next`
+
+### 2026-11-14 18:59
+- Added shared A4 landscape print CSS and a shared report print partial used at each report's header and end. Print output includes Manila generated time, a running title, footer counters on unnamed and `report-wide` pages, filtered record totals, relevant aggregate totals, and a conditional no-records message. Added `config/Timezone.php` and set username in new login sessions. Existing report queries and filters were not changed. PHP lint passed; Chrome is installed at 157.0.8103.52 but preview has not been tested.
+- Files changed: assets/css/print.css, config/Timezone.php, includes/report_print.php, includes/header.php, auth/login.php, six report pages, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Verify all six print previews and confirm margin-box counters in the installed Chrome; use Chrome's built-in Headers and footers if margin boxes do not render.
 
 ### 2026-11-14 16:31
 - User's read-only catalog query returned one `farmer_duplicate_guard` row attached to `public.reject_duplicate_farmer()`, confirming the trigger is installed. The screenshot truncates the function text in the result cell; the installed trigger/function names are confirmed. Pre-check SELECT results are still not visible.

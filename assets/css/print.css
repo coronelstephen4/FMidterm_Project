@@ -1,0 +1,50 @@
+.print-only { display: none !important; }
+
+@media print {
+    @page {
+        size: A4 landscape;
+        margin: 14mm 12mm 16mm;
+        @top-left { content: "Agriculture Information System"; font-size: 8pt; color: #374151; }
+        @bottom-left { content: "Agriculture Information System"; font-size: 8pt; color: #374151; }
+        @bottom-right { content: "Page " counter(page) " of " counter(pages); font-size: 8pt; color: #374151; }
+    }
+    @page report-wide {
+        size: A4 landscape;
+        margin: 14mm 12mm 16mm;
+        @top-left { content: "Agriculture Information System"; font-size: 8pt; color: #374151; }
+        @bottom-left { content: "Agriculture Information System"; font-size: 8pt; color: #374151; }
+        @bottom-right { content: "Page " counter(page) " of " counter(pages); font-size: 8pt; color: #374151; }
+    }
+
+    html, body { background: #fff !important; color: #000 !important; }
+    body { min-height: 0 !important; margin: 0 !important; padding: 0 !important; font-size: 10pt !important; }
+    body > header, body > footer, nav, form, button, .no-print, .pagination { display: none !important; }
+    main { max-width: none !important; margin: 0 !important; padding: 0 !important; }
+    main, main * { color: #000 !important; box-shadow: none !important; text-shadow: none !important; }
+    html.night-mode main, html.night-mode main * { background-color: transparent !important; }
+    html.night-mode main { background-color: #fff !important; }
+    .print-only { display: block !important; }
+    .print-report-header { margin: 0 0 5mm; border-bottom: 1px solid #777; padding-bottom: 3mm; }
+    .print-report-header h1 { margin: 1mm 0 2mm; font-size: 16pt; }
+    .print-report-header p { margin: 1mm 0; font-size: 9pt; }
+    .print-summary { break-inside: avoid; margin-top: 6mm; border-top: 1px solid #777; padding-top: 3mm; }
+    .print-summary h2 { margin: 0 0 2mm; font-size: 11pt; }
+    .print-summary p { margin: 1mm 0; }
+    main .overflow-x-auto { overflow: visible !important; border: 0 !important; border-radius: 0 !important; }
+    main table { width: 100% !important; min-width: 0 !important; table-layout: fixed !important; border-collapse: collapse !important; font-size: 10pt !important; }
+    main thead { display: table-header-group !important; }
+    main tfoot { display: table-footer-group !important; }
+    main tr { break-inside: avoid !important; page-break-inside: avoid !important; }
+    main th, main td { border: 1px solid #9ca3af !important; padding: 2mm 1.5mm !important; vertical-align: top !important; white-space: normal !important; overflow-wrap: anywhere !important; word-wrap: break-word !important; }
+    main th { background: #e5e7eb !important; color: #000 !important; font-weight: 700 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    html.night-mode main th { background: #e5e7eb !important; }
+    main td.numeric, main th.numeric { text-align: right !important; }
+    .print-farmers-farms th:nth-child(1), .print-farmers-farms td:nth-child(1), .print-farmers-farms th:nth-child(6), .print-farmers-farms td:nth-child(6),
+    .print-crops-farm th:nth-child(6), .print-crops-farm td:nth-child(6),
+    .print-plantings-status th:nth-child(6), .print-plantings-status td:nth-child(6),
+    .print-harvest-records th:nth-child(5), .print-harvest-records td:nth-child(5), .print-harvest-records th:nth-child(7), .print-harvest-records td:nth-child(7),
+    .print-total-quantity td:nth-child(n+2), .print-estimated-value td:nth-child(n+2) { text-align: right !important; }
+    main .bg-white, main .bg-slate-50, main .bg-slate-100, main .bg-emerald-50, main .bg-emerald-100 { background: #fff !important; }
+    main a { color: #000 !important; text-decoration: none !important; }
+    .print-no-records { margin: 3mm 0; }
+}
