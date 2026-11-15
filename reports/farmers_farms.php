@@ -8,8 +8,6 @@ require_once __DIR__ . '/../models/Report.php';
 
 $search = isset($_GET['search']) && is_string($_GET['search']) ? trim($_GET['search']) : '';
 $address = isset($_GET['address']) && is_string($_GET['address']) ? trim($_GET['address']) : '';
-$sort = isset($_GET['sort']) && is_string($_GET['sort']) ? $_GET['sort'] : 'farmer_id';
-$direction = isset($_GET['direction']) && is_string($_GET['direction']) ? $_GET['direction'] : 'ASC';
 $page = isset($_GET['page']) && is_string($_GET['page']) ? max(1, (int) $_GET['page']) : 1;
 $printAll = isset($_GET['print_all']) && $_GET['print_all'] === '1';
 $autoPrint = $printAll && isset($_GET['auto_print']) && $_GET['auto_print'] === '1';
@@ -28,7 +26,7 @@ try {
     $totalPages = max(1, (int) ceil($totalRows / $resultLimit));
     $page = min($page, $totalPages);
     $rows = $report->getFarmersAndFarms(
-        $search, $address, $sort, $direction, $resultLimit, ($page - 1) * $resultLimit
+        $search, $address, $resultLimit, ($page - 1) * $resultLimit
     );
 } catch (Throwable) {
     $pageError = 'The Farmers and Farms report could not be loaded. Please try again later.';
@@ -36,7 +34,7 @@ try {
 }
 
 $printAllUrl = $pageError === null ? '?' . http_build_query([
-    'search' => $search, 'address' => $address, 'sort' => $sort, 'direction' => $direction,
+    'search' => $search, 'address' => $address,
     'print_all' => '1', 'auto_print' => '1'
 ]) : '';
 $pageTitle = 'Farmers and their farms';
@@ -45,15 +43,9 @@ $reportPrint = true;
 $reportPrintGenerated = date('Y-m-d H:i');
 $reportPrintRecordCount = $totalRows;
 $reportPrintNoRecords = $totalRows === 0 && $pageError === null;
-$reportPrintFilters = ['Search' => $search, 'Address' => $address, 'Sort' => $sort . ' ' . $direction];
+$reportPrintFilters = ['Search' => $search, 'Address' => $address];
 $reportPrintTotals = ['Total area (ha)' => number_format(array_sum(array_map(static fn ($row): float => (float) ($row['area_hectares'] ?? 0), $rows)), 2)];
 require __DIR__ . '/../includes/header.php';
-$reportPrintSection = 'header';
-require __DIR__ . '/../includes/report_print.php';
-$sortLabels = [
-    'farmer_id' => 'Farmer ID', 'farmer_name' => 'Farmer', 'address' => 'Address',
-    'farm_name' => 'Farm', 'location' => 'Farm location', 'area_hectares' => 'Area (ha)'
-];
 ?>
 <div class="report-page-heading flex flex-wrap items-center justify-between gap-3">
     <div>
@@ -62,6 +54,7 @@ $sortLabels = [
     </div>
     <?php require __DIR__ . '/../includes/report_actions.php'; ?>
 </div>
+<?php $reportPrintSection = 'header'; require __DIR__ . '/../includes/report_print.php'; ?>
 
 <?php if ($pageError): ?>
     <div class="mt-5 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-red-800" role="alert">
@@ -88,29 +81,31 @@ $sortLabels = [
     <table class="print-farmers-farms min-w-full divide-y divide-slate-200 text-sm">
         <thead class="bg-slate-100 text-left text-slate-700">
             <tr>
-                <?php foreach ($sortLabels as $column => $label):
-                    $nextDirection = ($sort === $column && strtoupper($direction) === 'ASC') ? 'DESC' : 'ASC';
-                    $sortUrl = '?' . http_build_query(['search' => $search, 'address' => $address, 'sort' => $column, 'direction' => $nextDirection]);
-                ?>
-                    <th scope="col" class="whitespace-nowrap px-4 py-3 font-semibold"><a class="hover:text-emerald-800" href="<?= htmlspecialchars($sortUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>"><?= htmlspecialchars($label, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></a></th>
-                <?php endforeach; ?>
+                <th scope="col" class="px-4 py-3 font-semibold">Farmer ID</th>
+                <th scope="col" class="px-4 py-3 font-semibold">Farmer</th>
                 <th class="whitespace-nowrap px-4 py-3 font-semibold">Contact</th>
+                <th scope="col" class="px-4 py-3 font-semibold">Address</th>
+                <th scope="col" class="px-4 py-3 font-semibold">Farm ID</th>
+                <th scope="col" class="px-4 py-3 font-semibold">Farm</th>
+                <th scope="col" class="px-4 py-3 font-semibold">Farm location</th>
+                <th scope="col" class="px-4 py-3 font-semibold">Area (ha)</th>
                 <th class="whitespace-nowrap px-4 py-3 font-semibold">Soil</th>
                 <th class="whitespace-nowrap px-4 py-3 font-semibold">Irrigation</th>
             </tr>
         </thead>
         <tbody class="divide-y divide-slate-100">
             <?php if (!$rows): ?>
-                <tr><td colspan="9" class="px-4 py-8 text-center text-slate-500">No matching farmers or farms found.</td></tr>
+                <tr><td colspan="10" class="px-4 py-8 text-center text-slate-500">No matching farmers or farms found.</td></tr>
             <?php else: foreach ($rows as $row): ?>
                 <tr class="hover:bg-slate-50">
                     <td class="px-4 py-3"><?= (int) $row['farmer_id'] ?></td>
-                    <td class="whitespace-nowrap px-4 py-3"><?= htmlspecialchars($row['first_name'] . ' ' . $row['last_name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
+                    <td class="px-4 py-3"><?= htmlspecialchars($row['first_name'] . ' ' . $row['last_name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
+                    <td class="px-4 py-3"><?= htmlspecialchars(phoneDisplayValue((string) $row['contact_number']), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
                     <td class="px-4 py-3"><?= htmlspecialchars($row['address'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
+                    <td class="px-4 py-3"><?= (int) $row['farm_id'] ?></td>
                     <td class="px-4 py-3"><?= htmlspecialchars($row['farm_name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
                     <td class="px-4 py-3"><?= htmlspecialchars($row['location'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
                     <td class="px-4 py-3"><?= htmlspecialchars((string) $row['area_hectares'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
-                    <td class="px-4 py-3"><?= htmlspecialchars(phoneDisplayValue((string) $row['contact_number']), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
                     <td class="px-4 py-3"><?= htmlspecialchars($row['soil_type_name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
                     <td class="px-4 py-3"><?= htmlspecialchars($row['irrigation_type_name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
                 </tr>
@@ -120,12 +115,11 @@ $sortLabels = [
 </div>
 
 <div class="no-print mt-4 flex items-center justify-between text-sm text-slate-600">
-    <p><?= $totalRows ?> result<?= $totalRows === 1 ? '' : 's' ?></p>
+    <p><?= $totalRows ?> farm record<?= $totalRows === 1 ? '' : 's' ?></p>
     <div class="flex items-center gap-2">
-        <?php if ($page > 1): ?><a class="rounded-md border border-slate-300 px-3 py-2 hover:bg-white" href="?<?= htmlspecialchars(http_build_query(['search' => $search, 'address' => $address, 'sort' => $sort, 'direction' => $direction, 'page' => $page - 1]), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>">Previous</a><?php endif; ?>
+        <?php if ($page > 1): ?><a class="rounded-md border border-slate-300 px-3 py-2 hover:bg-white" href="?<?= htmlspecialchars(http_build_query(['search' => $search, 'address' => $address, 'page' => $page - 1]), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>">Previous</a><?php endif; ?>
         <span>Page <?= $page ?> of <?= $totalPages ?></span>
-        <?php if ($page < $totalPages): ?><a class="rounded-md border border-slate-300 px-3 py-2 hover:bg-white" href="?<?= htmlspecialchars(http_build_query(['search' => $search, 'address' => $address, 'sort' => $sort, 'direction' => $direction, 'page' => $page + 1]), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>">Next</a><?php endif; ?>
+        <?php if ($page < $totalPages): ?><a class="rounded-md border border-slate-300 px-3 py-2 hover:bg-white" href="?<?= htmlspecialchars(http_build_query(['search' => $search, 'address' => $address, 'page' => $page + 1]), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>">Next</a><?php endif; ?>
     </div>
 </div>
-<?php $reportPrintSection = 'summary'; require __DIR__ . '/../includes/report_print.php'; ?>
 <?php require __DIR__ . '/../includes/footer.php'; ?>

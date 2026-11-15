@@ -73,8 +73,6 @@ $totalValue = array_sum(array_map(static fn ($row): float => (float) ($row['quan
 $reportPrintFilters = ['Quality grade' => $selectedGradeName, 'Date from' => $dateFrom, 'Date to' => $dateTo, 'Search' => $search, 'Sort' => $sort . ' ' . $direction];
 $reportPrintTotals = ['Total quantity (kg)' => number_format($totalQuantity, 2), 'Estimated value' => number_format($totalValue, 2)];
 require __DIR__ . '/../includes/header.php';
-$reportPrintSection = 'header';
-require __DIR__ . '/../includes/report_print.php';
 $sortLabels = [
     'harvest_date' => 'Harvest date', 'farmer_name' => 'Farmer', 'farm_name' => 'Farm',
     'crop_name' => 'Crop', 'quantity_kg' => 'Quantity (kg)', 'quality_grade' => 'Quality'
@@ -87,6 +85,7 @@ $sortLabels = [
     </div>
     <?php require __DIR__ . '/../includes/report_actions.php'; ?>
 </div>
+<?php $reportPrintSection = 'header'; require __DIR__ . '/../includes/report_print.php'; ?>
 
 <?php if ($pageError): ?>
     <div class="mt-5 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-red-800" role="alert">
@@ -171,5 +170,4 @@ $sortLabels = [
         <?php if ($page < $totalPages): ?><a class="rounded-md border border-slate-300 px-3 py-2 hover:bg-white" href="?<?= htmlspecialchars(http_build_query(['quality_grade_id' => $qualityGradeId, 'date_from' => $dateFrom, 'date_to' => $dateTo, 'search' => $search, 'sort' => $sort, 'direction' => $direction, 'page' => $page + 1]), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>">Next</a><?php endif; ?>
     </div>
 </div>
-<?php $reportPrintSection = 'summary'; require __DIR__ . '/../includes/report_print.php'; ?>
 <?php require __DIR__ . '/../includes/footer.php'; ?>

@@ -15,12 +15,54 @@
 ## Current Status
 
 - **Phase:** 9 Final testing and submission
-- **Last updated:** 2026-11-15
-- **Currently working on:** The user-facing application name is centralized as `APP_NAME` and displays as HarvestHub. Shared print styling hides duplicate report title blocks while retaining the report title in page headers after the first page.
-- **Next step:** Review browser print previews for all reports and any list page with a print option. Confirm page-one title, repeated table headings, and footer output.
+- **Last updated:** 2026-11-16
+- **Currently working on:** Shared report printing uses zero-margin A4 landscape pages with repeating top/bottom spacer rows, auto-layout tables with wrapping and minimum widths for short columns, repeated table headings, and a fixed HarvestHub generated-time footer. Screen layout is flattened through the shared print frame wrapper.
+- **Next step:** Open Chrome print preview for all six reports with browser headers and footers enabled and disabled. Confirm no browser-generated text, per-page spacing, no text overlap, repeated table headings, footer placement, and clean final-page breaks; verify Farmers and Farms repeats all farmer details on every row.
 - **Last verified row-count snapshot (2026-11-15 05:21, user screenshots):** farmer 18, farm 19, crop 10, crop_variety 10, planting 31, harvest 22. Farmers without farms: IDs 25 and 38 (decision pending).
 
 ## Progress Log
+
+### 2026-11-16 02:32
+- Updated: Restored the flat Farmers and Farms table in screen and print output. Farmer ID, name, contact, and address now appear on every farm row; removed the per-farmer tbody markup and its print page-break rule. Kept Farm ID, the requested column order, farm-record count, and farmer_id/farm_id ordering. Updated the report documentation and task checklist. No database changes were made.
+- Files changed: `reports/farmers_farms.php`, `assets/css/print.css`, `FINAL_SYSTEM_DOCUMENTATION.md`, `PROJECT_TASKS.md`, `PROJECT_TRACKER.md`
+- Verification: `php -l` passed for `reports/farmers_farms.php`. Live data was not queried.
+- Next: Preview Farmers and Farms on screen and in print to confirm every farm row repeats the farmer details.
+
+### 2026-11-16 02:27
+- Updated: Added Farm ID and restored a flat Farmers and Farms display with farmer ID, name, contact, and address on every farm row. The query orders by farmer_id then farm_id; search/filter and farm-row counts remain joined at farm grain. Updated the result label and print column widths. No database changes were made.
+- Files changed: `models/Report.php`, `reports/farmers_farms.php`, `assets/css/print.css`, `PROJECT_TASKS.md`, `PROJECT_TRACKER.md`
+- Verification: `php -l` passed for both changed PHP files. Live database rows could not be queried here, so current Farm ID assignments are not verified.
+- Next: Preview Farmers and Farms on screen and in print, confirming all farmer details repeat for farmers 8, 9, and 40.
+
+### 2026-11-16 02:15
+- Updated: Changed shared print tables from fixed to auto layout at 100% width; removed general nowrap; enabled wrapping with anywhere overflow, normal word breaks, top alignment, and 2px by 4px cell padding. Added minimum widths for Farmer ID, area, contact, soil, irrigation, and date/numeric columns across the six report tables. Kept phone values unwrapped, text at 9pt, repeating headings, unbroken data rows, the zero-margin page, borderless wrapper, and fixed footer.
+- Files changed: `assets/css/print.css`, `PROJECT_TASKS.md`, `PROJECT_TRACKER.md`
+- Verification: No PHP files changed, so `php -l` does not apply. Browser previews remain pending.
+- Next: Review all six reports in Chrome and confirm wrapped content does not overlap neighboring columns.
+
+### 2026-11-16 02:10
+- Updated: Confirmed a single `@page` rule in the loaded shared print stylesheet and added a file-modified cache query to its link. Set report browser titles to `HarvestHub - <Report name>` and kept that title during automatic printing. Removed margin-box page counters/title rules, made only the wrapper's direct spacer elements borderless, and moved the existing generated-time footer to `position: fixed; bottom: 0` inside the repeated tfoot spacer. Screen table descendants remain unaffected by the wrapper's flattening rules.
+- Files changed: `includes/header.php`, `includes/report_print.php`, `assets/css/print.css`, `PROJECT_TASKS.md`, `PROJECT_TRACKER.md`
+- Verification: PHP lint and Chrome preview checks remain pending. No database changes were made.
+- Next: Lint all changed PHP files, then check each report in Chrome with Headers and footers enabled and disabled.
+
+### 2026-11-16 02:03
+- Updated: Replaced page-box margin headers/footers with zero-margin A4 landscape pages and a shared outer print table whose top and bottom spacer rows repeat per page. Added a fixed generated-time footer inside the bottom spacer. Removed margin-box page counters and the running title. The screen presentation remains flattened through the wrapper's non-print CSS.
+- Files changed: `includes/header.php`, `includes/footer.php`, `includes/report_print.php`, `assets/css/print.css`, `PROJECT_TASKS.md`, `PROJECT_TRACKER.md`
+- Verification: `php -l` passed for all three changed PHP files. Chrome preview checks remain pending. No database changes were made.
+- Next: Lint changed PHP files and preview every report with browser headers/footers both enabled and disabled.
+
+### 2026-11-16 01:56
+- Updated: Removed the settings tip beside the shared Print report action. The Print report and All reports controls, print stylesheet, footer, and page numbering are unchanged. No database changes were made.
+- Files changed: `includes/report_actions.php`, `PROJECT_TASKS.md`, `PROJECT_TRACKER.md`
+- Verification: PHP lint passed for the changed PHP partial. A whole-project text search found no remaining occurrence of the removed settings text.
+- Next: Continue the pending Chrome print-preview review for all six reports.
+
+### 2026-11-16 01:50
+- Updated: Removed the navigation descriptor and moved report print headings/filters into the shared partial after each report title. Print CSS now uses A4 landscape, 9pt fixed-width tables, compact padding, repeated table headers, unbroken rows, and shared page-box footer/running title. Added then later removed a browser print-dialog hint. Replaced app branding literals with `APP_NAME` and updated project guidance references.
+- Files changed: `includes/header.php`, `includes/report_actions.php`, `includes/report_print.php`, `assets/css/print.css`, six `reports/*.php` files, `auth/login.php`, `index.php`, `AGENTS.md`, `CODING_STANDARDS.md`, `database/21_audit_all_relation_row_counts.sql`, `PROJECT_TASKS.md`, `PROJECT_TRACKER.md`
+- Verification: `php -l` passed on all 12 changed PHP files. The old-name search found the unchanged original `ap3 project.docx` and the untracked `tatus --short` text artifact; tracked source and project guidance no longer contain the phrase. Browser preview remains pending.
+- Next: Review all six reports in Chrome print preview and confirm the repeated heading row, page-box footer, page numbers, and row density.
 
 Newest entry at the top. Format:
 `[Date Time] What was done | Files changed | What is next`
@@ -153,7 +195,7 @@ Newest entry at the top. Format:
 ### 2026-11-14 18:59
 - Added shared A4 landscape print CSS and a shared report print partial used at each report's header and end. Print output includes Manila generated time, a running title, footer counters on unnamed and `report-wide` pages, filtered record totals, relevant aggregate totals, and a conditional no-records message. Added `config/Timezone.php` and set username in new login sessions. Existing report queries and filters were not changed. PHP lint passed; Chrome is installed at 157.0.8103.52 but preview has not been tested.
 - Files changed: assets/css/print.css, config/Timezone.php, includes/report_print.php, includes/header.php, auth/login.php, six report pages, PROJECT_TASKS.md, PROJECT_TRACKER.md
-- Next: Verify all six print previews and confirm margin-box counters in the installed Chrome; use Chrome's built-in Headers and footers if margin boxes do not render.
+- Next: Verify all six print previews and confirm margin-box counters in the installed Chrome; check the browser's built-in print controls if margin boxes do not render.
 
 ### 2026-11-14 16:31
 - User's read-only catalog query returned one `farmer_duplicate_guard` row attached to `public.reject_duplicate_farmer()`, confirming the trigger is installed. The screenshot truncates the function text in the result cell; the installed trigger/function names are confirmed. Pre-check SELECT results are still not visible.

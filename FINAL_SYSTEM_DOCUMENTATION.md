@@ -97,7 +97,7 @@ The forms also set HTML `required`, `min`, `max`, and `step` attributes where ap
 
 | Report | Page | Model methods and filters |
 |---|---|---|
-| Farmers and their farms | `reports/farmers_farms.php` | `countFarmersAndFarms()`, `getFarmersAndFarms()`; search spans farmer/contact/address and farm name/location; separate address substring filter; left joins retain farmers without farms. Sort and pagination are applied to the result list. |
+| Farmers and their farms | `reports/farmers_farms.php` | `countFarmersAndFarms()`, `getFarmersAndFarms()`; displays one flat row per farm with farmer and farm IDs; search spans farmer/contact/address and farm name/location; separate address substring filter; inner joins retain complete farmer/farm/lookup rows. Results order by farmer ID then farm ID, with pagination. |
 | Crops planted per farm | `reports/crops_per_farm.php` | `getFarmOptions()`, `countCropsPlantedPerFarm()`, `getCropsPlantedPerFarm()`, `bindCropReportFilters()`; selected farm, inclusive planting-date range, search across farm/location/farmer/crop/variety, sort, and pagination. |
 | Planting records by status | `reports/plantings_by_status.php` | `getPlantingStatusOptions()`, `getPlantingStatusSummary()`, `countPlantingsByStatus()`, `getPlantingsByStatus()`, `bindPlantingDates()`, `bindPlantingsByStatusFilters()`; status, inclusive planting-date range, search, sort, and pagination. Summary retains status options with zero matching plantings. |
 | Harvest records | `reports/harvest_records.php` | `getHarvestQualityOptions()`, `countHarvestRecords()`, `getHarvestRecords()`, `bindHarvestReportFilters()`; grade, inclusive harvest-date range, search across related farmer/farm/crop/grade/remark labels, sort, and pagination. |

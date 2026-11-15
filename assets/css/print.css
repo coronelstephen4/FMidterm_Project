@@ -1,54 +1,87 @@
 .print-only { display: none !important; }
+.print-page-frame,
+.print-page-frame > tbody,
+.print-page-frame > tbody > tr,
+.print-page-frame > tbody > tr > td { display: contents; }
+.print-page-frame > thead,
+.print-page-frame > tfoot { display: none; }
 
 @media print {
     @page {
         size: A4 landscape;
-        margin: 14mm 12mm 16mm;
-        @top-left { content: "HarvestHub"; font-size: 8pt; color: #374151; }
-        @bottom-left { content: "HarvestHub"; font-size: 8pt; color: #374151; }
-        @bottom-right { content: "Page " counter(page) " of " counter(pages); font-size: 8pt; color: #374151; }
+        margin: 0;
     }
-    @page report-wide {
-        size: A4 landscape;
-        margin: 14mm 12mm 16mm;
-        @top-left { content: "HarvestHub"; font-size: 8pt; color: #374151; }
-        @bottom-left { content: "HarvestHub"; font-size: 8pt; color: #374151; }
-        @bottom-right { content: "Page " counter(page) " of " counter(pages); font-size: 8pt; color: #374151; }
-    }
-    @page :first { @top-left { content: none; } }
-    @page report-wide:first { @top-left { content: none; } }
 
     html, body { background: #fff !important; color: #000 !important; }
-    body { min-height: 0 !important; margin: 0 !important; padding: 0 !important; font-size: 10pt !important; }
+    body { min-height: 0 !important; margin: 0 !important; padding: 0 !important; font-size: 9pt !important; }
     body > header, body > footer, nav, form, button, .no-print, .pagination { display: none !important; }
     main { max-width: none !important; margin: 0 !important; padding: 0 !important; }
     main, main * { color: #000 !important; box-shadow: none !important; text-shadow: none !important; }
     html.night-mode main, html.night-mode main * { background-color: transparent !important; }
     html.night-mode main { background-color: #fff !important; }
     .print-only { display: block !important; }
-    .report-page-heading { display: none !important; }
-    .print-summary-note { display: block !important; margin: 3mm 0 5mm; font-size: 8pt; }
-    .print-report-header { margin: 0 0 5mm; border-bottom: 1px solid #777; padding-bottom: 3mm; }
-    .print-report-header h1 { margin: 1mm 0 2mm; font-size: 16pt; }
-    .print-report-header p { margin: 1mm 0; font-size: 9pt; }
-    .print-summary { break-inside: avoid; margin-top: 6mm; border-top: 1px solid #777; padding-top: 3mm; }
-    .print-summary h2 { margin: 0 0 2mm; font-size: 11pt; }
-    .print-summary p { margin: 1mm 0; }
+    .report-page-heading { display: block !important; margin: 0 0 2mm !important; }
+    .report-page-heading h1 { margin: 0 !important; font-size: 16pt !important; line-height: 1.2 !important; }
+    .report-page-heading p { margin: 1mm 0 0 !important; font-size: 9pt !important; }
+    .print-report-filters { margin: 0 0 3mm !important; font-size: 8pt !important; }
+    .print-no-records { margin: 2mm 0; }
     main .overflow-x-auto { overflow: visible !important; border: 0 !important; border-radius: 0 !important; }
-    main table { width: 100% !important; min-width: 0 !important; table-layout: fixed !important; border-collapse: collapse !important; font-size: 10pt !important; }
+    main table { width: 100% !important; min-width: 0 !important; table-layout: auto !important; border-collapse: collapse !important; font-size: 9pt !important; }
     main thead { display: table-header-group !important; }
     main tfoot { display: table-footer-group !important; }
     main tr { break-inside: avoid !important; page-break-inside: avoid !important; }
-    main th, main td { border: 1px solid #9ca3af !important; padding: 2mm 1.5mm !important; vertical-align: top !important; white-space: normal !important; overflow-wrap: anywhere !important; word-wrap: break-word !important; }
-    main th { background: #e5e7eb !important; color: #000 !important; font-weight: 700 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-    html.night-mode main th { background: #e5e7eb !important; }
+    main th, main td { border: 1px solid #9ca3af !important; padding: 2px 4px !important; vertical-align: top !important; white-space: normal !important; overflow-wrap: anywhere !important; word-break: normal !important; }
+    main th { background: #e5e7eb !important; font-weight: 700 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
     main td.numeric, main th.numeric { text-align: right !important; }
-    .print-farmers-farms th:nth-child(1), .print-farmers-farms td:nth-child(1), .print-farmers-farms th:nth-child(6), .print-farmers-farms td:nth-child(6),
+
+    main > .print-page-frame { display: table !important; width: 100% !important; table-layout: auto !important; border-collapse: collapse !important; }
+    .print-page-frame,
+    .print-page-frame > thead,
+    .print-page-frame > tbody,
+    .print-page-frame > tfoot,
+    .print-page-frame > thead > tr,
+    .print-page-frame > tbody > tr,
+    .print-page-frame > tfoot > tr,
+    .print-page-frame > thead > tr > td,
+    .print-page-frame > tbody > tr > td,
+    .print-page-frame > tfoot > tr > td {
+        border: 0 !important;
+        outline: 0 !important;
+        box-shadow: none !important;
+        background: transparent !important;
+    }
+    .print-page-frame > thead { display: table-header-group !important; }
+    .print-page-frame > tfoot { display: table-footer-group !important; }
+    .print-page-frame > tbody { display: table-row-group !important; }
+    .print-page-frame > thead > tr,
+    .print-page-frame > tfoot > tr { display: table-row !important; }
+    .print-page-frame > thead > tr > td,
+    .print-page-frame > tfoot > tr > td { display: table-cell !important; padding: 0 !important; border: 0 !important; font-size: 0 !important; line-height: 0 !important; }
+    .print-page-frame > thead > tr > td { height: 12mm !important; }
+    .print-page-frame > tfoot > tr > td { height: 14mm !important; }
+    .print-page-frame > tbody > tr { display: table-row !important; break-inside: auto !important; page-break-inside: auto !important; }
+    .print-page-frame > tbody > tr > .print-page-content { display: table-cell !important; padding: 0 12mm !important; border: 0 !important; vertical-align: top !important; white-space: normal !important; }
+    .print-page-footer { position: fixed !important; right: 12mm !important; bottom: 0 !important; left: 12mm !important; border: 0 !important; outline: 0 !important; box-shadow: none !important; background: transparent !important; font-size: 8pt !important; line-height: 1 !important; }
+
+    .print-farmers-farms th:nth-child(1), .print-farmers-farms td:nth-child(1),
+    .print-farmers-farms th:nth-child(5), .print-farmers-farms td:nth-child(5) { min-width: 22mm; text-align: right !important; }
+    .print-farmers-farms th:nth-child(3), .print-farmers-farms td:nth-child(3) { min-width: 28mm; white-space: nowrap !important; }
+    .print-farmers-farms th:nth-child(8), .print-farmers-farms td:nth-child(8) { min-width: 24mm; text-align: right !important; }
+    .print-farmers-farms th:nth-child(9), .print-farmers-farms td:nth-child(9),
+    .print-farmers-farms th:nth-child(10), .print-farmers-farms td:nth-child(10) { min-width: 24mm; }
+
+    .print-crops-farm th:nth-child(5), .print-crops-farm td:nth-child(5),
+    .print-crops-farm th:nth-child(9), .print-crops-farm td:nth-child(9),
+    .print-plantings-status th:nth-child(1), .print-plantings-status td:nth-child(1),
+    .print-plantings-status th:nth-child(7), .print-plantings-status td:nth-child(7),
+    .print-harvest-records th:nth-child(1), .print-harvest-records td:nth-child(1) { min-width: 24mm; }
     .print-crops-farm th:nth-child(6), .print-crops-farm td:nth-child(6),
     .print-plantings-status th:nth-child(6), .print-plantings-status td:nth-child(6),
-    .print-harvest-records th:nth-child(5), .print-harvest-records td:nth-child(5), .print-harvest-records th:nth-child(7), .print-harvest-records td:nth-child(7),
-    .print-total-quantity td:nth-child(n+2), .print-estimated-value td:nth-child(n+2) { text-align: right !important; }
+    .print-harvest-records th:nth-child(5), .print-harvest-records td:nth-child(5),
+    .print-harvest-records th:nth-child(7), .print-harvest-records td:nth-child(7),
+    .print-total-quantity th:nth-child(n+2), .print-total-quantity td:nth-child(n+2),
+    .print-estimated-value th:nth-child(n+2), .print-estimated-value td:nth-child(n+2) { min-width: 20mm; text-align: right !important; }
+
     main .bg-white, main .bg-slate-50, main .bg-slate-100, main .bg-emerald-50, main .bg-emerald-100 { background: #fff !important; }
     main a { color: #000 !important; text-decoration: none !important; }
-    .print-no-records { margin: 3mm 0; }
 }

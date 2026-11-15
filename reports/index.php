@@ -6,7 +6,7 @@ $pageTitle = 'Reports';
 require __DIR__ . '/../includes/header.php';
 ?>
 <h1 class="text-2xl font-bold text-slate-900">Reports</h1>
-<p class="mt-1 text-sm text-slate-600">View summaries generated from the HarvestHub database.</p>
+<p class="mt-1 text-sm text-slate-600">View summaries generated from the <?= htmlspecialchars(APP_NAME, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?> database.</p>
 
 <div class="mt-6 grid grid-cols-2 gap-3 sm:gap-4">
     <section class="rounded-lg bg-white p-3 shadow-sm ring-1 ring-slate-200 sm:p-5">

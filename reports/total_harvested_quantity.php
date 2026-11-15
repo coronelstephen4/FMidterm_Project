@@ -46,8 +46,6 @@ $reportPrintNoRecords = $reportPrintRecordCount === 0 && $pageError === null && 
 $reportPrintFilters = ['Date from' => $dateFrom, 'Date to' => $dateTo];
 $reportPrintTotals = ['Total quantity (kg)' => number_format((float) $summary['total_quantity_kg'], 2)];
 require __DIR__ . '/../includes/header.php';
-$reportPrintSection = 'header';
-require __DIR__ . '/../includes/report_print.php';
 ?>
 <div class="report-page-heading flex flex-wrap items-center justify-between gap-3">
     <div>
@@ -56,6 +54,7 @@ require __DIR__ . '/../includes/report_print.php';
     </div>
     <?php require __DIR__ . '/../includes/report_actions.php'; ?>
 </div>
+<?php $reportPrintSection = 'header'; require __DIR__ . '/../includes/report_print.php'; ?>
 
 <?php if ($pageError): ?>
     <div class="mt-5 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-red-800" role="alert">
@@ -117,5 +116,4 @@ require __DIR__ . '/../includes/report_print.php';
         </tbody>
     </table>
 </section>
-<?php $reportPrintSection = 'summary'; require __DIR__ . '/../includes/report_print.php'; ?>
 <?php require __DIR__ . '/../includes/footer.php'; ?>

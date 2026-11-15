@@ -46,8 +46,6 @@ $reportPrintNoRecords = $reportPrintRecordCount === 0 && $pageError === null && 
 $reportPrintFilters = ['Date from' => $dateFrom, 'Date to' => $dateTo];
 $reportPrintTotals = ['Total quantity (kg)' => number_format((float) $summary['total_quantity_kg'], 2), 'Estimated value' => number_format((float) $summary['estimated_value'], 2)];
 require __DIR__ . '/../includes/header.php';
-$reportPrintSection = 'header';
-require __DIR__ . '/../includes/report_print.php';
 ?>
 <div class="report-page-heading flex flex-wrap items-center justify-between gap-3">
     <div>
@@ -56,6 +54,7 @@ require __DIR__ . '/../includes/report_print.php';
     </div>
     <?php require __DIR__ . '/../includes/report_actions.php'; ?>
 </div>
+<?php $reportPrintSection = 'header'; require __DIR__ . '/../includes/report_print.php'; ?>
 
 <?php if ($pageError): ?>
     <div class="mt-5 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-red-800" role="alert">
@@ -98,8 +97,6 @@ require __DIR__ . '/../includes/report_print.php';
         <p class="mt-2 text-3xl font-bold text-slate-900"><?= (int) $summary['harvest_count'] ?></p>
     </div>
 </section>
-<p class="print-only print-summary-note">Estimated value is calculated as quantity (kg) multiplied by selling price per kg.</p>
-
 <section class="mt-6 overflow-x-auto rounded-lg bg-white shadow-sm ring-1 ring-slate-200" aria-labelledby="crop-value-heading">
     <h2 id="crop-value-heading" class="px-4 pt-4 text-lg font-semibold text-slate-900">Estimated value by crop</h2>
     <table class="print-estimated-value mt-3 min-w-full divide-y divide-slate-200 text-sm">
@@ -125,5 +122,4 @@ require __DIR__ . '/../includes/report_print.php';
         </tbody>
     </table>
 </section>
-<?php $reportPrintSection = 'summary'; require __DIR__ . '/../includes/report_print.php'; ?>
 <?php require __DIR__ . '/../includes/footer.php'; ?>

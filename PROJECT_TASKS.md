@@ -9,7 +9,8 @@ Work top to bottom. Do one task or one module at a time.
 
 ## HarvestHub branding and print layout
 - [x] Centralize the visible application name as `APP_NAME`, apply HarvestHub branding to shared templates and documentation, and remove duplicate report headings in print output
-- [ ] Verify print preview for every report and list page; confirm first-page title, later-page running title, repeated table headings, and footer
+- [x] Remove the print settings tip from the shared report actions without changing print behavior
+- [~] Verify all six report print previews with Chrome Headers and footers both enabled and disabled; confirm zero browser headers, per-page spacers, fixed HarvestHub footer, repeated table headings, clean page breaks, and no cell text overlap after allowing wrapping and minimum column widths
 
 ## Phase 0: Setup
 - [x] Create project folder in xampp\htdocs
@@ -94,6 +95,7 @@ Each module needs: model, list page with search, filter, sorting and pagination,
 
 ## Phase 6: Reports (all with filters, e.g. date range)
 - [x] Farmers and their farms
+- [x] Show Farm ID and repeat farmer details on every Farmers and Farms record
 - [x] Keep the Farmers and Farms report limited to complete farmer/farm/lookup relationships; keep unassigned farmers in the Farmers module
 - [x] Run a read-only Supabase row-count audit for the original 13 relations; user screenshot confirms those relations contain data
 - [~] Rerun the 14-relation audit, including `roles`, after migration 23 is applied
@@ -139,10 +141,10 @@ Each module needs: model, list page with search, filter, sorting and pagination,
 - [x] Put Print report beside All reports in each of the six report toolbars
 - [x] Make Print report include all rows matching current filters and sorting; keep screen pagination at 10 rows per page
 - [x] Apply the all-matching-rows Print report flow to all six reports, preserving date filters on summary reports
-- [x] Apply shared A4 landscape print styling and header/summary partials to all six reports, including Manila timezone, running page title, every-page footer counters, filtered totals, and empty-result handling
-- [x] Remove redundant “Report” suffixes from all six report document titles used in print headers and browser tabs
+- [x] Apply shared A4 landscape print styling and partials to all six reports, including Manila generated time, per-page spacer margins, fixed footer, filtered totals, and empty-result handling
+- [x] Set each report browser title to “HarvestHub - <Report name>” through the shared header
 - [x] Suppress the repeated browser-generated report title in print headers for all six reports
-- [x] Remove browser header/footer URL area from report print pages using zero-margin page boxes and explicit content padding
+- [x] Suppress browser headers and footers with one zero-margin A4 rule, repeating top/bottom spacer rows, a cache-busted shared print stylesheet, and a borderless fixed footer
 - [x] Print the four wide detail reports in landscape and retain portrait orientation for the two summary reports
 - [x] Force readable dark text colors in print output regardless of Light or Night mode
 - [x] Set report print CSS to A4 portrait with compact, wrapping table columns
@@ -209,7 +211,7 @@ Each module needs: model, list page with search, filter, sorting and pagination,
 - [x] Map the live crop duplicate trigger's custom SQLSTATE 23505 messages to friendly crop-name and variety-name messages without exposing SQL details
 - [x] Publish the pending HarvestHub report updates, final documentation, and SQL audit/update scripts to GitHub in commit `1bda119`; keep private credentials and the classmate reference PDF excluded
 - [x] Keep local project guidance, documentation, and the source DOCX discoverable to workspace file mentions
-- [~] Verify all six Print report previews in Chrome 157.0.8103.52, including no-filter, filter, no-result and multi-page cases, Manila time, page counters, screen-only visibility, and end summary; preview not yet tested
+- [~] Verify all six Print report previews in Chrome with browser headers/footers enabled and disabled, including filtered/unfiltered, no-result, multi-page, repeated table heading, per-page spacing, fixed footer, and final-page row break; preview not yet tested
 - [~] Test CRUD, search, filter, sort, dropdowns, joins, login, dashboard and reports after migration 08
 - [x] Test invalid input and error cases (module checks and integer overflow boundary check completed)
 - [x] Verify local XAMPP PDO connection to Supabase with a read-only SELECT

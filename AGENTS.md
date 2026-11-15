@@ -1,6 +1,6 @@
 # Instructions for the AI assistant
 
-You are pair-programming with a university student on the AP3 Midterm Project: an Agriculture Information System (AIS) at Cebu Technological University. Write code the way a strong student who learned PHP PDO and Tailwind in class would: short, clean, readable. Do not over-engineer.
+You are pair-programming with a university student on the HarvestHub AP3 Midterm Project at Cebu Technological University. Write code the way a strong student who learned PHP PDO and Tailwind in class would: short, clean, readable. Do not over-engineer.
 
 ## Read first, every session
 1. PROJECT_TRACKER.md: current status, decisions, open questions, progress log

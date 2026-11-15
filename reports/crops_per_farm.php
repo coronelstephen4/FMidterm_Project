@@ -69,8 +69,6 @@ foreach ($farms as $farm) { if ((int) $farm['farm_id'] === $farmId) { $selectedF
 $reportPrintFilters = ['Farm' => $selectedFarmName, 'Date from' => $dateFrom, 'Date to' => $dateTo, 'Search' => $search, 'Sort' => $sort . ' ' . $direction];
 $reportPrintTotals = ['Total area planted (ha)' => number_format(array_sum(array_map(static fn ($row): float => (float) ($row['area_planted'] ?? 0), $rows)), 2)];
 require __DIR__ . '/../includes/header.php';
-$reportPrintSection = 'header';
-require __DIR__ . '/../includes/report_print.php';
 $sortLabels = [
     'farm_name' => 'Farm', 'farmer_name' => 'Farmer', 'crop_name' => 'Crop',
     'variety' => 'Variety', 'planting_date' => 'Planting date', 'area_planted' => 'Area planted', 'status' => 'Status'
@@ -83,6 +81,7 @@ $sortLabels = [
     </div>
     <?php require __DIR__ . '/../includes/report_actions.php'; ?>
 </div>
+<?php $reportPrintSection = 'header'; require __DIR__ . '/../includes/report_print.php'; ?>
 
 <?php if ($pageError): ?>
     <div class="mt-5 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-red-800" role="alert">
@@ -168,5 +167,4 @@ $sortLabels = [
         <?php if ($page < $totalPages): ?><a class="rounded-md border border-slate-300 px-3 py-2 hover:bg-white" href="?<?= htmlspecialchars(http_build_query(['farm_id' => $farmId, 'date_from' => $dateFrom, 'date_to' => $dateTo, 'search' => $search, 'sort' => $sort, 'direction' => $direction, 'page' => $page + 1]), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>">Next</a><?php endif; ?>
     </div>
 </div>
-<?php $reportPrintSection = 'summary'; require __DIR__ . '/../includes/report_print.php'; ?>
 <?php require __DIR__ . '/../includes/footer.php'; ?>

@@ -1,5 +1,5 @@
 # 📘 AI Development Guidelines & Teacher's Coding Standards
-### Agriculture Information System (AIS) — AP 3 Web Application Development
+### HarvestHub — AP 3 Web Application Development
 
 > **CRITICAL DIRECTIVE FOR AI (Sonnet 3.5 / 5.5 / LLMs):**  
 > You are acting as a pair-programmer for **Medy Villarias**, a university student at Cebu Technological University taking **AP 3 (Web Application Development)**.  

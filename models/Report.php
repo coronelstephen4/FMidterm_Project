@@ -26,22 +26,9 @@ class Report {
     public function getFarmersAndFarms(
         string $search,
         string $address,
-        string $sort,
-        string $direction,
         int $limit,
         int $offset
     ): array {
-        $columns = [
-            'farmer_id' => 'fm.farmer_id',
-            'farmer_name' => 'fm.last_name',
-            'address' => 'fm.address',
-            'farm_name' => 'f.farm_name',
-            'location' => 'f.location',
-            'area_hectares' => 'f.area_hectares'
-        ];
-        $orderBy = $columns[$sort] ?? $columns['farmer_id'];
-        $orderDirection = strtoupper($direction) === 'ASC' ? 'ASC' : 'DESC';
-
         $sql = "SELECT fm.farmer_id, fm.first_name, fm.last_name, fm.contact_number,
                        fm.address, fm.date_registered, f.farm_id, f.farm_name, f.location,
                        f.area_hectares, st.soil_type_name, it.irrigation_type_name
@@ -52,7 +39,7 @@ class Report {
                 WHERE (:has_address = FALSE OR fm.address ILIKE :address_filter)
                   AND (:has_search = FALSE OR CONCAT_WS(' ', fm.first_name, fm.last_name, fm.contact_number,
                        fm.address, f.farm_name, f.location) ILIKE :search_filter)
-                ORDER BY {$orderBy} {$orderDirection} NULLS LAST, fm.farmer_id ASC, f.farm_id ASC
+                ORDER BY fm.farmer_id ASC, f.farm_id ASC
                 LIMIT :limit OFFSET :offset";
         $stmt = $this->pdo->prepare($sql);
         $stmt->bindValue(':has_address', $address !== '', PDO::PARAM_BOOL);

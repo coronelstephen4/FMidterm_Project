@@ -1,4 +1,4 @@
--- Read-only audit of all 14 current Agriculture Information System relations.
+-- Read-only audit of all 14 current HarvestHub relations.
 -- Run after database/23_role_lookup_table.sql has been applied.
 -- Run this in the Supabase SQL Editor and review every row before claiming
 -- that all tables contain data. This script does not insert, update, or delete.

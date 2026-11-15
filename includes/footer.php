@@ -1,3 +1,4 @@
+        <?php if (!empty($reportPrint)): $reportPrintSection = 'page_end'; require __DIR__ . '/report_print.php'; endif; ?>
     </main>
 
     <footer class="border-t border-slate-200 bg-white">

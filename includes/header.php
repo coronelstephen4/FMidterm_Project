@@ -9,7 +9,7 @@ require_once __DIR__ . '/../config/App.php';
 require_once __DIR__ . '/app_path.php';
 
 $pageTitle = $pageTitle ?? 'Dashboard';
-$documentTitle = $pageTitle . ' | ' . APP_NAME;
+$documentTitle = !empty($reportPrint) ? APP_NAME . ' - ' . $pageTitle : $pageTitle . ' | ' . APP_NAME;
 $appBaseUrl = APP_BASE_PATH;
 $successMessage = $_SESSION['success'] ?? null;
 $errorMessage = $_SESSION['error'] ?? null;
@@ -83,79 +83,9 @@ $navigation = [
             main .overflow-x-auto th,
             main .overflow-x-auto td { white-space: nowrap; }
         }
-        @media print {
-            @page { size: A4 portrait; margin: 0; }
-            @page report-wide { size: A4 landscape; margin: 0; }
-            html, body { background: #fff !important; color: #111827 !important; }
-            body { min-height: auto !important; margin: 0 !important; padding: 10mm !important; }
-            body[data-print-orientation="landscape"] main { page: report-wide; }
-            body > header,
-            body > footer,
-            .no-print,
-            main form { display: none !important; }
-            main { max-width: none !important; margin: 0 !important; padding: 0 !important; }
-            main, main * {
-                color: #111827 !important;
-                writing-mode: horizontal-tb !important;
-                text-orientation: mixed !important;
-            }
-            html.night-mode main .text-slate-900,
-            html.night-mode main .text-slate-800,
-            html.night-mode main .text-slate-700,
-            html.night-mode main .text-slate-600,
-            html.night-mode main .text-slate-500,
-            html.night-mode main .text-emerald-800,
-            html.night-mode main .text-emerald-900,
-            html.night-mode main .text-blue-800,
-            html.night-mode main .text-red-800,
-            html.night-mode main .text-red-700 { color: #111827 !important; }
-            html.night-mode main table tbody tr:hover { color: #111827 !important; background: #fff !important; }
-            main .overflow-x-auto {
-                overflow: visible !important;
-                border: 1px solid #cbd5e1 !important;
-                box-shadow: none !important;
-            }
-            main table {
-                width: 100% !important;
-                min-width: 0 !important;
-                border-collapse: collapse !important;
-                table-layout: auto !important;
-                font-size: 8pt !important;
-            }
-            main thead { display: table-header-group; }
-            main tr { break-inside: avoid; }
-            main th, main td {
-                border: 1px solid #cbd5e1 !important;
-                padding: 5px !important;
-                color: #111827 !important;
-                background: #fff !important;
-                white-space: normal !important;
-                overflow-wrap: anywhere !important;
-                text-align: left !important;
-                vertical-align: middle !important;
-            }
-            main .bg-white { background: #fff !important; box-shadow: none !important; }
-            main .bg-slate-50,
-            main .bg-slate-100,
-            main .bg-emerald-50,
-            main .bg-emerald-100 { background: #fff !important; }
-            main a { color: #111827 !important; text-decoration: none !important; }
-        }
     </style>
     <?php if (!empty($reportPrint)): ?>
-        <link rel="stylesheet" href="<?= $appBaseUrl ?>/assets/css/print.css">
-        <?php
-        $pageBoxTitle = json_encode((string) $pageTitle, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
-        $pageBoxFooter = json_encode(APP_NAME . ' | Generated: ' . ($reportPrintGenerated ?? date('Y-m-d H:i')), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
-        ?>
-        <style>
-            @media print {
-                @page { @top-left { content: <?= $pageBoxTitle ?>; } @bottom-left { content: <?= $pageBoxFooter ?>; } }
-                @page report-wide { @top-left { content: <?= $pageBoxTitle ?>; } @bottom-left { content: <?= $pageBoxFooter ?>; } }
-                @page :first { @top-left { content: none; } }
-                @page report-wide:first { @top-left { content: none; } }
-            }
-        </style>
+        <link rel="stylesheet" href="<?= $appBaseUrl ?>/assets/css/print.css?v=<?= (int) filemtime(__DIR__ . '/../assets/css/print.css') ?>">
     <?php endif; ?>
 </head>
 <body data-auto-print="<?= !empty($autoPrint) ? 'true' : 'false' ?>" data-print-orientation="<?= htmlspecialchars($printOrientation ?? 'portrait', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" class="min-h-screen bg-slate-50 text-slate-800">
@@ -170,8 +100,7 @@ $navigation = [
                         </svg>
                     </span>
                     <span class="leading-tight">
-                        <span class="block font-serif text-xl font-bold tracking-tight text-white sm:text-[1.75rem]">HarvestHub</span>
-                        <span class="mt-0.5 block text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-emerald-100 sm:mt-1 sm:text-sm sm:tracking-[0.16em]">Agriculture Information System</span>
+                        <span class="block font-serif text-xl font-bold tracking-tight text-white sm:text-[1.75rem]"><?= htmlspecialchars(APP_NAME, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></span>
                     </span>
                 </a>
                 <?php if (isset($_SESSION['user_id'])): ?>
@@ -265,11 +194,6 @@ $navigation = [
             setNightMode(document.documentElement.classList.contains('night-mode'));
             if (document.body.dataset.autoPrint === 'true') {
                 window.addEventListener('load', () => {
-                    const originalTitle = document.title;
-                    document.title = '';
-                    window.addEventListener('afterprint', () => {
-                        document.title = originalTitle;
-                    }, { once: true });
                     window.print();
                 }, { once: true });
             }
@@ -296,6 +220,7 @@ $navigation = [
     <?php endif; ?>
 
     <main class="mx-auto max-w-[1680px] px-4 py-6 sm:px-6 lg:px-8">
+        <?php if (!empty($reportPrint)): $reportPrintSection = 'page_start'; require __DIR__ . '/report_print.php'; endif; ?>
         <?php if (is_string($successMessage) && $successMessage !== ''): ?>
             <div class="mb-5 rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-800" role="status" aria-live="polite">
                 <?= htmlspecialchars($successMessage, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
