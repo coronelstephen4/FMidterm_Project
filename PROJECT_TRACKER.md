@@ -17,13 +17,18 @@
 - **Phase:** 9 Final testing and submission
 - **Last updated:** 2026-11-15
 - **Currently working on:** The shared app base path now resolves for both XAMPP subdirectory and Render web-root deployments. Application links, forms, assets, and redirects use it. Render Docker and environment-first database configuration remain prepared; no database changes were made.
-- **Next step:** Lint changed PHP files, then deploy the URL-path fix to Render when approved. Browser validation on local XAMPP and Render remains pending.
+- **Next step:** Rebuild and redeploy the Docker image so PHP output buffering is enabled, then verify login redirects in Render. Browser validation remains pending.
 - **Last verified row-count snapshot (2026-11-15 05:21, user screenshots):** farmer 18, farm 19, crop 10, crop_variety 10, planting 31, harvest 22. Farmers without farms: IDs 25 and 38 (decision pending).
 
 ## Progress Log
 
 Newest entry at the top. Format:
 `[Date Time] What was done | Files changed | What is next`
+
+### 2026-11-15 08:08
+- Removed the UTF-8 BOM from `includes/country_phone.php` after the scan showed it could emit output before PHP session/header calls. Configured Docker PHP with `output_buffering = 4096`. Checked all 60 PHP files; no other BOMs were present, and no pure-PHP include/model/config file had a trailing close tag. PHP lint passed for the changed PHP file. No Supabase or Git changes were made.
+- Files changed: `includes/country_phone.php`, `Dockerfile`, `PROJECT_TASKS.md`, `PROJECT_TRACKER.md`
+- Next: Rebuild/redeploy Render and verify login redirects.
 
 ### 2026-11-15 07:57
 - Added shared base-path detection using the application root relative to DOCUMENT_ROOT, with SCRIPT_NAME fallback. Replaced hardcoded application URL prefixes across authentication, navigation, dashboard, modules, shared notices, and reports so root and XAMPP-subdirectory URLs are generated dynamically. All PHP files passed `php -n -l`; simulated base-path checks returned empty for web root and `/FMidterm_Project` for XAMPP; no hardcoded prefix remains in PHP source. No SQL or Supabase changes were made; no Git operations were performed.

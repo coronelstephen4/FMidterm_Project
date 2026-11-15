@@ -3,6 +3,7 @@ FROM php:8.2-apache
 RUN apt-get update \
     && apt-get install -y --no-install-recommends libpq-dev \
     && docker-php-ext-install pdo_pgsql pgsql \
+    && printf 'output_buffering = 4096\n' > /usr/local/etc/php/conf.d/app.ini \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --chown=www-data:www-data . /var/www/html/

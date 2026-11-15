@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 function countryPhoneOptions(): array {
     return [
         'PH' => ['name' => 'Philippines', 'dial_code' => '63', 'flag' => '🇵🇭', 'trunk' => '0'],

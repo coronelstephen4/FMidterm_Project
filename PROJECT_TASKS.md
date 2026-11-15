@@ -4,6 +4,9 @@ Mark `[x]` when finished. Add new tasks as they come up.
 Status key: `[ ]` not started, `[~]` in progress, `[x]` done
 Work top to bottom. Do one task or one module at a time.
 
+## Deployment follow-up
+- [x] Strip the UTF-8 BOM from `includes/country_phone.php` and enable PHP output buffering in the Docker image to prevent premature output from breaking login session redirects
+
 ## Phase 0: Setup
 - [x] Create project folder in xampp\htdocs
 - [x] Install Codex and open it
