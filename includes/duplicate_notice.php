@@ -16,8 +16,8 @@ $duplicateRoute = $duplicateRoutes[$duplicateRecordType] ?? null;
         <p><?= htmlspecialchars($duplicateMessage, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></p>
         <?php if ($duplicateRoute && !empty($duplicateRecordId)): ?>
             <div class="mt-2 flex gap-4 text-sm font-semibold">
-                <a class="underline" href="/FMidterm_Project/<?= $duplicateRoute ?>/view.php?id=<?= (int) $duplicateRecordId ?>">View record</a>
-                <a class="underline" href="/FMidterm_Project/<?= $duplicateRoute ?>/edit.php?id=<?= (int) $duplicateRecordId ?>">Edit record</a>
+                <a class="underline" href="<?= APP_BASE_PATH ?>/<?= $duplicateRoute ?>/view.php?id=<?= (int) $duplicateRecordId ?>">View record</a>
+                <a class="underline" href="<?= APP_BASE_PATH ?>/<?= $duplicateRoute ?>/edit.php?id=<?= (int) $duplicateRecordId ?>">Edit record</a>
             </div>
         <?php endif; ?>
     </div>

@@ -137,7 +137,7 @@ $sortLabels = [
     </div>
     <div class="flex items-end gap-2">
         <button type="submit" class="rounded-md bg-slate-800 px-4 py-2 font-semibold text-white hover:bg-slate-900">Apply</button>
-        <a href="/FMidterm_Project/reports/plantings_by_status.php" class="rounded-md border border-slate-300 px-4 py-2 font-semibold hover:bg-slate-50">Clear</a>
+        <a href="<?= APP_BASE_PATH ?>/reports/plantings_by_status.php" class="rounded-md border border-slate-300 px-4 py-2 font-semibold hover:bg-slate-50">Clear</a>
     </div>
 </form>
 

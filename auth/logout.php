@@ -4,6 +4,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 require_once __DIR__ . '/../includes/csrf.php';
+require_once __DIR__ . '/../includes/app_path.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -33,5 +34,5 @@ if (ini_get('session.use_cookies')) {
 
 session_destroy();
 
-header('Location: /FMidterm_Project/auth/login.php');
+header('Location: ' . APP_BASE_PATH . '/auth/login.php');
 exit;

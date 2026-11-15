@@ -1,5 +1,5 @@
 <div class="no-print flex flex-wrap items-center gap-2">
-    <a href="/FMidterm_Project/reports/" class="rounded-md border border-slate-300 px-4 py-2 font-semibold hover:bg-white">All reports</a>
+    <a href="<?= APP_BASE_PATH ?>/reports/" class="rounded-md border border-slate-300 px-4 py-2 font-semibold hover:bg-white">All reports</a>
     <?php if (!empty($printAllUrl)): ?>
         <a href="<?= htmlspecialchars($printAllUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-md bg-emerald-700 px-4 py-2 font-semibold text-white hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2">
     <?php else: ?>

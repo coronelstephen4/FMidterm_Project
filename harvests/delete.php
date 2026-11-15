@@ -9,7 +9,7 @@ $harvestId = is_string($idValue) ? (int) $idValue : 0;
 
 if ($harvestId < 1) {
     $_SESSION['error'] = 'Harvest record not found.';
-    header('Location: /FMidterm_Project/harvests/');
+    header('Location: ' . APP_BASE_PATH . '/harvests/');
     exit;
 }
 
@@ -20,13 +20,13 @@ try {
     $harvest = $harvestModel->getById($harvestId);
 } catch (Throwable) {
     $_SESSION['error'] = 'Harvest record could not be loaded right now. Please try again later.';
-    header('Location: /FMidterm_Project/harvests/');
+    header('Location: ' . APP_BASE_PATH . '/harvests/');
     exit;
 }
 
 if (!$harvest) {
     $_SESSION['error'] = 'Harvest record not found.';
-    header('Location: /FMidterm_Project/harvests/');
+    header('Location: ' . APP_BASE_PATH . '/harvests/');
     exit;
 }
 
@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['error'] = 'Harvest record could not be deleted. Please try again.';
     }
 
-    header('Location: /FMidterm_Project/harvests/');
+    header('Location: ' . APP_BASE_PATH . '/harvests/');
     exit;
 }
 
@@ -54,9 +54,9 @@ require __DIR__ . '/../includes/header.php';
         <strong><?= htmlspecialchars($harvest['crop_name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></strong>?
         This action cannot be undone.
     </p>
-    <form method="post" action="/FMidterm_Project/harvests/delete.php?id=<?= $harvestId ?>" class="mt-6 flex flex-wrap gap-3">
+    <form method="post" action="<?= APP_BASE_PATH ?>/harvests/delete.php?id=<?= $harvestId ?>" class="mt-6 flex flex-wrap gap-3">
         <button type="submit" class="rounded-md bg-red-700 px-4 py-2 font-semibold text-white hover:bg-red-800">Confirm Delete</button>
-        <a href="/FMidterm_Project/harvests/view.php?id=<?= $harvestId ?>" class="rounded-md border border-slate-300 px-4 py-2 font-semibold hover:bg-slate-50">Cancel</a>
+        <a href="<?= APP_BASE_PATH ?>/harvests/view.php?id=<?= $harvestId ?>" class="rounded-md border border-slate-300 px-4 py-2 font-semibold hover:bg-slate-50">Cancel</a>
     </form>
 </section>
 <?php require __DIR__ . '/../includes/footer.php'; ?>

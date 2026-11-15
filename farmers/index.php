@@ -43,7 +43,7 @@ require __DIR__ . '/../includes/header.php';
         <p class="mt-1 text-sm text-slate-600">Manage farmer contact and registration details.</p>
     </div>
     <?php if (isAdmin()): ?>
-        <a href="/FMidterm_Project/farmers/create.php"
+        <a href="<?= APP_BASE_PATH ?>/farmers/create.php"
            class="rounded-md bg-emerald-700 px-4 py-2 font-semibold text-white hover:bg-emerald-800">
             Add Farmer
         </a>
@@ -69,7 +69,7 @@ require __DIR__ . '/../includes/header.php';
     </div>
     <div class="flex items-end gap-2">
         <button type="submit" class="rounded-md bg-slate-800 px-4 py-2 font-semibold text-white hover:bg-slate-900">Apply</button>
-        <a href="/FMidterm_Project/farmers/" class="rounded-md border border-slate-300 px-4 py-2 font-semibold hover:bg-slate-50">Clear</a>
+        <a href="<?= APP_BASE_PATH ?>/farmers/" class="rounded-md border border-slate-300 px-4 py-2 font-semibold hover:bg-slate-50">Clear</a>
     </div>
 </form>
 
@@ -87,7 +87,7 @@ require __DIR__ . '/../includes/header.php';
                 ];
                 foreach ($sortableColumns as $column => $label):
                     $nextDirection = ($sort === $column && strtoupper($direction) === 'ASC') ? 'DESC' : 'ASC';
-                    $sortUrl = '/FMidterm_Project/farmers/?' . http_build_query([
+                    $sortUrl = APP_BASE_PATH . '/farmers/?' . http_build_query([
                         'search' => $search,
                         'address' => $address,
                         'sort' => $column,
@@ -119,10 +119,10 @@ require __DIR__ . '/../includes/header.php';
                         <td class="whitespace-nowrap px-4 py-3"><?= htmlspecialchars($farmer['date_registered'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
                         <td class="whitespace-nowrap px-4 py-3"><?= htmlspecialchars(phoneDisplayValue((string) $farmer['contact_number']), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
                         <td class="whitespace-nowrap px-4 py-3">
-                            <a class="font-medium text-emerald-800 hover:underline" href="/FMidterm_Project/farmers/view.php?id=<?= (int) $farmer['farmer_id'] ?>">View</a>
+                            <a class="font-medium text-emerald-800 hover:underline" href="<?= APP_BASE_PATH ?>/farmers/view.php?id=<?= (int) $farmer['farmer_id'] ?>">View</a>
                             <?php if (isAdmin()): ?>
-                                <a class="ml-3 font-medium text-blue-800 hover:underline" href="/FMidterm_Project/farmers/edit.php?id=<?= (int) $farmer['farmer_id'] ?>">Edit</a>
-                                <a class="ml-3 font-medium text-red-700 hover:underline" href="/FMidterm_Project/farmers/delete.php?id=<?= (int) $farmer['farmer_id'] ?>">Delete</a>
+                                <a class="ml-3 font-medium text-blue-800 hover:underline" href="<?= APP_BASE_PATH ?>/farmers/edit.php?id=<?= (int) $farmer['farmer_id'] ?>">Edit</a>
+                                <a class="ml-3 font-medium text-red-700 hover:underline" href="<?= APP_BASE_PATH ?>/farmers/delete.php?id=<?= (int) $farmer['farmer_id'] ?>">Delete</a>
                             <?php endif; ?>
                         </td>
                     </tr>

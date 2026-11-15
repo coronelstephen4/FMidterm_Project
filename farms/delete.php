@@ -9,7 +9,7 @@ $farmId = is_string($idValue) ? (int) $idValue : 0;
 
 if ($farmId < 1) {
     $_SESSION['error'] = 'Farm not found.';
-    header('Location: /FMidterm_Project/farms/');
+    header('Location: ' . APP_BASE_PATH . '/farms/');
     exit;
 }
 
@@ -19,13 +19,13 @@ try {
     $farm = $farmModel->getById($farmId);
 } catch (Throwable) {
     $_SESSION['error'] = 'Farm could not be loaded right now. Please try again later.';
-    header('Location: /FMidterm_Project/farms/');
+    header('Location: ' . APP_BASE_PATH . '/farms/');
     exit;
 }
 
 if (!$farm) {
     $_SESSION['error'] = 'Farm not found.';
-    header('Location: /FMidterm_Project/farms/');
+    header('Location: ' . APP_BASE_PATH . '/farms/');
     exit;
 }
 
@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['error'] = 'Farm could not be deleted. A planting record may still be linked to this farm.';
     }
 
-    header('Location: /FMidterm_Project/farms/');
+    header('Location: ' . APP_BASE_PATH . '/farms/');
     exit;
 }
 
@@ -51,9 +51,9 @@ require __DIR__ . '/../includes/header.php';
         This action cannot be undone.
     </p>
     <p class="mt-2 text-sm text-slate-600">A farm with linked planting records cannot be deleted.</p>
-    <form method="post" action="/FMidterm_Project/farms/delete.php?id=<?= $farmId ?>" class="mt-6 flex flex-wrap gap-3">
+    <form method="post" action="<?= APP_BASE_PATH ?>/farms/delete.php?id=<?= $farmId ?>" class="mt-6 flex flex-wrap gap-3">
         <button type="submit" class="rounded-md bg-red-700 px-4 py-2 font-semibold text-white hover:bg-red-800">Confirm Delete</button>
-        <a href="/FMidterm_Project/farms/view.php?id=<?= $farmId ?>" class="rounded-md border border-slate-300 px-4 py-2 font-semibold hover:bg-slate-50">Cancel</a>
+        <a href="<?= APP_BASE_PATH ?>/farms/view.php?id=<?= $farmId ?>" class="rounded-md border border-slate-300 px-4 py-2 font-semibold hover:bg-slate-50">Cancel</a>
     </form>
 </section>
 <?php require __DIR__ . '/../includes/footer.php'; ?>

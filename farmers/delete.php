@@ -9,7 +9,7 @@ $farmerId = is_string($idValue) ? (int) $idValue : 0;
 
 if ($farmerId < 1) {
     $_SESSION['error'] = 'Farmer not found.';
-    header('Location: /FMidterm_Project/farmers/');
+    header('Location: ' . APP_BASE_PATH . '/farmers/');
     exit;
 }
 
@@ -19,13 +19,13 @@ try {
     $farmer = $farmerModel->getById($farmerId);
 } catch (Throwable) {
     $_SESSION['error'] = 'Farmer could not be loaded right now. Please try again later.';
-    header('Location: /FMidterm_Project/farmers/');
+    header('Location: ' . APP_BASE_PATH . '/farmers/');
     exit;
 }
 
 if (!$farmer) {
     $_SESSION['error'] = 'Farmer not found.';
-    header('Location: /FMidterm_Project/farmers/');
+    header('Location: ' . APP_BASE_PATH . '/farmers/');
     exit;
 }
 
@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['error'] = 'Farmer could not be deleted. A farm may still be linked to this farmer.';
     }
 
-    header('Location: /FMidterm_Project/farmers/');
+    header('Location: ' . APP_BASE_PATH . '/farmers/');
     exit;
 }
 
@@ -51,9 +51,9 @@ require __DIR__ . '/../includes/header.php';
         This action cannot be undone.
     </p>
     <p class="mt-2 text-sm text-slate-600">A farmer with linked farms cannot be deleted.</p>
-    <form method="post" action="/FMidterm_Project/farmers/delete.php?id=<?= $farmerId ?>" class="mt-6 flex flex-wrap gap-3">
+    <form method="post" action="<?= APP_BASE_PATH ?>/farmers/delete.php?id=<?= $farmerId ?>" class="mt-6 flex flex-wrap gap-3">
         <button type="submit" class="rounded-md bg-red-700 px-4 py-2 font-semibold text-white hover:bg-red-800">Confirm Delete</button>
-        <a href="/FMidterm_Project/farmers/view.php?id=<?= $farmerId ?>" class="rounded-md border border-slate-300 px-4 py-2 font-semibold hover:bg-slate-50">Cancel</a>
+        <a href="<?= APP_BASE_PATH ?>/farmers/view.php?id=<?= $farmerId ?>" class="rounded-md border border-slate-300 px-4 py-2 font-semibold hover:bg-slate-50">Cancel</a>
     </form>
 </section>
 <?php require __DIR__ . '/../includes/footer.php'; ?>

@@ -16,14 +16,19 @@
 
 - **Phase:** 9 Final testing and submission
 - **Last updated:** 2026-11-15
-- **Currently working on:** Prepared the Render Docker deployment files and environment-first database configuration. Local credentials remain the XAMPP fallback; live database/data/schema were not touched.
-- **Next step:** Configure Render's DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASS, and DB_SSLMODE values, then build/deploy the Docker Web Service. Browser validation of the application workflows remains pending.
+- **Currently working on:** The shared app base path now resolves for both XAMPP subdirectory and Render web-root deployments. Application links, forms, assets, and redirects use it. Render Docker and environment-first database configuration remain prepared; no database changes were made.
+- **Next step:** Lint changed PHP files, then deploy the URL-path fix to Render when approved. Browser validation on local XAMPP and Render remains pending.
 - **Last verified row-count snapshot (2026-11-15 05:21, user screenshots):** farmer 18, farm 19, crop 10, crop_variety 10, planting 31, harvest 22. Farmers without farms: IDs 25 and 38 (decision pending).
 
 ## Progress Log
 
 Newest entry at the top. Format:
 `[Date Time] What was done | Files changed | What is next`
+
+### 2026-11-15 07:57
+- Added shared base-path detection using the application root relative to DOCUMENT_ROOT, with SCRIPT_NAME fallback. Replaced hardcoded application URL prefixes across authentication, navigation, dashboard, modules, shared notices, and reports so root and XAMPP-subdirectory URLs are generated dynamically. All PHP files passed `php -n -l`; simulated base-path checks returned empty for web root and `/FMidterm_Project` for XAMPP; no hardcoded prefix remains in PHP source. No SQL or Supabase changes were made; no Git operations were performed.
+- Files changed: includes/app_path.php, includes/auth_check.php, includes/header.php, auth/login.php, auth/logout.php, index.php, farmers/*.php, farms/*.php, crops/*.php, plantings/*.php, harvests/*.php, reports/*.php, includes/duplicate_notice.php, includes/report_actions.php, PROJECT_TASKS.md, PROJECT_TRACKER.md
+- Next: Finish PHP lint and confirm no hardcoded application URL prefixes remain in PHP; then user can commit/push when ready.
 
 ### 2026-11-15 07:31
 - Updated database configuration to prefer environment variables and fall back to the private local credentials file, defaulting SSL mode to `require`. Added a minimal PHP 8.2 Apache Dockerfile with PostgreSQL extensions and Render port handling, plus a Docker build ignore list for credentials, Git metadata, submission files, and local notes. PHP lint passed. No SQL or Supabase changes were made.

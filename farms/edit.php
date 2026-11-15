@@ -13,7 +13,7 @@ $farmId = is_string($idValue) ? (int) $idValue : 0;
 
 if ($farmId < 1) {
     $_SESSION['error'] = 'Farm not found.';
-    header('Location: /FMidterm_Project/farms/');
+    header('Location: ' . APP_BASE_PATH . '/farms/');
     exit;
 }
 
@@ -29,13 +29,13 @@ try {
     $irrigationTypes = $farmModel->getIrrigationTypes();
 } catch (Throwable) {
     $_SESSION['error'] = 'Farm could not be loaded right now. Please try again later.';
-    header('Location: /FMidterm_Project/farms/');
+    header('Location: ' . APP_BASE_PATH . '/farms/');
     exit;
 }
 
 if (!$farm) {
     $_SESSION['error'] = 'Farm not found.';
-    header('Location: /FMidterm_Project/farms/');
+    header('Location: ' . APP_BASE_PATH . '/farms/');
     exit;
 }
 
@@ -107,7 +107,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             $_SESSION['success'] = 'Farm updated successfully.';
-            header('Location: /FMidterm_Project/farms/view.php?id=' . $farmId);
+            header('Location: ' . APP_BASE_PATH . '/farms/view.php?id=' . $farmId);
             exit;
         } catch (Throwable $error) {
             if (DuplicateChecker::isUniqueViolation($error)) {
@@ -150,7 +150,7 @@ require __DIR__ . '/../includes/header.php';
     <?php endif; ?>
     <?php require __DIR__ . '/../includes/duplicate_notice.php'; ?>
 
-    <form method="post" action="/FMidterm_Project/farms/edit.php?id=<?= $farmId ?>" class="mt-6 space-y-5 rounded-lg bg-white p-6 shadow-sm ring-1 ring-slate-200">
+    <form method="post" action="<?= APP_BASE_PATH ?>/farms/edit.php?id=<?= $farmId ?>" class="mt-6 space-y-5 rounded-lg bg-white p-6 shadow-sm ring-1 ring-slate-200">
         <div>
             <label for="farmer_id" class="mb-1 block text-sm font-medium">Farmer <span class="text-rose-600" aria-hidden="true">*</span></label>
             <select id="farmer_id" name="farmer_id" required class="w-full rounded-md border border-slate-300 px-3 py-2">
@@ -200,7 +200,7 @@ require __DIR__ . '/../includes/header.php';
         </div>
         <div class="flex flex-wrap gap-3">
             <button type="submit" class="rounded-md bg-emerald-700 px-4 py-2 font-semibold text-white hover:bg-emerald-800">Save Changes</button>
-            <a href="/FMidterm_Project/farms/view.php?id=<?= $farmId ?>" class="rounded-md border border-slate-300 px-4 py-2 font-semibold hover:bg-slate-50">Cancel</a>
+            <a href="<?= APP_BASE_PATH ?>/farms/view.php?id=<?= $farmId ?>" class="rounded-md border border-slate-300 px-4 py-2 font-semibold hover:bg-slate-50">Cancel</a>
         </div>
     </form>
 </div>

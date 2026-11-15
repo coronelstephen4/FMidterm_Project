@@ -80,7 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
 
                 $_SESSION['success'] = 'Crop variety created successfully.';
-                header('Location: /FMidterm_Project/crops/view.php?id=' . $cropId);
+                header('Location: ' . APP_BASE_PATH . '/crops/view.php?id=' . $cropId);
                 exit;
             }
         } catch (Throwable $error) {
@@ -172,7 +172,7 @@ require __DIR__ . '/../includes/header.php';
         </div>
         <div class="flex flex-wrap gap-3">
             <button type="submit" class="rounded-md bg-emerald-700 px-4 py-2 font-semibold text-white hover:bg-emerald-800">Save Variety</button>
-            <a href="/FMidterm_Project/crops/" class="rounded-md border border-slate-300 px-4 py-2 font-semibold hover:bg-slate-50">Cancel</a>
+            <a href="<?= APP_BASE_PATH ?>/crops/" class="rounded-md border border-slate-300 px-4 py-2 font-semibold hover:bg-slate-50">Cancel</a>
         </div>
     </form>
 </div>

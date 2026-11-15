@@ -33,7 +33,7 @@ require __DIR__ . '/../includes/header.php';
         <h1 class="text-2xl font-bold text-slate-900">Harvest Details</h1>
         <p class="mt-1 text-sm text-slate-600">View the planting, farm, farmer, and crop related to this harvest.</p>
     </div>
-    <a href="/FMidterm_Project/harvests/" class="rounded-md border border-slate-300 px-4 py-2 font-semibold hover:bg-white">Back to Harvests</a>
+    <a href="<?= APP_BASE_PATH ?>/harvests/" class="rounded-md border border-slate-300 px-4 py-2 font-semibold hover:bg-white">Back to Harvests</a>
 </div>
 
 <?php if ($pageError): ?>
@@ -88,8 +88,8 @@ require __DIR__ . '/../includes/header.php';
         </dl>
         <div class="flex flex-wrap gap-3 border-t border-slate-100 px-5 py-4">
             <?php if (isAdmin()): ?>
-                <a href="/FMidterm_Project/harvests/edit.php?id=<?= (int) $harvest['harvest_id'] ?>" class="rounded-md bg-blue-700 px-4 py-2 font-semibold text-white hover:bg-blue-800">Edit Harvest</a>
-                <a href="/FMidterm_Project/harvests/delete.php?id=<?= (int) $harvest['harvest_id'] ?>" class="rounded-md bg-red-700 px-4 py-2 font-semibold text-white hover:bg-red-800">Delete Harvest</a>
+                <a href="<?= APP_BASE_PATH ?>/harvests/edit.php?id=<?= (int) $harvest['harvest_id'] ?>" class="rounded-md bg-blue-700 px-4 py-2 font-semibold text-white hover:bg-blue-800">Edit Harvest</a>
+                <a href="<?= APP_BASE_PATH ?>/harvests/delete.php?id=<?= (int) $harvest['harvest_id'] ?>" class="rounded-md bg-red-700 px-4 py-2 font-semibold text-white hover:bg-red-800">Delete Harvest</a>
             <?php endif; ?>
         </div>
     </section>

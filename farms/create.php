@@ -95,7 +95,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             $_SESSION['success'] = 'Farm created successfully.';
-            header('Location: /FMidterm_Project/farms/view.php?id=' . $farmId);
+            header('Location: ' . APP_BASE_PATH . '/farms/view.php?id=' . $farmId);
             exit;
         } catch (Throwable $error) {
             if (DuplicateChecker::isUniqueViolation($error)) {
@@ -194,7 +194,7 @@ require __DIR__ . '/../includes/header.php';
         </div>
         <div class="flex flex-wrap gap-3">
             <button type="submit" class="rounded-md bg-emerald-700 px-4 py-2 font-semibold text-white hover:bg-emerald-800">Save Farm</button>
-            <a href="/FMidterm_Project/farms/" class="rounded-md border border-slate-300 px-4 py-2 font-semibold hover:bg-slate-50">Cancel</a>
+            <a href="<?= APP_BASE_PATH ?>/farms/" class="rounded-md border border-slate-300 px-4 py-2 font-semibold hover:bg-slate-50">Cancel</a>
         </div>
     </form>
 </div>

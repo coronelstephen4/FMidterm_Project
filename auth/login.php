@@ -4,10 +4,11 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 require_once __DIR__ . '/../includes/csrf.php';
+require_once __DIR__ . '/../includes/app_path.php';
 require_once __DIR__ . '/../includes/Validator.php';
 
 if (isset($_SESSION['user_id'], $_SESSION['role'])) {
-    header('Location: /FMidterm_Project/');
+    header('Location: ' . APP_BASE_PATH . '/');
     exit;
 }
 
@@ -31,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$validator->validateLogin($username, $password)) {
         $_SESSION['error'] = 'Invalid username or password';
         $_SESSION['old_username'] = $username;
-        header('Location: /FMidterm_Project/auth/login.php');
+        header('Location: ' . APP_BASE_PATH . '/auth/login.php');
         exit;
     }
 
@@ -47,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['username'] = $user['username'];
             $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 
-            header('Location: /FMidterm_Project/');
+            header('Location: ' . APP_BASE_PATH . '/');
             exit;
         }
 
@@ -57,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     $_SESSION['old_username'] = $username;
 
-    header('Location: /FMidterm_Project/auth/login.php');
+    header('Location: ' . APP_BASE_PATH . '/auth/login.php');
     exit;
 }
 
@@ -72,7 +73,7 @@ require __DIR__ . '/../includes/header.php';
     <h1 class="text-2xl font-bold text-slate-900">Sign in</h1>
     <p class="mt-2 text-sm text-slate-600">Use your AIS account to continue.</p>
 
-    <form method="post" action="/FMidterm_Project/auth/login.php" class="mt-6 space-y-5">
+    <form method="post" action="<?= APP_BASE_PATH ?>/auth/login.php" class="mt-6 space-y-5">
         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrfToken(), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>">
         <div>
             <label for="username" class="mb-1 block text-sm font-medium text-slate-700">Username <span class="text-rose-600" aria-hidden="true">*</span></label>

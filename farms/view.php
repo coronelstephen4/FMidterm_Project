@@ -33,7 +33,7 @@ require __DIR__ . '/../includes/header.php';
         <h1 class="text-2xl font-bold text-slate-900">Farm Details</h1>
         <p class="mt-1 text-sm text-slate-600">View the farm and its associated farmer.</p>
     </div>
-    <a href="/FMidterm_Project/farms/" class="rounded-md border border-slate-300 px-4 py-2 font-semibold hover:bg-white">Back to Farms</a>
+    <a href="<?= APP_BASE_PATH ?>/farms/" class="rounded-md border border-slate-300 px-4 py-2 font-semibold hover:bg-white">Back to Farms</a>
 </div>
 
 <?php if ($pageError): ?>
@@ -76,8 +76,8 @@ require __DIR__ . '/../includes/header.php';
         </dl>
         <div class="flex flex-wrap gap-3 border-t border-slate-100 px-5 py-4">
             <?php if (isAdmin()): ?>
-                <a href="/FMidterm_Project/farms/edit.php?id=<?= (int) $farm['farm_id'] ?>" class="rounded-md bg-blue-700 px-4 py-2 font-semibold text-white hover:bg-blue-800">Edit Farm</a>
-                <a href="/FMidterm_Project/farms/delete.php?id=<?= (int) $farm['farm_id'] ?>" class="rounded-md bg-red-700 px-4 py-2 font-semibold text-white hover:bg-red-800">Delete Farm</a>
+                <a href="<?= APP_BASE_PATH ?>/farms/edit.php?id=<?= (int) $farm['farm_id'] ?>" class="rounded-md bg-blue-700 px-4 py-2 font-semibold text-white hover:bg-blue-800">Edit Farm</a>
+                <a href="<?= APP_BASE_PATH ?>/farms/delete.php?id=<?= (int) $farm['farm_id'] ?>" class="rounded-md bg-red-700 px-4 py-2 font-semibold text-white hover:bg-red-800">Delete Farm</a>
             <?php endif; ?>
         </div>
     </section>

@@ -51,6 +51,7 @@ Work top to bottom. Do one task or one module at a time.
 - [x] config/Database.php (PDO pgsql, credentials read from a private file, not hard-coded)
 - [x] Add Render environment-variable database settings, with private local XAMPP credentials as fallback
 - [x] Add a PHP 8.2 Apache Dockerfile and Docker build exclusions for secrets and local documents
+- [x] Replace deployment-specific app URL prefixes with a shared dynamic base path for XAMPP subdirectory and Render web-root deployments
 - [x] config/db_credentials.example.php and .gitignore entry for the real credentials file
 - [x] includes/header.php (Tailwind CDN, navbar with links to all modules, success/error message area)
 - [x] includes/footer.php

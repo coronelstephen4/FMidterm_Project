@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../config/Timezone.php';
+require_once __DIR__ . '/app_path.php';
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -7,7 +8,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 function requireLogin(): void {
     if (!isset($_SESSION['user_id'], $_SESSION['role'])) {
-        header('Location: /FMidterm_Project/auth/login.php');
+        header('Location: ' . APP_BASE_PATH . '/auth/login.php');
         exit;
     }
 }

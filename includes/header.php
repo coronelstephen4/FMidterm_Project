@@ -5,9 +5,10 @@ if (session_status() === PHP_SESSION_NONE) {
 
 require_once __DIR__ . '/csrf.php';
 require_once __DIR__ . '/../config/Timezone.php';
+require_once __DIR__ . '/app_path.php';
 
 $pageTitle = $pageTitle ?? 'Agriculture Information System';
-$appBaseUrl = '/FMidterm_Project';
+$appBaseUrl = APP_BASE_PATH;
 $successMessage = $_SESSION['success'] ?? null;
 $errorMessage = $_SESSION['error'] ?? null;
 $warningMessage = $_SESSION['warning'] ?? null;

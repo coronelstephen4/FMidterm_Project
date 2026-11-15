@@ -9,7 +9,7 @@ $cropId = is_string($idValue) ? (int) $idValue : 0;
 
 if ($cropId < 1) {
     $_SESSION['error'] = 'Crop not found.';
-    header('Location: /FMidterm_Project/crops/');
+    header('Location: ' . APP_BASE_PATH . '/crops/');
     exit;
 }
 
@@ -19,13 +19,13 @@ try {
     $crop = $cropModel->getById($cropId);
 } catch (Throwable) {
     $_SESSION['error'] = 'Crop could not be loaded right now. Please try again later.';
-    header('Location: /FMidterm_Project/crops/');
+    header('Location: ' . APP_BASE_PATH . '/crops/');
     exit;
 }
 
 if (!$crop) {
     $_SESSION['error'] = 'Crop not found.';
-    header('Location: /FMidterm_Project/crops/');
+    header('Location: ' . APP_BASE_PATH . '/crops/');
     exit;
 }
 
@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['error'] = 'Crop variety could not be deleted. A planting record may still use it.';
     }
 
-    header('Location: /FMidterm_Project/crops/');
+    header('Location: ' . APP_BASE_PATH . '/crops/');
     exit;
 }
 
@@ -51,9 +51,9 @@ require __DIR__ . '/../includes/header.php';
         This action cannot be undone.
     </p>
     <p class="mt-2 text-sm text-slate-600">A variety linked to a planting record cannot be deleted.</p>
-    <form method="post" action="/FMidterm_Project/crops/delete.php?id=<?= $cropId ?>" class="mt-6 flex flex-wrap gap-3">
+    <form method="post" action="<?= APP_BASE_PATH ?>/crops/delete.php?id=<?= $cropId ?>" class="mt-6 flex flex-wrap gap-3">
         <button type="submit" class="rounded-md bg-red-700 px-4 py-2 font-semibold text-white hover:bg-red-800">Confirm Delete</button>
-        <a href="/FMidterm_Project/crops/view.php?id=<?= $cropId ?>" class="rounded-md border border-slate-300 px-4 py-2 font-semibold hover:bg-slate-50">Cancel</a>
+        <a href="<?= APP_BASE_PATH ?>/crops/view.php?id=<?= $cropId ?>" class="rounded-md border border-slate-300 px-4 py-2 font-semibold hover:bg-slate-50">Cancel</a>
     </form>
 </section>
 <?php require __DIR__ . '/../includes/footer.php'; ?>

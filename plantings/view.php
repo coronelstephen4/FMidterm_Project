@@ -33,7 +33,7 @@ require __DIR__ . '/../includes/header.php';
         <h1 class="text-2xl font-bold text-slate-900">Planting Details</h1>
         <p class="mt-1 text-sm text-slate-600">View the related farm, farmer, crop, and planting information.</p>
     </div>
-    <a href="/FMidterm_Project/plantings/" class="rounded-md border border-slate-300 px-4 py-2 font-semibold hover:bg-white">Back to Plantings</a>
+    <a href="<?= APP_BASE_PATH ?>/plantings/" class="rounded-md border border-slate-300 px-4 py-2 font-semibold hover:bg-white">Back to Plantings</a>
 </div>
 
 <?php if ($pageError): ?>
@@ -84,8 +84,8 @@ require __DIR__ . '/../includes/header.php';
         </dl>
         <div class="flex flex-wrap gap-3 border-t border-slate-100 px-5 py-4">
             <?php if (isAdmin()): ?>
-                <a href="/FMidterm_Project/plantings/edit.php?id=<?= (int) $planting['planting_id'] ?>" class="rounded-md bg-blue-700 px-4 py-2 font-semibold text-white hover:bg-blue-800">Edit Planting</a>
-                <a href="/FMidterm_Project/plantings/delete.php?id=<?= (int) $planting['planting_id'] ?>" class="rounded-md bg-red-700 px-4 py-2 font-semibold text-white hover:bg-red-800">Delete Planting</a>
+                <a href="<?= APP_BASE_PATH ?>/plantings/edit.php?id=<?= (int) $planting['planting_id'] ?>" class="rounded-md bg-blue-700 px-4 py-2 font-semibold text-white hover:bg-blue-800">Edit Planting</a>
+                <a href="<?= APP_BASE_PATH ?>/plantings/delete.php?id=<?= (int) $planting['planting_id'] ?>" class="rounded-md bg-red-700 px-4 py-2 font-semibold text-white hover:bg-red-800">Delete Planting</a>
             <?php endif; ?>
         </div>
     </section>

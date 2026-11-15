@@ -107,7 +107,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($warningMessages) {
                     $_SESSION['warning'] = 'Saved. Note: ' . implode(' ', $warningMessages);
                 }
-                header('Location: /FMidterm_Project/harvests/view.php?id=' . $harvestId);
+                header('Location: ' . APP_BASE_PATH . '/harvests/view.php?id=' . $harvestId);
                 exit;
             }
         } catch (Throwable $error) {
@@ -202,7 +202,7 @@ require __DIR__ . '/../includes/header.php';
         </div>
         <div class="flex flex-wrap gap-3">
             <button type="submit" class="rounded-md bg-emerald-700 px-4 py-2 font-semibold text-white hover:bg-emerald-800">Save Harvest</button>
-            <a href="/FMidterm_Project/harvests/" class="rounded-md border border-slate-300 px-4 py-2 font-semibold hover:bg-slate-50">Cancel</a>
+            <a href="<?= APP_BASE_PATH ?>/harvests/" class="rounded-md border border-slate-300 px-4 py-2 font-semibold hover:bg-slate-50">Cancel</a>
         </div>
     </form>
 </div>

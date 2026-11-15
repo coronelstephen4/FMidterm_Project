@@ -39,7 +39,7 @@ require __DIR__ . '/../includes/header.php';
         <p class="mt-1 text-sm text-slate-600">Manage crop varieties and their growing information.</p>
     </div>
     <?php if (isAdmin()): ?>
-        <a href="/FMidterm_Project/crops/create.php" class="rounded-md bg-emerald-700 px-4 py-2 font-semibold text-white hover:bg-emerald-800">Add Crop</a>
+        <a href="<?= APP_BASE_PATH ?>/crops/create.php" class="rounded-md bg-emerald-700 px-4 py-2 font-semibold text-white hover:bg-emerald-800">Add Crop</a>
     <?php endif; ?>
 </div>
 
@@ -67,7 +67,7 @@ require __DIR__ . '/../includes/header.php';
     </div>
     <div class="flex items-end gap-2">
         <button type="submit" class="rounded-md bg-slate-800 px-4 py-2 font-semibold text-white hover:bg-slate-900">Apply</button>
-        <a href="/FMidterm_Project/crops/" class="rounded-md border border-slate-300 px-4 py-2 font-semibold hover:bg-slate-50">Clear</a>
+        <a href="<?= APP_BASE_PATH ?>/crops/" class="rounded-md border border-slate-300 px-4 py-2 font-semibold hover:bg-slate-50">Clear</a>
     </div>
 </form>
 
@@ -86,7 +86,7 @@ require __DIR__ . '/../includes/header.php';
                 ];
                 foreach ($sortableColumns as $column => $label):
                     $nextDirection = ($sort === $column && strtoupper($direction) === 'ASC') ? 'DESC' : 'ASC';
-                    $sortUrl = '/FMidterm_Project/crops/?' . http_build_query([
+                    $sortUrl = APP_BASE_PATH . '/crops/?' . http_build_query([
                         'search' => $search,
                         'category_id' => $categoryId,
                         'sort' => $column,
@@ -115,10 +115,10 @@ require __DIR__ . '/../includes/header.php';
                         <td class="whitespace-nowrap px-4 py-3"><?= (int) $crop['growing_period_days'] ?></td>
                         <td class="whitespace-nowrap px-4 py-3"><?= htmlspecialchars($crop['recommended_season_name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
                         <td class="whitespace-nowrap px-4 py-3">
-                            <a class="font-medium text-emerald-800 hover:underline" href="/FMidterm_Project/crops/view.php?id=<?= (int) $crop['variety_id'] ?>">View</a>
+                            <a class="font-medium text-emerald-800 hover:underline" href="<?= APP_BASE_PATH ?>/crops/view.php?id=<?= (int) $crop['variety_id'] ?>">View</a>
                             <?php if (isAdmin()): ?>
-                                <a class="ml-3 font-medium text-blue-800 hover:underline" href="/FMidterm_Project/crops/edit.php?id=<?= (int) $crop['variety_id'] ?>">Edit</a>
-                                <a class="ml-3 font-medium text-red-700 hover:underline" href="/FMidterm_Project/crops/delete.php?id=<?= (int) $crop['variety_id'] ?>">Delete</a>
+                                <a class="ml-3 font-medium text-blue-800 hover:underline" href="<?= APP_BASE_PATH ?>/crops/edit.php?id=<?= (int) $crop['variety_id'] ?>">Edit</a>
+                                <a class="ml-3 font-medium text-red-700 hover:underline" href="<?= APP_BASE_PATH ?>/crops/delete.php?id=<?= (int) $crop['variety_id'] ?>">Delete</a>
                             <?php endif; ?>
                         </td>
                     </tr>

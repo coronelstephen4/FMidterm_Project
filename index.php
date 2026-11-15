@@ -96,7 +96,7 @@ require __DIR__ . '/includes/header.php';
     ];
     foreach ($cards as $card):
     ?>
-        <a href="/FMidterm_Project<?= $card['url'] ?>" class="rounded-lg bg-white p-3 shadow-sm ring-1 ring-slate-200 hover:ring-emerald-500 sm:p-5">
+        <a href="<?= APP_BASE_PATH ?><?= $card['url'] ?>" class="rounded-lg bg-white p-3 shadow-sm ring-1 ring-slate-200 hover:ring-emerald-500 sm:p-5">
             <p class="text-sm font-medium text-slate-600"><?= htmlspecialchars($card['label'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></p>
             <p class="mt-2 text-2xl font-bold text-emerald-800 sm:text-3xl"><?= (int) $card['count'] ?></p>
         </a>
@@ -112,7 +112,7 @@ require __DIR__ . '/includes/header.php';
     <section class="overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-slate-200">
         <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
             <h2 class="font-semibold text-slate-900">Recent Plantings</h2>
-            <a href="/FMidterm_Project/plantings/" class="text-sm font-medium text-emerald-800 hover:underline">View all</a>
+            <a href="<?= APP_BASE_PATH ?>/plantings/" class="text-sm font-medium text-emerald-800 hover:underline">View all</a>
         </div>
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-slate-100 text-sm">
@@ -131,7 +131,7 @@ require __DIR__ . '/includes/header.php';
                         <?php foreach ($recentPlantings as $planting): ?>
                             <tr>
                                 <td class="px-4 py-3">
-                                    <a class="font-medium text-emerald-800 hover:underline" href="/FMidterm_Project/plantings/view.php?id=<?= (int) $planting['planting_id'] ?>">
+                                    <a class="font-medium text-emerald-800 hover:underline" href="<?= APP_BASE_PATH ?>/plantings/view.php?id=<?= (int) $planting['planting_id'] ?>">
                                         <?= htmlspecialchars($planting['crop_name'] . ' (' . $planting['variety'] . ')', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
                                     </a>
                                 </td>
@@ -152,7 +152,7 @@ require __DIR__ . '/includes/header.php';
     <section class="overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-slate-200">
         <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
             <h2 class="font-semibold text-slate-900">Recent Harvests</h2>
-            <a href="/FMidterm_Project/harvests/" class="text-sm font-medium text-emerald-800 hover:underline">View all</a>
+            <a href="<?= APP_BASE_PATH ?>/harvests/" class="text-sm font-medium text-emerald-800 hover:underline">View all</a>
         </div>
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-slate-100 text-sm">
@@ -171,7 +171,7 @@ require __DIR__ . '/includes/header.php';
                         <?php foreach ($recentHarvests as $harvest): ?>
                             <tr>
                                 <td class="px-4 py-3">
-                                    <a class="font-medium text-emerald-800 hover:underline" href="/FMidterm_Project/harvests/view.php?id=<?= (int) $harvest['harvest_id'] ?>">
+                                    <a class="font-medium text-emerald-800 hover:underline" href="<?= APP_BASE_PATH ?>/harvests/view.php?id=<?= (int) $harvest['harvest_id'] ?>">
                                         <?= htmlspecialchars($harvest['crop_name'] . ' (' . $harvest['variety'] . ')', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
                                     </a>
                                     <div class="text-xs text-slate-500"><?= htmlspecialchars($harvest['farm_name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></div>
