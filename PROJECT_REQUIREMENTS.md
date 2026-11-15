@@ -1,8 +1,8 @@
-# Project Requirements: Agriculture Information System (AIS)
+# Project Requirements: HarvestHub
 
 Source: [`ap3 project.docx`](ap3%20project.docx) (AP3 Midterm Project, Cebu Technological University). This is a plain-text copy so AI tools can read it. If anything here conflicts with the DOCX, the DOCX wins.
 
-**Goal:** Design and develop a working Agriculture Information System that demonstrates database normalization, relational design, secure data management, CRUD, reporting and dashboard visualization.
+**Goal:** Design and develop a working HarvestHub that demonstrates database normalization, relational design, secure data management, CRUD, reporting and dashboard visualization.
 **Database:** Supabase PostgreSQL. **Application:** web-based information system.
 
 ## Tables (current design from the docx)
@@ -122,7 +122,7 @@ The dropdown shows `remark_description`; the harvest record stores the numeric `
 18. **Deployment and readiness.** Database hosted in Supabase. App connects successfully. Use environment variables or another secure configuration for credentials. Demonstrable with actual records. Ready for demo and evaluation.
 
 ## Required deliverables
-- Working AIS source code
+- Working HarvestHub source code
 - Supabase database with tables, constraints, relationships and lookup data
 - ERD and normalized design (UNF/1NF/2NF/3NF)
 - Project documentation

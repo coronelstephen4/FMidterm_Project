@@ -4,17 +4,19 @@
     @page {
         size: A4 landscape;
         margin: 14mm 12mm 16mm;
-        @top-left { content: "Agriculture Information System"; font-size: 8pt; color: #374151; }
-        @bottom-left { content: "Agriculture Information System"; font-size: 8pt; color: #374151; }
+        @top-left { content: "HarvestHub"; font-size: 8pt; color: #374151; }
+        @bottom-left { content: "HarvestHub"; font-size: 8pt; color: #374151; }
         @bottom-right { content: "Page " counter(page) " of " counter(pages); font-size: 8pt; color: #374151; }
     }
     @page report-wide {
         size: A4 landscape;
         margin: 14mm 12mm 16mm;
-        @top-left { content: "Agriculture Information System"; font-size: 8pt; color: #374151; }
-        @bottom-left { content: "Agriculture Information System"; font-size: 8pt; color: #374151; }
+        @top-left { content: "HarvestHub"; font-size: 8pt; color: #374151; }
+        @bottom-left { content: "HarvestHub"; font-size: 8pt; color: #374151; }
         @bottom-right { content: "Page " counter(page) " of " counter(pages); font-size: 8pt; color: #374151; }
     }
+    @page :first { @top-left { content: none; } }
+    @page report-wide:first { @top-left { content: none; } }
 
     html, body { background: #fff !important; color: #000 !important; }
     body { min-height: 0 !important; margin: 0 !important; padding: 0 !important; font-size: 10pt !important; }
@@ -24,6 +26,8 @@
     html.night-mode main, html.night-mode main * { background-color: transparent !important; }
     html.night-mode main { background-color: #fff !important; }
     .print-only { display: block !important; }
+    .report-page-heading { display: none !important; }
+    .print-summary-note { display: block !important; margin: 3mm 0 5mm; font-size: 8pt; }
     .print-report-header { margin: 0 0 5mm; border-bottom: 1px solid #777; padding-bottom: 3mm; }
     .print-report-header h1 { margin: 1mm 0 2mm; font-size: 16pt; }
     .print-report-header p { margin: 1mm 0; font-size: 9pt; }

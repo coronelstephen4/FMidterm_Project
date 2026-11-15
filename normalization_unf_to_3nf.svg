@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1760" height="1120" viewBox="0 0 1760 1120" role="img" aria-labelledby="title description">
-  <title id="title">AIS normalization from assignment source tables to implemented 3NF</title>
+  <title id="title">HarvestHub normalization from assignment source tables to implemented 3NF</title>
   <desc id="description">Four columns compare the five separate source tables from the AP3 guideline at UNF, 1NF, and 2NF with the implemented 3NF design. No combined wide UNF table is invented. The application has 12 operational relations plus a separate users authentication relation.</desc>
   <defs>
     <style>
@@ -20,7 +20,7 @@
   </defs>
   <rect width="1760" height="1120" fill="#f1f5f9"/>
   <rect width="1760" height="135" fill="#065f46"/>
-  <text x="48" y="60" class="title">Agriculture Information System</text>
+  <text x="48" y="60" class="title">HarvestHub</text>
   <text x="50" y="98" class="subtitle">Normalization stages based on the five core tables in ap3 project.docx</text>
   <g stroke="#0f766e" stroke-width="5" fill="none" marker-end="url(#arrow)">
     <path d="M438 210 H458"/><path d="M868 210 H888"/><path d="M1298 210 H1318"/>

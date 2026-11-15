@@ -1,6 +1,6 @@
 # Project Tracker: FMidterm_Project
 
-**Project:** Agriculture Information System (AIS), AP3 Midterm, Cebu Technological University
+**Project:** HarvestHub, AP3 Midterm, Cebu Technological University
 **Location:** C:\xampp\htdocs\FMidterm_Project (run at http://localhost/FMidterm_Project/)
 **Stack:** Native PHP (OOP models + PDO), Supabase PostgreSQL, Tailwind CSS via CDN, XAMPP Apache. No frameworks, no Composer.
 **Purpose:** Track progress so work can continue even if the AI runs out of tokens or the session ends.
@@ -16,14 +16,19 @@
 
 - **Phase:** 9 Final testing and submission
 - **Last updated:** 2026-11-15
-- **Currently working on:** The shared app base path now resolves for both XAMPP subdirectory and Render web-root deployments. Application links, forms, assets, and redirects use it. Render Docker and environment-first database configuration remain prepared; no database changes were made.
-- **Next step:** Rebuild and redeploy the Docker image so PHP output buffering is enabled, then verify login redirects in Render. Browser validation remains pending.
+- **Currently working on:** The user-facing application name is centralized as `APP_NAME` and displays as HarvestHub. Shared print styling hides duplicate report title blocks while retaining the report title in page headers after the first page.
+- **Next step:** Review browser print previews for all reports and any list page with a print option. Confirm page-one title, repeated table headings, and footer output.
 - **Last verified row-count snapshot (2026-11-15 05:21, user screenshots):** farmer 18, farm 19, crop 10, crop_variety 10, planting 31, harvest 22. Farmers without farms: IDs 25 and 38 (decision pending).
 
 ## Progress Log
 
 Newest entry at the top. Format:
 `[Date Time] What was done | Files changed | What is next`
+
+### 2026-11-16 01:17
+- Centralized the visible brand as `APP_NAME = 'HarvestHub'`; updated shared page titles, navigation, login text, dashboard/report copy, footer, print headers/footers, and project documentation. Print-only rules hide duplicate report heading blocks, suppress the running title on page one, retain it on later pages, and show the estimated-value explanation once beneath the summary cards. Browser print checks remain pending. No Supabase or Git changes were made.
+- Files changed: `config/App.php`, `includes/header.php`, `includes/footer.php`, `includes/report_print.php`, `assets/css/print.css`, `auth/login.php`, `index.php`, `reports/index.php`, `reports/*.php`, Markdown documentation and README files, both DOCX outputs, ERD SVG text, report builder display text, `PROJECT_TASKS.md`, `PROJECT_TRACKER.md`
+- Next: Verify report and list print previews in the browser.
 
 ### 2026-11-15 08:08
 - Removed the UTF-8 BOM from `includes/country_phone.php` after the scan showed it could emit output before PHP session/header calls. Configured Docker PHP with `output_buffering = 4096`. Checked all 60 PHP files; no other BOMs were present, and no pure-PHP include/model/config file had a trailing close tag. PHP lint passed for the changed PHP file. No Supabase or Git changes were made.
@@ -349,14 +354,14 @@ Newest entry at the top. Format:
 ### 2026-11-12 22:56
 - User's Supabase screenshot confirms the location update succeeded and returned 15 farms. All 15 former generated location labels now cycle across the six user-provided names; farm ID 13 is Cogon, Compostela, Cebu City.
 - Files changed: PROJECT_TASKS.md, PROJECT_TRACKER.md; Supabase farm.location data updated by the user-run SQL script
-- Next: Refresh the AIS Farms page and visually confirm the saved locations.
+- Next: Refresh the HarvestHub Farms page and visually confirm the saved locations.
 ### 2026-11-12 23:04
-- Reviewed the pending worktree and confirmed `origin` points to the AIS GitHub repository. The private credentials file is ignored. Excluding the untracked classmate reference PDF from publication; preparing the AIS documentation, report updates, and SQL audit/update scripts for push.
+- Reviewed the pending worktree and confirmed `origin` points to the HarvestHub GitHub repository. The private credentials file is ignored. Excluding the untracked classmate reference PDF from publication; preparing the HarvestHub documentation, report updates, and SQL audit/update scripts for push.
 - Files changed: PROJECT_TRACKER.md; no GitHub changes yet
-- Next: Commit the reviewed AIS files and push to `origin/main`.
+- Next: Commit the reviewed HarvestHub files and push to `origin/main`.
 ### 2026-11-12 23:05
-- Published AIS report updates, final system documentation, and SQL audit/location scripts to GitHub. Commit `1bda119` pushed to `origin/main`; private credentials and the classmate reference PDF were excluded.
-- Files changed: 15 AIS files in commit `1bda119`, including report code, documentation, tracker/tasks, and SQL scripts
+- Published HarvestHub report updates, final system documentation, and SQL audit/location scripts to GitHub. Commit `1bda119` pushed to `origin/main`; private credentials and the classmate reference PDF were excluded.
+- Files changed: 15 HarvestHub files in commit `1bda119`, including report code, documentation, tracker/tasks, and SQL scripts
 - Next: Refresh the Farms page and verify Farm IDs 13 and 18; continue pending authenticated print-preview and end-to-end workflow checks.
 ### 2026-11-12 22:53
 - Prepared a transactional SQL update for only locations matching the generated “Farm Location NN, Cebu” pattern. It cycles equally by farm_id through the six real location strings from the user's screenshot and returns updated farm IDs/names/locations for review.
@@ -411,7 +416,7 @@ Newest entry at the top. Format:
 - Files changed: includes/report_actions.php, includes/header.php, four report pages, PROJECT_TASKS.md, PROJECT_TRACKER.md
 - Next: Verify the all-results flow and printed pagination in the browser.
 ### 2026-11-12 21:18
-- After the user restored Microsoft Print to PDF, set AIS report print CSS to A4 portrait with compact, wrapping table columns so the report and restored printer use portrait output.
+- After the user restored Microsoft Print to PDF, set HarvestHub report print CSS to A4 portrait with compact, wrapping table columns so the report and restored printer use portrait output.
 - Files changed: includes/header.php, PROJECT_TASKS.md, PROJECT_TRACKER.md
 - Next: In Chrome Print, set More settings > Layout to Portrait, regenerate a report PDF, and confirm the text is upright.
 ### 2026-11-12 21:13
@@ -473,7 +478,7 @@ Newest entry at the top. Format:
 - Next: Verify the print flow in a browser when the XAMPP database connection is available; continue remaining Phase 9 workflow tests and screenshots.
 ### 2026-11-12 18:05
 - Reviewed the original AP3 DOCX and current Supabase schema. All 13 expected relations are present; the source requires created_at and updated_at where appropriate and does not require deleted_at.
-- Local PHP syntax scan passed and the signed-out dashboard route redirected to login. Local PDO could not connect; the private config host differs from the AIS project, and a connection attempt using the AIS host in memory also failed. No credentials were displayed and no application code or database data was changed.
+- Local PHP syntax scan passed and the signed-out dashboard route redirected to login. Local PDO could not connect; the private config host differs from the HarvestHub project, and a connection attempt using the HarvestHub host in memory also failed. No credentials were displayed and no application code or database data was changed.
 - Files changed: PROJECT_TASKS.md, PROJECT_TRACKER.md
 - Next: Verify the private connection settings/network, then complete live workflow tests, screenshots, demo rehearsal and submission cleanup.
 ### 2026-11-12 04:35
@@ -920,7 +925,7 @@ Decision:
 - Next: Continue populated-database integration checks when Supabase connectivity is available to the test environment.
 
 ### 2026-11-06 04:52
-- Moved the role badge beside the Agriculture Information System title in the header row; navigation and Log out remain on the row below.
+- Moved the role badge beside the HarvestHub title in the header row; navigation and Log out remain on the row below.
 - Test: XAMPP PHP lint passed for `includes/header.php`.
 - Files changed: `includes/header.php`, `PROJECT_TRACKER.md`
 - Next: Continue populated-database integration checks when Supabase connectivity is available to the test environment.

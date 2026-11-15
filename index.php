@@ -76,7 +76,7 @@ require __DIR__ . '/includes/header.php';
 ?>
 <div>
     <h1 class="text-2xl font-bold text-slate-900">Dashboard</h1>
-    <p class="mt-1 text-sm text-slate-600">A quick overview of your agriculture records.</p>
+    <p class="mt-1 text-sm text-slate-600">A quick overview of your HarvestHub records.</p>
 </div>
 
 <?php if ($pageError): ?>

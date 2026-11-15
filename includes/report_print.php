@@ -3,7 +3,7 @@ $printEscape = static fn ($value): string => htmlspecialchars((string) $value, E
 if (($reportPrintSection ?? '') === 'header'):
 ?>
 <section class="print-only print-report-header" aria-label="Print report details">
-    <strong>Agriculture Information System</strong>
+    <strong><?= $printEscape(APP_NAME) ?></strong>
     <h1><?= $printEscape($pageTitle ?? 'Report') ?></h1>
     <p>Generated: <?= $printEscape($reportPrintGenerated ?? date('Y-m-d H:i')) ?> | User: <?= $printEscape($_SESSION['username'] ?? 'Unknown') ?> (<?= $printEscape(($_SESSION['role'] ?? '') === 'admin' ? 'Administrator' : 'Staff') ?>)</p>
     <p>Filters: <?php

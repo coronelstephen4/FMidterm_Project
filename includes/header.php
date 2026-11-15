@@ -5,9 +5,11 @@ if (session_status() === PHP_SESSION_NONE) {
 
 require_once __DIR__ . '/csrf.php';
 require_once __DIR__ . '/../config/Timezone.php';
+require_once __DIR__ . '/../config/App.php';
 require_once __DIR__ . '/app_path.php';
 
-$pageTitle = $pageTitle ?? 'Agriculture Information System';
+$pageTitle = $pageTitle ?? 'Dashboard';
+$documentTitle = $pageTitle . ' | ' . APP_NAME;
 $appBaseUrl = APP_BASE_PATH;
 $successMessage = $_SESSION['success'] ?? null;
 $errorMessage = $_SESSION['error'] ?? null;
@@ -30,7 +32,7 @@ $navigation = [
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title><?= htmlspecialchars((string) $pageTitle, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></title>
+    <title><?= htmlspecialchars($documentTitle, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         try {
@@ -144,12 +146,14 @@ $navigation = [
         <link rel="stylesheet" href="<?= $appBaseUrl ?>/assets/css/print.css">
         <?php
         $pageBoxTitle = json_encode((string) $pageTitle, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
-        $pageBoxFooter = json_encode('Agriculture Information System | Generated: ' . ($reportPrintGenerated ?? date('Y-m-d H:i')), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
+        $pageBoxFooter = json_encode(APP_NAME . ' | Generated: ' . ($reportPrintGenerated ?? date('Y-m-d H:i')), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
         ?>
         <style>
             @media print {
                 @page { @top-left { content: <?= $pageBoxTitle ?>; } @bottom-left { content: <?= $pageBoxFooter ?>; } }
                 @page report-wide { @top-left { content: <?= $pageBoxTitle ?>; } @bottom-left { content: <?= $pageBoxFooter ?>; } }
+                @page :first { @top-left { content: none; } }
+                @page report-wide:first { @top-left { content: none; } }
             }
         </style>
     <?php endif; ?>
@@ -166,8 +170,8 @@ $navigation = [
                         </svg>
                     </span>
                     <span class="leading-tight">
-                        <span class="block font-serif text-xl font-bold tracking-tight text-white sm:text-[1.75rem]">Agriculture</span>
-                        <span class="mt-0.5 block text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-emerald-100 sm:mt-1 sm:text-sm sm:tracking-[0.16em]">Information System</span>
+                        <span class="block font-serif text-xl font-bold tracking-tight text-white sm:text-[1.75rem]">HarvestHub</span>
+                        <span class="mt-0.5 block text-[0.65rem] font-semibold uppercase tracking-[0.12em] text-emerald-100 sm:mt-1 sm:text-sm sm:tracking-[0.16em]">Agriculture Information System</span>
                     </span>
                 </a>
                 <?php if (isset($_SESSION['user_id'])): ?>

@@ -55,7 +55,7 @@ $sortLabels = [
     'farm_name' => 'Farm', 'location' => 'Farm location', 'area_hectares' => 'Area (ha)'
 ];
 ?>
-<div class="flex flex-wrap items-center justify-between gap-3">
+<div class="report-page-heading flex flex-wrap items-center justify-between gap-3">
     <div>
         <h1 class="text-2xl font-bold text-slate-900">Farmers and their farms</h1>
         <p class="mt-1 text-sm text-slate-600">Farmers with registered farms are listed. Farmers without farms remain available in the Farmers module.</p>

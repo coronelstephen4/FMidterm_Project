@@ -1,15 +1,15 @@
-# Agriculture Information System — AP3 Midterm Project
+# HarvestHub — AP3 Midterm Project
 
 **Cebu Technological University**  
 **Submission documentation**  
-**Application:** Agriculture Information System (AIS)  
+**Application:** HarvestHub
 **Stack:** Native PHP (OOP models and PDO), Supabase PostgreSQL, Tailwind CSS CDN, XAMPP Apache
 
 > This document describes the checked-in implementation and migration history. A source-code review is not evidence of a successful current live database session. Items below explicitly distinguish implementation from tests and screenshots that still need evidence.
 
 ## 1. Project Title and Description
 
-The **Agriculture Information System - AP3 Midterm Project, Cebu Technological University** is a web application for maintaining farmer, farm, crop, planting, and harvest records. Users authenticate through the `roles` lookup as `admin` or `staff`. The five operational modules provide record lists, forms, detail pages, and deletion routes; related values are displayed through SQL joins. The dashboard summarizes database records and the Reports area contains six report views.
+HarvestHub is a web application for maintaining farmer, farm, crop, planting, and harvest records for the AP3 Midterm Project at Cebu Technological University. Users authenticate through the `roles` lookup as `admin` or `staff`. The five operational modules provide record lists, forms, detail pages, and deletion routes; related values are displayed through SQL joins. The dashboard summarizes database records and the Reports area contains six report views.
 
 ### Architecture
 
@@ -108,7 +108,7 @@ The forms also set HTML `required`, `min`, `max`, and `step` attributes where ap
 
 ## 4. Entity-Relationship Diagram (ERD)
 
-![AIS entity relationship diagram](submission_materials/ais_3nf_erd.svg)
+![HarvestHub entity relationship diagram](submission_materials/ais_3nf_erd.svg)
 
 ```mermaid
 erDiagram

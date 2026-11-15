@@ -5,7 +5,7 @@ Create one dated test report after checking the application against the final Su
 Copy this template into a dated file such as `2026-11-12-final-tests.md`:
 
 ```markdown
-# AIS Final Test Run
+# HarvestHub Final Test Run
 
 - Date and time:
 - Application URL:

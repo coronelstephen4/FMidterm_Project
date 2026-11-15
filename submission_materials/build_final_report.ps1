@@ -52,13 +52,13 @@ function Add-Node($g,[int]$x,[int]$y,[int]$w,[int]$h,[string]$title,[string]$fie
 }
 function Save-Page($obj,[string]$name) {
     $bmp=$obj[0]; $g=$obj[1]
-    $g.DrawString('AGRICULTURE INFORMATION SYSTEM  |  AP3 MIDTERM PROJECT',(New-Object Drawing.Font('Segoe UI',12,[Drawing.FontStyle]::Bold)),(New-Object Drawing.SolidBrush($script:muted)),70,855)
+    $g.DrawString('HarvestHub  |  AP3 MIDTERM PROJECT',(New-Object Drawing.Font('Segoe UI',12,[Drawing.FontStyle]::Bold)),(New-Object Drawing.SolidBrush($script:muted)),70,855)
     $g.DrawString('12 NOV 2026',(New-Object Drawing.Font('Segoe UI',12,[Drawing.FontStyle]::Bold)),(New-Object Drawing.SolidBrush($script:muted)),1390,855)
     $bmp.Save((Join-Path $pages $name),[Drawing.Imaging.ImageFormat]::Png); $g.Dispose(); $bmp.Dispose()
 }
 
 # Cover
-$p=New-Canvas 'AGRICULTURE' 'INFORMATION SYSTEM' 'AP3  /  FINAL PROJECT REPORT'
+$p=New-Canvas 'HarvestHub' 'AP3 Midterm Project' 'FINAL PROJECT REPORT'
 $g=$p[1]
 $g.FillRectangle((New-Object Drawing.SolidBrush($script:green)),70,235,1460,390)
 $g.DrawString('A visual guide to the system, data model, and project readiness',$script:fontHead,(New-Object Drawing.SolidBrush($script:white)),120,290)
@@ -163,7 +163,7 @@ Add-Card $g 830 495 700 230 'Harvest lookups and users' 'HARVEST_QUALITY_GRADES:
 Save-Page $p '10_dictionary_lookups.png'
 
 # User guide
-$p=New-Canvas 'Quick user guide' 'Everyday route through the Agriculture Information System.' '10  /  USER GUIDE'
+$p=New-Canvas 'Quick user guide' 'Everyday route through the HarvestHub.' '10  /  USER GUIDE'
 $g=$p[1]
 Add-Card $g 70 225 450 220 '1. Sign in' 'Use an assigned account. Access is role-based.' $script:blue
 Add-Card $g 575 225 450 220 '2. Choose a module' 'Open Farmers, Farms, Crops, Plantings, or Harvests from navigation.' $script:mint

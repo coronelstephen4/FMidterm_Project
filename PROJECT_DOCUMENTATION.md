@@ -1,4 +1,4 @@
-# Agriculture Information System (AIS)
+# HarvestHub
 
 **Course project:** AP3 Web Application Development Midterm Project  
 **Institution:** Cebu Technological University  
@@ -8,7 +8,7 @@
 
 ## 1. Project description
 
-The AIS stores farmers, farms, crops, planting operations, and harvest yields. Users sign in as an administrator or staff member. The application provides validated CRUD screens, search and filters, dashboard totals, and reports that join related records.
+HarvestHub stores farmers, farms, crops, planting operations, and harvest yields. Users sign in as an administrator or staff member. The application provides validated CRUD screens, search and filters, dashboard totals, and reports that join related records.
 
 ## 2. Objectives
 
@@ -46,7 +46,7 @@ The six report topics are: farmers and their farms; crops planted per farm; plan
 
 ## 5. Entity relationship diagram
 
-![AIS entity relationship diagram](submission_materials/ais_3nf_erd.svg)
+![HarvestHub entity relationship diagram](submission_materials/ais_3nf_erd.svg)
 
 ```mermaid
 erDiagram

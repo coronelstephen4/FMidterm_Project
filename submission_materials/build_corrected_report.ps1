@@ -1,4 +1,4 @@
-﻿Add-Type -AssemblyName System.IO.Compression
+Add-Type -AssemblyName System.IO.Compression
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $ErrorActionPreference = 'Stop'
 
@@ -32,13 +32,13 @@ function T([string[]]$headers, [object[]]$rows) {
 }
 
 $body = ''
-$body += New-P 'AGRICULTURE INFORMATION SYSTEM' 'Title'
+$body += New-P 'HarvestHub' 'Title'
 $body += New-P 'AP3 Midterm Project | Final Project Documentation'
 $body += New-P 'Cebu Technological University'
 $body += New-P 'Native PHP + PDO | Supabase PostgreSQL | Tailwind CSS'
 $body += New-P 'Revised 12 November 2026. Prepared against the original ap3 project.docx and the current project documentation.'
 $body += New-H '1. Project description and objectives'
-$body += New-P 'The Agriculture Information System records farmers, farms, crop varieties, planting operations, and harvest yields. It provides role-based access, validated record management, a dashboard, and reports.'
+$body += New-P 'The HarvestHub records farmers, farms, crop varieties, planting operations, and harvest yields. It provides role-based access, validated record management, a dashboard, and reports.'
 $body += New-P 'Objectives: organize records in a relational database; demonstrate normalization through 3NF, keys, relationships, and constraints; protect access with hashed passwords and roles; validate input; and summarize planting and harvest activity.'
 $body += New-H '2. Functional requirements and implementation'
 $fr = @(

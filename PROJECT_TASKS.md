@@ -7,6 +7,10 @@ Work top to bottom. Do one task or one module at a time.
 ## Deployment follow-up
 - [x] Strip the UTF-8 BOM from `includes/country_phone.php` and enable PHP output buffering in the Docker image to prevent premature output from breaking login session redirects
 
+## HarvestHub branding and print layout
+- [x] Centralize the visible application name as `APP_NAME`, apply HarvestHub branding to shared templates and documentation, and remove duplicate report headings in print output
+- [ ] Verify print preview for every report and list page; confirm first-page title, later-page running title, repeated table headings, and footer
+
 ## Phase 0: Setup
 - [x] Create project folder in xampp\htdocs
 - [x] Install Codex and open it
@@ -38,7 +42,7 @@ Work top to bottom. Do one task or one module at a time.
 - [x] Run `database/10_remove_demo_labels_from_sample_records.sql` in Supabase to remove the Demo word from sample farmer/farm labels (user screenshot confirms success; verification queries returned 0 old labels)
 - [x] Recheck the three previously reported placeholder clues in the current Supabase data; none were found, so leave migration 11 unapplied
 - [x] Run a read-only inventory of all five business tables and compare records/relationships with archived demo seed clues; uncertain additional records identified and preserved
-- [x] Apply the user's repeating Cogon/Cansaga/Maguikay address sequence to all 15 remaining AIS placeholder farmer addresses in Supabase and verify the results
+- [x] Apply the user's repeating Cogon/Cansaga/Maguikay address sequence to all 15 remaining HarvestHub placeholder farmer addresses in Supabase and verify the results
 - [x] Capitalize the first character of text values across the five main modules and linked lookup labels in Supabase; verification found no lowercase initials
 - [x] Mirror the website's duplicate checks in Supabase with `database/18_prevent_duplicate_records.sql`; user screenshot confirms the five triggers were installed (information_schema displays one row per event)
 - [x] Remove generated numbered farm-name prefixes from all 16 affected farms; assign farm_id 7 a distinct owner-based name to satisfy the per-farmer uniqueness constraint
@@ -203,7 +207,7 @@ Each module needs: model, list page with search, filter, sorting and pagination,
 - [~] Choose the active duplicate policy after comparing PHP checks, live-schema notes, and the unrun composite index SQL
 - [x] Audit live PK/UNIQUE constraints and triggers across all 15 ERD tables with read-only Supabase SELECTs; preserve the catalog query in `database/32_audit_duplicate_constraints_read_only.sql`
 - [x] Map the live crop duplicate trigger's custom SQLSTATE 23505 messages to friendly crop-name and variety-name messages without exposing SQL details
-- [x] Publish the pending AIS report updates, final documentation, and SQL audit/update scripts to GitHub in commit `1bda119`; keep private credentials and the classmate reference PDF excluded
+- [x] Publish the pending HarvestHub report updates, final documentation, and SQL audit/update scripts to GitHub in commit `1bda119`; keep private credentials and the classmate reference PDF excluded
 - [x] Keep local project guidance, documentation, and the source DOCX discoverable to workspace file mentions
 - [~] Verify all six Print report previews in Chrome 157.0.8103.52, including no-filter, filter, no-result and multi-page cases, Manila time, page counters, screen-only visibility, and end summary; preview not yet tested
 - [~] Test CRUD, search, filter, sort, dropdowns, joins, login, dashboard and reports after migration 08

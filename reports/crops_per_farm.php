@@ -76,7 +76,7 @@ $sortLabels = [
     'variety' => 'Variety', 'planting_date' => 'Planting date', 'area_planted' => 'Area planted', 'status' => 'Status'
 ];
 ?>
-<div class="flex flex-wrap items-center justify-between gap-3">
+<div class="report-page-heading flex flex-wrap items-center justify-between gap-3">
     <div>
         <h1 class="text-2xl font-bold text-slate-900">Crops planted per farm</h1>
         <p class="mt-1 text-sm text-slate-600">Filter planting records by farm and planting date.</p>
