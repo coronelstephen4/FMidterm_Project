@@ -16,11 +16,23 @@
 
 - **Phase:** 9 Final testing and submission
 - **Last updated:** 2026-11-16
-- **Currently working on:** Shared report printing uses zero-margin A4 landscape pages with repeating top/bottom spacer rows, auto-layout tables with wrapping and minimum widths for short columns, repeated table headings, and a fixed HarvestHub generated-time footer. Screen layout is flattened through the shared print frame wrapper.
-- **Next step:** Open Chrome print preview for all six reports with browser headers and footers enabled and disabled. Confirm no browser-generated text, per-page spacing, no text overlap, repeated table headings, footer placement, and clean final-page breaks; verify Farmers and Farms repeats all farmer details on every row.
-- **Last verified row-count snapshot (2026-11-15 05:21, user screenshots):** farmer 18, farm 19, crop 10, crop_variety 10, planting 31, harvest 22. Farmers without farms: IDs 25 and 38 (decision pending).
+- **Currently working on:** Making report row identity clear by showing a farmer ID once across the farmer's farm rows and the unique planting/harvest IDs on detail reports.
+- **Next step:** Review the updated Farmers and Farms, Crops Planted per Farm, Plantings by Status, and Harvest Records reports in screen and print views. Confirm unique row IDs are clear and farmer IDs restart on a new page.
+- **Last verified row-count snapshot (2026-11-16, user screenshots):** farmer/farm report 19 farm rows, planting reports 29 distinct planting IDs (20 Harvested, 9 Growing), harvest report 21 distinct harvest IDs; estimated value totals 2,775 kg and 126,243.75. Farmers without farms: IDs 25 and 38 (decision pending).
 
 ## Progress Log
+
+### 2026-11-16 05:21
+- Updated: Applied the read-only audit results. Farmers and Farms now displays each farmer ID once for consecutive farm rows, while each row retains its unique Farm ID. Added unique Planting ID and Harvest ID columns to planting and harvest detail reports, and selected planting_id in the crops-per-farm query. No database changes or deletions were made.
+- Files changed: `models/Report.php`, `reports/farmers_farms.php`, `reports/crops_per_farm.php`, `reports/plantings_by_status.php`, `reports/harvest_records.php`, `assets/css/print.css`, `PROJECT_TASKS.md`, `PROJECT_TRACKER.md`
+- Verification: PHP lint and screen/print preview remain to be completed. Supabase screenshots show 19 distinct farm rows, 29 planting IDs, and 21 harvest IDs.
+- Next: Lint the changed PHP files and preview the four detail reports on screen and in print.
+
+### 2026-11-16 05:01
+- Updated: Added SELECT-only queries matching the six reports' joins and row grain, including primary keys and parent IDs to make repeated labels distinguishable. No database was accessed or modified.
+- Files changed: `database/38_report_row_grain_audit_read_only.sql`, `PROJECT_TASKS.md`, `PROJECT_TRACKER.md`
+- Verification: Reviewed query joins and selected identifiers against `models/Report.php`; user must execute the script to inspect live data.
+- Next: Run the script in Supabase SQL Editor and share results for analysis.
 
 ### 2026-11-16 02:32
 - Updated: Restored the flat Farmers and Farms table in screen and print output. Farmer ID, name, contact, and address now appear on every farm row; removed the per-farmer tbody markup and its print page-break rule. Kept Farm ID, the requested column order, farm-record count, and farmer_id/farm_id ordering. Updated the report documentation and task checklist. No database changes were made.

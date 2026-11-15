@@ -94,9 +94,11 @@ Each module needs: model, list page with search, filter, sorting and pagination,
 - [x] Links from the dashboard to every module
 
 ## Phase 6: Reports (all with filters, e.g. date range)
+- [x] Prepare and review read-only row-grain and primary-key queries for all six reports (`database/38_report_row_grain_audit_read_only.sql`); user screenshots confirm distinct Farm, Planting, and Harvest record IDs
 - [x] Farmers and their farms
-- [x] Show Farm ID and repeat farmer details on every Farmers and Farms record
+- [x] Show Farm ID and repeat farmer contact details on every farm row while displaying each farmer ID once per farmer group
 - [x] Keep the Farmers and Farms report limited to complete farmer/farm/lookup relationships; keep unassigned farmers in the Farmers module
+- [x] Prevent repeated farmer IDs from looking like duplicate farm records; show the unique planting or harvest record ID on detailed reports
 - [x] Run a read-only Supabase row-count audit for the original 13 relations; user screenshot confirms those relations contain data
 - [~] Rerun the 14-relation audit, including `roles`, after migration 23 is applied
 - [x] Crops planted per farm

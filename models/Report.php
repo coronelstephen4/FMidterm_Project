@@ -98,7 +98,7 @@ class Report {
         ];
         $orderBy = $columns[$sort] ?? $columns['farm_name'];
         $orderDirection = strtoupper($direction) === 'DESC' ? 'DESC' : 'ASC';
-        $sql = "SELECT f.farm_id, f.farm_name, f.location, fm.first_name || ' ' || fm.last_name AS farmer_name,
+        $sql = "SELECT p.planting_id, f.farm_id, f.farm_name, f.location, fm.first_name || ' ' || fm.last_name AS farmer_name,
                        c.crop_name, cv.variety_name AS variety, p.planting_date, p.area_planted, p.expected_harvest_date,
                        ps.status_name
                 FROM planting p
@@ -112,7 +112,7 @@ class Report {
                   AND (:has_date_to = FALSE OR p.planting_date <= :date_to)
                   AND (:has_search = FALSE OR CONCAT_WS(' ', f.farm_name, f.location, fm.first_name,
                        fm.last_name, c.crop_name, cv.variety_name) ILIKE :search_filter)
-                ORDER BY {$orderBy} {$orderDirection} NULLS LAST, f.farm_id ASC, p.planting_date DESC
+                ORDER BY {$orderBy} {$orderDirection} NULLS LAST, f.farm_id ASC, p.planting_date DESC, p.planting_id ASC
                 LIMIT :limit OFFSET :offset";
         $stmt = $this->pdo->prepare($sql);
         $this->bindCropReportFilters($stmt, $farmId, $dateFrom, $dateTo, $search);

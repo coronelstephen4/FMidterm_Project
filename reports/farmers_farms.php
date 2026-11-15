@@ -96,9 +96,12 @@ require __DIR__ . '/../includes/header.php';
         <tbody class="divide-y divide-slate-100">
             <?php if (!$rows): ?>
                 <tr><td colspan="10" class="px-4 py-8 text-center text-slate-500">No matching farmers or farms found.</td></tr>
-            <?php else: foreach ($rows as $row): ?>
+            <?php else: $previousFarmerId = null; foreach ($rows as $row):
+                $showFarmerId = (int) $row['farmer_id'] !== $previousFarmerId;
+                $previousFarmerId = (int) $row['farmer_id'];
+            ?>
                 <tr class="hover:bg-slate-50">
-                    <td class="px-4 py-3"><?= (int) $row['farmer_id'] ?></td>
+                    <td class="px-4 py-3"><?= $showFarmerId ? (int) $row['farmer_id'] : '' ?></td>
                     <td class="px-4 py-3"><?= htmlspecialchars($row['first_name'] . ' ' . $row['last_name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
                     <td class="px-4 py-3"><?= htmlspecialchars(phoneDisplayValue((string) $row['contact_number']), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
                     <td class="px-4 py-3"><?= htmlspecialchars($row['address'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>

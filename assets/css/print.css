@@ -70,15 +70,18 @@
     .print-farmers-farms th:nth-child(9), .print-farmers-farms td:nth-child(9),
     .print-farmers-farms th:nth-child(10), .print-farmers-farms td:nth-child(10) { min-width: 24mm; }
 
-    .print-crops-farm th:nth-child(5), .print-crops-farm td:nth-child(5),
-    .print-crops-farm th:nth-child(9), .print-crops-farm td:nth-child(9),
-    .print-plantings-status th:nth-child(1), .print-plantings-status td:nth-child(1),
-    .print-plantings-status th:nth-child(7), .print-plantings-status td:nth-child(7),
-    .print-harvest-records th:nth-child(1), .print-harvest-records td:nth-child(1) { min-width: 24mm; }
+    .print-crops-farm th:nth-child(1), .print-crops-farm td:nth-child(1),
     .print-crops-farm th:nth-child(6), .print-crops-farm td:nth-child(6),
-    .print-plantings-status th:nth-child(6), .print-plantings-status td:nth-child(6),
-    .print-harvest-records th:nth-child(5), .print-harvest-records td:nth-child(5),
-    .print-harvest-records th:nth-child(7), .print-harvest-records td:nth-child(7),
+    .print-crops-farm th:nth-child(10), .print-crops-farm td:nth-child(10),
+    .print-plantings-status th:nth-child(1), .print-plantings-status td:nth-child(1),
+    .print-plantings-status th:nth-child(2), .print-plantings-status td:nth-child(2),
+    .print-plantings-status th:nth-child(8), .print-plantings-status td:nth-child(8),
+    .print-harvest-records th:nth-child(1), .print-harvest-records td:nth-child(1),
+    .print-harvest-records th:nth-child(2), .print-harvest-records td:nth-child(2) { min-width: 24mm; }
+    .print-crops-farm th:nth-child(7), .print-crops-farm td:nth-child(7),
+    .print-plantings-status th:nth-child(7), .print-plantings-status td:nth-child(7),
+    .print-harvest-records th:nth-child(6), .print-harvest-records td:nth-child(6),
+    .print-harvest-records th:nth-child(8), .print-harvest-records td:nth-child(8),
     .print-total-quantity th:nth-child(n+2), .print-total-quantity td:nth-child(n+2),
     .print-estimated-value th:nth-child(n+2), .print-estimated-value td:nth-child(n+2) { min-width: 20mm; text-align: right !important; }
 

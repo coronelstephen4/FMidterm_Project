@@ -144,6 +144,7 @@ $sortLabels = [
     <table class="print-plantings-status min-w-full divide-y divide-slate-200 text-sm">
         <thead class="bg-slate-100 text-left text-slate-700">
             <tr>
+                <th scope="col" class="whitespace-nowrap px-4 py-3 font-semibold">Planting ID</th>
                 <?php foreach ($sortLabels as $column => $label):
                     $nextDirection = ($sort === $column && strtoupper($direction) === 'ASC') ? 'DESC' : 'ASC';
                     $sortUrl = '?' . http_build_query([
@@ -158,9 +159,10 @@ $sortLabels = [
         </thead>
         <tbody class="divide-y divide-slate-100">
             <?php if (!$rows): ?>
-                <tr><td colspan="7" class="px-4 py-8 text-center text-slate-500">No planting records match these filters.</td></tr>
+                <tr><td colspan="8" class="px-4 py-8 text-center text-slate-500">No planting records match these filters.</td></tr>
             <?php else: foreach ($rows as $row): ?>
                 <tr class="hover:bg-slate-50">
+                    <td class="whitespace-nowrap px-4 py-3"><?= (int) $row['planting_id'] ?></td>
                     <td class="whitespace-nowrap px-4 py-3"><?= htmlspecialchars($row['planting_date'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
                     <td class="px-4 py-3"><?= htmlspecialchars($row['status_name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
                     <td class="px-4 py-3"><?= htmlspecialchars($row['farm_name'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
