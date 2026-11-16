@@ -1,5 +1,19 @@
 config/db_credentials.php
 
+# Keep these project guidance and submission files on this computer only.
+/AGENTS.md
+/CODING_STANDARDS.md
+/FINAL_SYSTEM_DOCUMENTATION.docx
+/FINAL_SYSTEM_DOCUMENTATION.md
+/Final ERD_clean.png
+/Final ERD_constraints.png
+/PROJECT_DOCUMENTATION.md
+/PROJECT_REQUIREMENTS.md
+/PROJECT_TASKS.md
+/PROJECT_TRACKER.md
+/ap3 project.docx
+/normalization_unf_to_3nf.svg
+
 # Keep project guidance files discoverable to workspace file mentions.
 ~$*.docx
 /submission_materials/
